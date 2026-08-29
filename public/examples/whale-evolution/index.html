@@ -21,7 +21,7 @@
       <section class="title-slide" data-ref="Uhen 2010; Thewissen et al. 2009">
         <div class="wash deep" style="left:-120px;top:40px;width:520px;height:380px;"></div>
         <div class="wash light" style="left:760px;top:-100px;width:620px;height:480px;"></div>
-        <svg class="whale-art" viewBox="0 0 1200 205" width="1200" height="205" style="position:absolute;left:40px;top:470px;" aria-label="The main steps of whale evolution drawn to scale by body length, from the raccoon-sized Indohyus to the 30-metre blue whale" font-family="inherit">
+        <svg class="whale-art" viewBox="0 0 1200 205" width="1200" height="205" style="position:absolute;left:40px;top:400px;" aria-label="The main steps of whale evolution drawn to scale by body length, from the raccoon-sized Indohyus to the 30-metre blue whale" font-family="inherit">
           <defs>
             <!-- silhouettes in a 100-unit-long box; scaled per species so lengths are to scale -->
             <symbol id="s-quad" viewBox="0 0 100 40"><path d="M30,26 C28,16 34,10 46,9 C60,8 78,9 88,7 C96,6 100,10 96,13 C88,15 80,16 74,18 C70,22 66,26 64,28 L67,38 L63,38 L60,29 C52,30 44,30 38,29 L40,38 L36,38 L33,29 C31,29 30,28 30,26 Z M30,25 C20,26 10,30 4,36" fill="#1d4f74" stroke="#1d4f74" stroke-width="2.5" stroke-linecap="round"></path></symbol>
@@ -56,14 +56,62 @@
         </svg>
         <h1>From land to sea.</h1>
         <p class="sub">The evolutionary pathways of whales</p>
-        <p class="meta"><b>Cetacean evolution</b>, before and after the return to water · out of the sea ~375 Ma, back in ~50 Ma · <span class="soft">sources on every slide (notes, <code>data-ref</code>)</span></p>
+        <p class="meta" style="margin-top:1.2em"><b>Cetacean evolution</b>, before and after the return to water · out of the sea ~375 Ma, back in ~50 Ma · <span class="soft">sources on every slide (notes, <code>data-ref</code>)</span></p>
         
-        <div hidden="" data-ai-note="" style="position:absolute;left:490px;top:406px;width:300px;">move the diagram to here</div>
-        <p style="position:absolute;left:384px;top:302px;width:512px;margin:0;">Text</p><aside class="notes">
+        <div hidden="" data-ai-note="done" data-ai-reply="Moved the to-scale row up to y = 400, just under the subtitle. It spans the full slide width, so it can only move vertically; I also removed an empty text box that had been left on the slide." style="position:absolute;left:490px;top:406px;width:300px;">move the diagram to here</div>
+        <aside class="notes">
           Overview sources: Uhen, M.D. (2010) "The origin(s) of whales", Annual Review of Earth and Planetary Sciences 38:189–219.
           Thewissen, J.G.M., Cooper, L.N., George, J.C. &amp; Bajpai, S. (2009) "From land to water: the origin of whales, dolphins, and porpoises", Evolution: Education and Outreach 2:272–288.
           Marx, F.G., Lambert, O. &amp; Uhen, M.D. (2016) Cetacean Paleobiology, Wiley-Blackwell.
           Sizes in the title graphic: Indohyus ~1 m and Pakicetus wolf-sized (~1.8 m) (Thewissen et al. 2007, 2001); Ambulocetus ~3 m (Thewissen et al. 1994); Rodhocetus ~3 m (Gingerich et al. 1994); Dorudon ~5 m (Uhen 2004); Basilosaurus ~16–18 m (Gingerich et al. 1990); blue whale up to ~30 m. Ages as on the timeline slide.
+        </aside>
+      </section>
+
+      <!-- 1b · the whole pathway -->
+      <section data-ref="Knoll 2015 Life on a Young Planet; Erwin et al. 2011 Science 334:1091; Shu et al. 1999 Nature 402:42; Benton 2015; Clack 2012; Uhen 2010">
+        <div class="kicker">The whole road · sea → land → sea</div>
+        <h2>From the first cells to whales: four billion years, two changes of element.</h2>
+        <svg viewBox="0 0 1200 470" width="1200" height="470" aria-label="Schematic pathway from the first cells to whales, showing which stages lived in the sea and which on land" style="font-family:inherit">
+          <defs>
+            <linearGradient id="seaband" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8ec1e0" stop-opacity=".55"/><stop offset="1" stop-color="#3b7fb0" stop-opacity=".35"/></linearGradient>
+            <linearGradient id="landband" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e8c9a6" stop-opacity=".6"/><stop offset="1" stop-color="#c3703a" stop-opacity=".25"/></linearGradient>
+          </defs>
+          <!-- two bands: sea (bottom) and land (top) -->
+          <rect x="30" y="60" width="1140" height="150" rx="14" fill="url(#landband)"/>
+          <rect x="30" y="250" width="1140" height="150" rx="14" fill="url(#seaband)"/>
+          <text x="48" y="90" font-size="15" font-weight="700" fill="#8a4a1e" letter-spacing=".12em">ON LAND</text>
+          <text x="48" y="280" font-size="15" font-weight="700" fill="#1d4f74" letter-spacing=".12em">IN THE SEA</text>
+          <!-- the path: sea → land at 375 Ma → sea at 50 Ma -->
+          <path d="M70,330 C300,330 420,330 470,330 C540,330 560,140 620,140 C760,140 880,140 940,140 C990,140 1000,330 1050,330 L1150,330" fill="none" stroke="#17303f" stroke-width="5" stroke-linecap="round" stroke-dasharray="0" opacity=".85"/>
+          <!-- nodes: (x, y, label, sublabel) -->
+          <g fill="#17303f">
+            <circle cx="70" cy="330" r="9"/><circle cx="175" cy="330" r="9"/><circle cx="280" cy="330" r="9"/><circle cx="380" cy="330" r="9"/><circle cx="470" cy="330" r="9"/>
+            <circle cx="620" cy="140" r="9"/><circle cx="730" cy="140" r="9"/><circle cx="840" cy="140" r="9"/><circle cx="940" cy="140" r="9"/>
+            <circle cx="1050" cy="330" r="9"/><circle cx="1150" cy="330" r="9"/>
+          </g>
+          <g font-size="15" fill="#17303f" text-anchor="middle">
+            <text x="70" y="362" font-weight="700">First cells</text><text x="70" y="380" font-size="12" fill="#4f6b7d">~3.5 billion years</text>
+            <text x="175" y="300" font-weight="700">Eukaryotes</text><text x="175" y="316" font-size="12" fill="#4f6b7d">~1.8 billion years</text>
+            <text x="280" y="362" font-weight="700">Animals</text><text x="280" y="380" font-size="12" fill="#4f6b7d">~575 Ma · Ediacaran</text>
+            <text x="380" y="300" font-weight="700">First vertebrates</text><text x="380" y="316" font-size="12" fill="#4f6b7d">~518 Ma · jawless fish</text>
+            <text x="470" y="362" font-weight="700">Lobe-finned fish</text><text x="470" y="380" font-size="12" fill="#4f6b7d">~420 Ma · lungs, fleshy fins</text>
+            <text x="620" y="112" font-weight="700">Tetrapods</text><text x="620" y="96" font-size="12" fill="#4f6b7d">~375 Ma · Tiktaalik, Acanthostega</text>
+            <text x="730" y="176" font-weight="700">Amniotes</text><text x="730" y="192" font-size="12" fill="#4f6b7d">~315 Ma</text>
+            <text x="840" y="112" font-weight="700">Mammals</text><text x="840" y="96" font-size="12" fill="#4f6b7d">~205 Ma</text>
+            <text x="940" y="176" font-weight="700">Artiodactyls</text><text x="940" y="192" font-size="12" fill="#4f6b7d">~55 Ma</text>
+            <text x="1050" y="362" font-weight="700">First whales</text><text x="1050" y="380" font-size="12" fill="#4f6b7d">~50 Ma · Pakicetus</text>
+            <text x="1150" y="300" font-weight="700">Whales today</text><text x="1150" y="316" font-size="12" fill="#4f6b7d">~90 species</text>
+          </g>
+          <!-- the two crossings -->
+          <g font-size="13" fill="#c3703a" font-weight="700">
+            <text x="520" y="228" text-anchor="end">leave the sea ↗</text><text x="520" y="244" text-anchor="end" font-size="12" font-weight="500">~375 Ma</text>
+            <text x="1022" y="228" text-anchor="start">↘ back into the sea</text><text x="1022" y="244" text-anchor="start" font-size="12" font-weight="500">~50 Ma</text>
+          </g>
+          <text x="600" y="440" font-size="13" fill="#4f6b7d" text-anchor="middle">Order is to scale; spacing is not — the first three steps alone span three billion years. Ages are conventional first appearances (see notes).</text>
+        </svg>
+        <p class="caption" style="text-align:left;margin-top:0">Of the ~4 billion years, whales' ancestors spent all but ~325 million in water: a marine lineage that went ashore, then came back.</p>
+        <aside class="notes">
+          Ages: earliest convincing fossil life ~3.5 Ga (stromatolites and microfossils; Knoll, A.H. (2015) Life on a Young Planet, Princeton University Press); eukaryotes by ~1.8–1.6 Ga (Knoll 2015); earliest animals ~575 Ma in the Ediacaran (Erwin, D.H. et al. (2011) "The Cambrian conundrum: early divergence and later ecological success in the early history of animals", Science 334:1091–1097); earliest vertebrates ~518 Ma, Chengjiang (Shu, D.-G. et al. (1999) "Lower Cambrian vertebrates from south China", Nature 402:42–46); lobe-finned fishes (sarcopterygians) by ~420 Ma, tetrapods ~375 Ma, amniotes ~315 Ma, mammaliaforms ~205 Ma, artiodactyls ~55 Ma (Benton 2015; Clack 2012); whales ~50 Ma (Uhen 2010). Living cetacean species: about 90 (Committee on Taxonomy, Society for Marine Mammalogy).
         </aside>
       </section>
 
@@ -108,7 +156,7 @@
           </div>
         </div>
         
-        <div hidden="" data-ai-note="" style="position:absolute;left:359px;top:572px;width:300px;">add a slide before this one showing full evolutionary pathway of whales from single cell -&gt; whales, indicating where they leave and reenter the sea</div><aside class="notes">
+        <div hidden="" data-ai-note="done" data-ai-reply="Added the slide before this one: a two-band diagram (sea below, land above) tracing first cells → eukaryotes → animals → vertebrates → lobe-finned fish → tetrapods (leave the sea, ~375 Ma) → amniotes → mammals → artiodactyls → first whales (back in, ~50 Ma) → today, with ages and sources in its notes." style="position:absolute;left:523px;top:160px;width:300px;">add a slide before this one showing full evolutionary pathway of whales from single cell -&gt; whales, indicating where they leave and reenter the sea</div><aside class="notes">
           Nikaido, M., Rooney, A.P. &amp; Okada, N. (1999) "Phylogenetic relationships among cetartiodactyls based on insertions of short and long interspersed elements: hippopotamuses are the closest extant relatives of whales", PNAS 96:10261–10266.
           Gatesy, J. (1997) "More DNA support for a Cetacea/Hippopotamidae clade", Molecular Biology and Evolution 14:537–543.
           Gingerich, P.D., ul Haq, M., Zalmout, I.S., Khan, I.H. &amp; Malkani, M.S. (2001) "Origin of whales from early artiodactyls: hands and feet of Eocene Protocetidae from Pakistan", Science 293:2239–2242.
@@ -265,18 +313,20 @@
             </ul>
           </div>
           <div class="col">
-            <svg viewBox="0 0 420 200" width="440" height="210" aria-label="Stylised silhouette of Pakicetus, a four-legged early whale with a long snout and tail">
+            <svg viewBox="0 0 420 200" width="220" height="105" aria-label="Stylised silhouette of Pakicetus, a four-legged early whale with a long snout and tail" style="position:absolute;left:1000px;top:560px;">
               <g transform="translate(0,-14)">
                 <path d="M150,126 C140,100 150,80 190,74 C230,68 280,70 310,66 C340,62 366,60 392,70 C400,74 396,80 386,82 C370,86 352,88 336,90 C320,92 306,96 298,102 C292,110 286,118 280,126 L288,160 L276,160 L266,128 C246,130 224,130 206,128 L212,160 L200,160 L188,128 C176,128 162,128 150,126 Z" fill="#1d4f74" opacity=".9"></path>
                 <path d="M150,122 C120,124 80,130 40,150 C30,156 24,166 26,176" stroke="#1d4f74" stroke-width="9" fill="none" stroke-linecap="round"></path>
                 <circle cx="352" cy="72" r="3.5" fill="#eef4f8"></circle>
               </g>
             </svg>
-            <p class="caption">Shape only; proportions are schematic.</p>
+            <svg viewBox="0 0 100 40" width="3300" height="1320" preserveAspectRatio="none" aria-label="A blue whale drawn at the same scale as the Pakicetus silhouette: 30 metres against 1.8 metres; only its head fits on the slide" style="position:absolute;left:-2020px;top:-300px;opacity:.13;pointer-events:none;transform:scaleX(-1);">
+              <path d="M3,21 C9,14 27,11 50,13 C65,14 75,16 84,18 C87,19 89,19 90,20 C89,21 87,22 84,22 C75,25 62,28 47,28 C27,28 10,26 3,21 Z M89,20 C93,16 99,15 100,17 C97,18 95,20 93,20 C95,21 97,22 100,23 C99,25 93,24 89,20 Z M67,17 C71,14 75,13 76,15 C74,16 71,18 69,19 Z M37,28 C40,32 46,33 50,30 C46,30 42,29 37,28 Z" fill="#1d4f74"></path>
+            </svg>
           </div>
         </div>
         
-        <div hidden="" data-ai-note="" style="position:absolute;left:807px;top:446px;width:300px;">place a transparent whale in the background here, to scale with respect to the pakicetus<div><br></div></div><aside class="notes">
+        <div hidden="" data-ai-note="done" data-ai-reply="Put a 13 %-opacity blue whale behind the slide at the same scale as the Pakicetus (≈110 px per metre): at that scale the whale is 3.3 m wide on screen, so only its head and eye fit — the rest runs off the slide, which is the point. Pakicetus now sits at the bottom right beside the whale's mouth, with a caption." style="position:absolute;left:754px;top:198px;width:300px;">place a transparent whale in the background here, to scale with respect to the pakicetus</div><aside class="notes">
           Gingerich, P.D., Wells, N.A., Russell, D.E. &amp; Shah, S.M.I. (1983) "Origin of whales in epicontinental remnant seas: new evidence from the early Eocene of Pakistan", Science 220:403–406.
           Thewissen, J.G.M., Williams, E.M., Roe, L.J. &amp; Hussain, S.T. (2001) "Skeletons of terrestrial cetaceans and the relationship of whales to artiodactyls", Nature 413:277–281.
         </aside>
@@ -465,16 +515,39 @@
       <section data-ref="Huelsmann et al. 2019 Sci Adv 5:eaaw6671; McGowen et al. 2020 Syst Biol 69:479">
         <div class="kicker">Transition 9 · written in the genome</div>
         <h2>The land-to-water transition left a trail of lost genes.</h2>
-        <ul>
-          <li>Comparing 62 mammalian genomes, Huelsmann et al. (2019) identified <strong>85 protein-coding genes lost</strong> in the cetacean stem lineage.</li>
-          <li>Examples with plausible aquatic explanations: <em>AANAT</em> and <em>ASMT</em> (melatonin synthesis — consistent with unihemispheric sleep), <em>F12</em> (a coagulation factor; a possible protection against clotting during dives), <em>KLK8</em> (skin and hair function), <em>SLC4A9</em> (saliva secretion).</li>
-          <li>A genome-scale phylogeny of living cetaceans (McGowen et al. 2020) dates the crown Neoceti divergence and resolves the placement of most families.</li>
-        </ul>
-        <div class="card" style="margin-top:14px;">
-          <p><strong>Caveat.</strong> Gene loss correlates with the transition; the functional stories are hypotheses tested one gene at a time, and not all losses have known consequences.</p>
-        </div>
-        
-        <div hidden="" data-ai-note="" style="position:absolute;left:427px;top:527px;width:300px;">is there a nice diagram that could take up most of this slide?<div><br></div></div><aside class="notes">
+        <svg viewBox="0 0 1200 430" width="1200" height="430" aria-label="Diagram: the cetacean lineage after its split from hippos lost 85 protein-coding genes; examples grouped by function with their likely aquatic explanation" style="font-family:inherit">
+          <!-- tree -->
+          <g stroke="#1d4f74" stroke-width="4" fill="none" stroke-linecap="round">
+            <path d="M60,215 H200"></path>
+            <path d="M200,215 C260,215 260,110 320,110 H1120"></path>
+            <path d="M200,215 C260,215 260,320 320,320 H1120"></path>
+          </g>
+          <g font-size="16" fill="#17303f">
+            <text x="60" y="200">common ancestor</text><text x="60" y="242" font-size="13" fill="#4f6b7d">~55 Ma · on land</text>
+            <text x="1130" y="116" font-weight="700">hippos</text>
+            <text x="1130" y="326" font-weight="700" fill="#2f6f9f">whales</text>
+          </g>
+          <!-- the stem with losses -->
+          <rect x="330" y="300" width="380" height="40" rx="20" fill="#c3703a" opacity=".9"></rect>
+          <text x="520" y="326" font-size="16" font-weight="700" fill="#fff" text-anchor="middle">85 genes lost on the whale stem</text>
+          <text x="520" y="362" font-size="12" fill="#4f6b7d" text-anchor="middle">Huelsmann et al. 2019 · 62 mammalian genomes compared</text>
+          <!-- callouts -->
+          <g font-size="13" fill="#17303f">
+            <rect x="330" y="30" width="240" height="60" rx="8" fill="#fff" fill-opacity=".7" stroke="#c9d9e4"/><text x="342" y="52" font-weight="700">Sleep · AANAT, ASMT</text><text x="342" y="72" font-size="12" fill="#4f6b7d">melatonin synthesis — whales sleep</text><text x="342" y="86" font-size="12" fill="#4f6b7d">one brain half at a time</text>
+            <rect x="590" y="30" width="240" height="60" rx="8" fill="#fff" fill-opacity=".7" stroke="#c9d9e4"/><text x="602" y="52" font-weight="700">Diving · F12, KLKB1</text><text x="602" y="72" font-size="12" fill="#4f6b7d">contact-activation clotting —</text><text x="602" y="86" font-size="12" fill="#4f6b7d">fewer clots during deep dives</text>
+            <rect x="850" y="30" width="240" height="60" rx="8" fill="#fff" fill-opacity=".7" stroke="#c9d9e4"/><text x="862" y="52" font-weight="700">Skin · KLK8</text><text x="862" y="72" font-size="12" fill="#4f6b7d">epidermal protease — hairless,</text><text x="862" y="86" font-size="12" fill="#4f6b7d">thick, glandless whale skin</text>
+            <rect x="560" y="370" width="240" height="46" rx="8" fill="#fff" fill-opacity=".7" stroke="#c9d9e4"/><text x="572" y="390" font-weight="700">Saliva · SLC4A9</text><text x="572" y="408" font-size="12" fill="#4f6b7d">no need to moisten food under water</text>
+            <rect x="820" y="370" width="240" height="46" rx="8" fill="#fff" fill-opacity=".7" stroke="#c9d9e4"/><text x="832" y="390" font-weight="700">DNA repair · POLM</text><text x="832" y="408" font-size="12" fill="#4f6b7d">an error-prone repair enzyme, dropped</text>
+          </g>
+          <g stroke="#c9d9e4" stroke-width="1.5" stroke-dasharray="3 3">
+            <line x1="450" y1="90" x2="450" y2="300"/><line x1="710" y1="90" x2="620" y2="300"/><line x1="970" y1="90" x2="690" y2="300"/>
+            <line x1="680" y1="370" x2="640" y2="340"/><line x1="940" y1="370" x2="705" y2="338"/>
+          </g>
+          <text x="60" y="425" font-size="13" fill="#4f6b7d">Gene loss correlates with the transition; each functional story is a hypothesis tested one gene at a time. Tree schematic.</text>
+        </svg>
+        <div hidden="" data-ai-note="done" data-ai-reply="Replaced the bullet list with a slide-wide diagram: the hippo/whale split with the 85 lost genes on the whale stem and five callouts (sleep, diving, skin, saliva, DNA repair) naming the genes and their likely aquatic explanation; the caveat is kept as a footnote." style="position:absolute;left:738px;top:312px;width:300px;">is there a nice diagram that could take up most of this slide?</div>
+        <aside class="notes">
+          Gene examples and interpretations from Huelsmann et al. (2019): AANAT and ASMT (melatonin synthesis; cetaceans show unihemispheric sleep), F12 and KLKB1 (contact activation pathway of blood clotting; loss may reduce thrombosis risk during diving), KLK8 (epidermal function; cetacean skin lacks hair and glands), SLC4A9 (salivary bicarbonate secretion), POLM (DNA polymerase μ, error-prone repair). McGowen et al. (2020) for the living-cetacean phylogeny.
           Huelsmann, M., Hecker, N., Springer, M.S., Gatesy, J., Sharma, V. &amp; Hiller, M. (2019) "Genes lost during the transition from land to water in cetaceans highlight genomic changes associated with aquatic adaptations", Science Advances 5:eaaw6671.
           McGowen, M.R. et al. (2020) "Phylogenomic resolution of the cetacean tree of life using target sequence capture", Systematic Biology 69:479–501.
         </aside>
@@ -507,6 +580,7 @@
           Since all tetrapods descend from Devonian fish, every marine tetrapod lineage is a water → land → water story; whales are the one that went furthest.
         </aside>
       </section>
+
 
       <!-- 13c · convergence -->
       <section data-ref="Kelley & Pyenson 2015; Motani et al. 2014 PLoS ONE 9:e88640; Houssaye 2009 Integrative Zoology 4:325">
@@ -565,6 +639,7 @@
               <li>Coates M.I. &amp; Clack J.A. (1990) Nature 347:66–69.</li>
               <li>Daeschler E.B., Shubin N.H. &amp; Jenkins F.A. (2006) Nature 440:757–763.</li>
               <li>Domning D.P. (2001) Nature 413:625–627.</li>
+              <li>Erwin D.H. et al. (2011) Science 334:1091–1097.</li>
               <li>Fordyce R.E. &amp; Marx F.G. (2018) Curr. Biol. 28:1670–1676.</li>
               <li>Gatesy J. (1997) Mol. Biol. Evol. 14:537–543.</li>
               <li>Geisler J.H., Colbert M.W. &amp; Carew J.L. (2014) Nature 508:383–386.</li>
@@ -582,6 +657,7 @@
               <li>Houssaye A. (2009) Integr. Zool. 4:325–340.</li>
               <li>Huelsmann M. et al. (2019) Sci. Adv. 5:eaaw6671.</li>
               <li>Kelley N.P. &amp; Pyenson N.D. (2015) Science 348:aaa3716.</li>
+              <li>Knoll A.H. (2015) Life on a Young Planet. Princeton Univ. Press.</li>
               <li>Lambert O. et al. (2017) Curr. Biol. 27:1535–1541.</li>
               <li>Lambert O. et al. (2019) Curr. Biol. 29:1352–1359.</li>
               <li>Marx F.G., Lambert O. &amp; Uhen M.D. (2016) Cetacean Paleobiology. Wiley-Blackwell.</li>
@@ -592,6 +668,7 @@
               <li>Nikaido M., Rooney A.P. &amp; Okada N. (1999) PNAS 96:10261–10266.</li>
               <li>Nummela S. et al. (2004) Nature 430:776–778.</li>
               <li>Rybczynski N., Dawson M.R. &amp; Tedford R.H. (2009) Nature 458:1021–1024.</li>
+              <li>Shu D.-G. et al. (1999) Nature 402:42–46.</li>
               <li>Shubin N.H., Daeschler E.B. &amp; Jenkins F.A. (2006) Nature 440:764–771.</li>
               <li>Slack K.E. et al. (2006) Mol. Biol. Evol. 23:1144–1155.</li>
               <li>Slater G.J., Goldbogen J.A. &amp; Pyenson N.D. (2017) Proc. R. Soc. B 284:20170546.</li>

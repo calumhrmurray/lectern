@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('bundled example decks', () => {
-  for (const [id, count] of [['whale-evolution', 19], ['naturalisation-fr', 17]] as const) {
+  for (const [id, count] of [['whale-evolution', 20], ['naturalisation-fr', 17]] as const) {
     test(`${id} opens from the welcome screen`, async ({ page }) => {
       await page.goto('/');
       await page.locator('.lec-list-item', { hasText: id === 'whale-evolution' ? 'From land to sea' : 'naturalisation' }).locator('.lec-btn', { hasText: 'Preview' }).click();

@@ -1,6 +1,6 @@
 {
   "examples": [
-    { "id": "whale-evolution", "title": "From land to sea — the evolutionary pathways of whales", "description": "19 referenced slides in the Aquarelle theme: leaving the water (Tiktaalik), raoellids, Pakicetus, Ambulocetus, protocetids, basilosaurids, the Neoceti split, echolocation, gigantism, genomics, and the other returns to the sea.", "lang": "en", "files": ["index.html", "theme.css"] },
+    { "id": "whale-evolution", "title": "From land to sea — the evolutionary pathways of whales", "description": "20 referenced slides in the Aquarelle theme: the whole road from the first cells, leaving the water (Tiktaalik), raoellids, Pakicetus, Ambulocetus, protocetids, basilosaurids, the Neoceti split, echolocation, gigantism, genomics, and the other returns to the sea.", "lang": "en", "files": ["index.html", "theme.css"] },
     { "id": "naturalisation-fr", "title": "Préparer l'entretien de naturalisation", "description": "17 diapositives en français : cadre juridique, déroulement, symboles, valeurs, institutions, histoire, droits et devoirs — sources sur chaque diapositive.", "lang": "fr", "files": ["index.html", "theme.css"] }
   ]
 }
