@@ -275,7 +275,7 @@ export class App {
         this.removeBridge = installFetchBridge(ws, this.blobCache);
         this.setLoading(true, 'Reading the folder…');
         await this.blobCache.preload();
-        this.inlinedHtml = await inlineDeck(ws, deckPath, text, this.blobCache);
+        this.inlinedHtml = await inlineDeck(ws, deckPath, text, this.blobCache, REVEAL_EMBEDDED);
         const cache = this.blobCache;
         const deckDir = dirname(deckPath);
         this.editor.stage.liveUrlResolver = (rel) => cache.peek(joinPath(deckDir, rel.split(/[?#]/)[0]));
@@ -445,7 +445,7 @@ export class App {
       if (this.inline) {
         // No URL to open: write the inlined deck into a new window.
         void (async () => {
-          const html = await inlineDeck(this.workspace!, this.deckPath, this.editor.doc.serialize(), this.blobCache!);
+          const html = await inlineDeck(this.workspace!, this.deckPath, this.editor.doc.serialize(), this.blobCache!, REVEAL_EMBEDDED);
           const w = window.open('', '_blank');
           if (!w) { this.toast('The browser blocked the presentation window.', 'error'); return; }
           w.document.open(); w.document.write(html); w.document.close();

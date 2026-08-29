@@ -137,9 +137,21 @@ export const URL_BRIDGE = '__lecternUrl';
  * Builds the `srcdoc` for a deck: relative references become blob URLs and a
  * fetch shim is injected. `deckPath` is workspace-relative.
  */
-export async function inlineDeck(ws: Workspace, deckPath: string, html: string, cache: BlobUrlCache): Promise<string> {
+export async function inlineDeck(ws: Workspace, deckPath: string, html: string, cache: BlobUrlCache, fallbacks: Record<string, string> = {}): Promise<string> {
   const baseDir = dirname(deckPath);
   const doc = new DOMParser().parseFromString(html, 'text/html');
+  // A reference that leaves the picked folder ("../../reveal/dist/reveal.js") or points at a missing
+  // file can still be satisfied from the embedded copies, matched by path suffix.
+  const fallbackFor = (raw: string): string | null => {
+    const clean = raw.split(/[?#]/)[0].replace(/\\/g, '/');
+    for (const [suffix, text] of Object.entries(fallbacks)) if (clean === suffix || clean.endsWith('/' + suffix)) return text;
+    return null;
+  };
+  const escapes = (raw: string): boolean => {
+    let depth = baseDir ? baseDir.split('/').length : 0;
+    for (const seg of raw.split(/[?#]/)[0].split('/')) { if (seg === '..') depth--; else if (seg && seg !== '.') depth++; if (depth < 0) return true; }
+    return false;
+  };
 
   // Scripts and stylesheets are inlined by content (no URL of any kind is needed for them to run);
   // other resources get blob URLs.
@@ -148,7 +160,8 @@ export async function inlineDeck(ws: Workspace, deckPath: string, html: string, 
     if (ABSOLUTE.test(raw) || raw.startsWith('data:')) continue;
     const path = joinPath(baseDir, raw.split(/[?#]/)[0]);
     let text: string | null = null;
-    try { text = await ws.readText(path); } catch { text = null; }
+    if (!escapes(raw)) { try { text = await ws.readText(path); } catch { text = null; } }
+    if (text === null) text = fallbackFor(raw);
     if (text === null) continue;
     const inline = doc.createElement('script');
     for (const a of Array.from(el.attributes)) if (a.name !== 'src' && a.name !== 'async' && a.name !== 'defer') inline.setAttribute(a.name, a.value);
@@ -163,7 +176,7 @@ export async function inlineDeck(ws: Workspace, deckPath: string, html: string, 
     const path = joinPath(baseDir, clean);
     const isCss = /\.css$/i.test(clean) || (el.getAttribute('rel') ?? '').includes('stylesheet');
     if (isCss) {
-      const text = await cache.cssText(path);
+      const text = (escapes(raw) ? null : await cache.cssText(path)) ?? fallbackFor(raw);
       if (text === null) continue;
       const style = doc.createElement('style');
       style.setAttribute('data-lec-href', raw);
@@ -239,6 +252,19 @@ export async function inlineDeck(ws: Workspace, deckPath: string, html: string, 
       if ((n === 'src' || n === 'href') && /^(SCRIPT|LINK|IMG|SOURCE|VIDEO|AUDIO|IFRAME)$/.test(this.tagName)) v = fix(String(v));
       return sa.call(this, n, v);
     };
+    // Content the deck builds with innerHTML / insertAdjacentHTML (slides fetched from part files, figures added by script).
+    var attrs = ['src', 'poster', 'data-background-image', 'data-background-video'];
+    function fixEl(el){
+      if (!el || el.nodeType !== 1) return;
+      for (var i = 0; i < attrs.length; i++) { var v = el.getAttribute(attrs[i]); if (v) { var f = fix(v); if (f !== v) sa.call(el, attrs[i], f); } }
+      if (el.tagName === 'LINK') { var h = el.getAttribute('href'); if (h) { var fh = fix(h); if (fh !== h) sa.call(el, 'href', fh); } }
+    }
+    function fixTree(root){ fixEl(root); if (root.querySelectorAll) { var all = root.querySelectorAll('[src],[poster],[data-background-image],[data-background-video],link[href]'); for (var i = 0; i < all.length; i++) fixEl(all[i]); } }
+    document.addEventListener('DOMContentLoaded', function(){
+      new MutationObserver(function(muts){
+        for (var i = 0; i < muts.length; i++) { var m = muts[i]; if (m.type === 'attributes') fixEl(m.target); else for (var j = 0; j < m.addedNodes.length; j++) fixTree(m.addedNodes[j]); }
+      }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: attrs });
+    });
     window.fetch = function(input, init){
       var url = typeof input === 'string' ? input : (input && input.url) || '';
       if (!url || abs.test(url) || url.indexOf('data:') === 0 || url.indexOf('blob:') === 0) return orig.call(window, input, init);
