@@ -43,7 +43,7 @@ export function collectAiNotes(doc: DeckDocument): AiNote[] {
 
 /** A prompt an assistant can act on directly. */
 export function aiNotesPrompt(doc: DeckDocument, deckPath: string, size: { width: number; height: number }): string {
-  const notes = collectAiNotes(doc);
+  const notes = collectAiNotes(doc).filter((n) => n.text);
   if (!notes.length) return '';
   const lines = [
     `The slide deck ${deckPath} (slides are ${size.width}×${size.height}) has ${notes.length} note${notes.length === 1 ? '' : 's'} for you, marked in the HTML as <div hidden data-ai-note …> inside the slide's <section>:`,

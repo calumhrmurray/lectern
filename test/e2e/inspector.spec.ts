@@ -134,11 +134,33 @@ test('notes for AI: placed on the slide, saved hidden, listed with a prompt', as
   expect(await serialized(page)).not.toContain('data-ai-note');
 });
 
-test('type-to-edit: typing on a selected note replaces its placeholder', async ({ page }) => {
+test('double-click on empty canvas creates a note there; an untouched note disappears', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 0);
+  const c = await page.locator('.lec-canvas-outline').boundingBox();
+  if (!c) throw new Error('no canvas');
+  await page.mouse.dblclick(c.x + c.width * 0.7, c.y + c.height * 0.8);
+  await expect(frame.locator('section.present [data-ai-note][contenteditable="true"]')).toBeVisible();
+  await page.keyboard.type('draw a whale here');
+  await page.keyboard.press('Escape');
+  let out = await serialized(page);
+  expect(out).toMatch(/<div hidden(="")? data-ai-note(="")? style="position:absolute;left:\d+px;top:\d+px;width:300px;">draw a whale here<\/div>/);
+  const m = /left:(\d+)px;top:(\d+)px;width:300px;">draw a whale here/.exec(out)!;
+  expect(Number(m[1])).toBeGreaterThan(600);
+  expect(Number(m[2])).toBeGreaterThan(400);
+  // a second double-click, then clicking away without typing, leaves nothing behind
+  await page.mouse.dblclick(c.x + c.width * 0.2, c.y + c.height * 0.8);
+  await page.keyboard.press('Escape');
+  out = await serialized(page);
+  expect(out.match(/data-ai-note/g)?.length).toBe(1);
+});
+
+test('type-to-edit: typing on a selected note replaces its text', async ({ page }) => {
   const frame = await openDeck(page);
   await goToSlide(page, 1);
   await page.locator('.lec-btn[data-action="ainote"]').click();
-  await page.keyboard.press('Escape'); // stop the initial edit, keeping the placeholder
+  await page.keyboard.type('first');
+  await page.keyboard.press('Escape');
   const note = await centerOf(page, 'section.present [data-ai-note]');
   await page.mouse.click(note.x, note.y); // single click: selected, not editing
   await page.keyboard.type('explain gigantism here');
@@ -146,5 +168,5 @@ test('type-to-edit: typing on a selected note replaces its placeholder', async (
   await expect(frame.locator('section.present [data-ai-note]')).toHaveText('explain gigantism here');
   const out = await serialized(page);
   expect(out).toContain('>explain gigantism here</div>');
-  expect(out).not.toContain('Describe what you want here');
+  expect(out).not.toMatch(/data-ai-note[^>]*>first/);
 });

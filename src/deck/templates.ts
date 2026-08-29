@@ -118,7 +118,7 @@ export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
   },
   ainote: {
     id: 'ainote', name: 'Note for AI',
-    html: (b) => `<div hidden data-ai-note style="${boxStyle({ ...b, h: undefined })}">Describe what you want here</div>`,
+    html: (b) => `<div hidden data-ai-note style="${boxStyle({ ...b, h: undefined })}"></div>`,
   },
   iframe: {
     id: 'iframe', name: 'Web embed',

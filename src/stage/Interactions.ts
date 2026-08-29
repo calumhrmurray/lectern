@@ -38,6 +38,8 @@ export interface InteractionHost {
   rotationOf(el: Element): number;
   /** Right-click. */
   contextMenu?(clientX: number, clientY: number, el: Element | null): void;
+  /** Double-click on empty canvas. */
+  dblClickEmpty?(clientX: number, clientY: number): void;
 }
 
 type State =
@@ -188,6 +190,8 @@ export class Interactions {
     if (target && this.host.isTextEditable(target)) {
       this.host.select([target], 'replace');
       this.host.startTextEdit(target, { clientX: ev.clientX, clientY: ev.clientY });
+    } else if (!target) {
+      this.host.dblClickEmpty?.(ev.clientX, ev.clientY);
     }
   };
 

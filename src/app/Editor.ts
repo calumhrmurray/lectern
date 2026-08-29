@@ -479,6 +479,15 @@ export class Editor implements InteractionHost {
   setMarquee(rect: Rect | null): void { this.marquee = rect; this.refreshOverlay(); }
   isTextEditable(el: Element): boolean { return isTextEditable(el); }
 
+  /** Double-click on empty canvas: a note for the AI, right there. */
+  dblClickEmpty(clientX: number, clientY: number): void {
+    if (!this.doc.length) return;
+    const p = this.toSlide(clientX, clientY);
+    const size = this.stage.slideSize;
+    const w = 300;
+    this.insertElement('ainote', { rect: { x: Math.round(Math.max(0, Math.min(p.x - 20, size.width - w))), y: Math.round(Math.max(0, Math.min(p.y - 16, size.height - 80))), w, h: 80 }, edit: true });
+  }
+
   rotationOf(src: Element): number {
     const t = (src as HTMLElement).style?.transform ?? '';
     const m = /rotate\((-?[\d.]+)deg\)/.exec(t);
@@ -912,7 +921,7 @@ export class Editor implements InteractionHost {
   // ---------------------------------------------------------------- text editing
 
   /** Placeholder texts of freshly inserted objects: typing replaces them wholesale. */
-  private static PLACEHOLDERS = new Set(['Describe what you want here', 'Text', 'Title', 'Note', '// code', 'First point Second point']);
+  private static PLACEHOLDERS = new Set(['Text', 'Title', 'Note', '// code', 'First point Second point']);
 
   startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }, opts: { replaceAll?: boolean } = {}): void {
     if (this.textSession) this.endTextEdit();
@@ -928,8 +937,9 @@ export class Editor implements InteractionHost {
         onEnd: (_committed, changed) => {
           this.textSession = null;
           this.overlay.setTextMode(false);
-          // Remove emptied text boxes the user just inserted.
-          if (changed && el.textContent?.trim() === '' && !el.children.length && el.parentElement) {
+          // Remove emptied text objects (and untouched notes) rather than leaving invisible husks.
+          const textLike = el.hasAttribute('data-ai-note') || /^(p|h[1-6]|pre|blockquote|li|ul|ol)$/i.test(el.tagName);
+          if (textLike && el.textContent?.trim() === '' && !el.querySelector('img, svg, video, iframe, table') && el.parentElement) {
             this.stage.remove(el);
             this.sel = this.sel.filter((s) => s !== el);
           }

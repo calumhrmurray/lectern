@@ -29,6 +29,7 @@ describe('notes for AI', () => {
     const t = document.createElement('template');
     t.innerHTML = ELEMENT_TEMPLATES.ainote.html({ x: 10, y: 20, w: 300, h: 80 });
     const el = t.content.firstElementChild!;
+    expect(el.textContent).toBe('');
     expect(el.hasAttribute('hidden')).toBe(true);
     expect(el.hasAttribute('data-ai-note')).toBe(true);
     const wrap = document.createElement('section');
