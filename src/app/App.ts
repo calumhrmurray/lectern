@@ -20,7 +20,7 @@ import { SLIDE_LAYOUTS, starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
 import type { SlideRef } from '../stage/Stage';
 import { h, isMac } from '../ui/dom';
-import { aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, promptDialog, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
+import { TUTORIAL_URL, aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, promptDialog, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
 import { Inspector } from '../ui/Inspector';
 import { closeMenus } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
@@ -620,6 +620,7 @@ export class App {
   }
 
   showShortcuts(): void { void shortcutsDialog(); }
+  showTutorial(): void { window.open(TUTORIAL_URL, '_blank', 'noopener'); }
   showAbout(): void { void aboutDialog(); }
 
   private setLoading(on: boolean, text = 'Loading…'): void {

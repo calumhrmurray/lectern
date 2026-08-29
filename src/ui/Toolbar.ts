@@ -142,7 +142,8 @@ export class Toolbar {
       { separator: true },
       { label: 'Present', icon: 'play', disabled: !app.editor.ready, onSelect: () => app.present() },
       { separator: true },
-      { label: 'Keyboard shortcuts', icon: 'help', shortcut: '?', onSelect: () => app.showShortcuts() },
+      { label: 'Tutorial', icon: 'help', onSelect: () => app.showTutorial() },
+      { label: 'Keyboard shortcuts', shortcut: '?', onSelect: () => app.showShortcuts() },
       { label: 'About Lectern', onSelect: () => app.showAbout() },
     ], anchor);
   }

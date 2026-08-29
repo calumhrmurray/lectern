@@ -65,6 +65,9 @@ export async function promptDialog(title: string, label: string, value = '', pla
 
 // ---------------------------------------------------------------- welcome
 
+export const TUTORIAL_URL = 'https://calumhrmurray.github.io/lectern/tutorial.html';
+export const AGENTS_URL = 'https://calumhrmurray.github.io/lectern/AGENTS.md';
+
 export interface ExampleInfo { id: string; title: string; description: string; lang: string; files: string[] }
 
 export function renderWelcome(app: App, container: HTMLElement, recents: RecentEntry[], fsaOk: boolean, examples: ExampleInfo[] = []): void {
@@ -72,6 +75,7 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
     h('div', { class: 'lec-welcome-card' },
       h('h1', {}, svgIcon(icons.lectern), 'Lectern'),
       h('p', { class: 'lec-tagline' }, 'A visual editor for HTML presentations. The HTML file is the document. ', h('span', { class: 'lec-sub', title: 'Build time' }, `build ${__LECTERN_BUILD__}`)),
+      h('p', { class: 'lec-links' }, 'New here? ', h('a', { href: TUTORIAL_URL, target: '_blank', rel: 'noopener' }, 'Five-minute tutorial'), ' · ', h('a', { href: AGENTS_URL, target: '_blank', rel: 'noopener' }, 'Instructions for your AI assistant')),
       h('div', { class: 'lec-welcome-actions' },
         h('button', { class: 'lec-btn', type: 'button', disabled: !fsaOk, onclick: () => void app.openFolder() },
           svgIcon(icons.folder), h('b', {}, 'Open a folder…'), h('span', {}, fsaOk ? 'Pick the folder that contains your deck. Saves go straight back to the file.' : 'Needs Chrome or Edge. In other browsers, run the CLI (see below).')),

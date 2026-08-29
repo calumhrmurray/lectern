@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lectern in five minutes</title>
+  <meta name="description" content="A short tutorial for Lectern, the visual editor for HTML / reveal.js slide decks: open a deck, move and edit things, add slides, save, and leave notes for an AI assistant.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23e0894a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 5h10l-1.5 4h-7z'/%3E%3Cpath d='M8 9v5M5 14h6'/%3E%3C/svg%3E">
+  <style>
+    :root { --bg: #1b1d21; --panel: #24272d; --line: #3a3d44; --text: #e6e7ea; --soft: #a9adb6; --dim: #7c818c; --accent: #6ea2ff; --warm: #e0894a; --yellow: #fff3a8; --green: #bfe8c0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { font-size: 34px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.01em; }
+    h1 svg { width: 30px; height: 30px; vertical-align: -4px; margin-right: 6px; }
+    .lead { color: var(--soft); font-size: 17px; margin: 0 0 36px; }
+    .lead a, p a, li a { color: var(--accent); text-decoration: none; }
+    .lead a:hover, p a:hover, li a:hover { text-decoration: underline; }
+    h2 { font-size: 21px; margin: 44px 0 10px; display: flex; align-items: baseline; gap: 12px; }
+    h2 .n { color: var(--warm); font-variant-numeric: tabular-nums; font-size: 15px; letter-spacing: .08em; }
+    p, li { color: var(--text); }
+    ul { padding-left: 20px; margin: 8px 0; }
+    li { margin: 4px 0; }
+    kbd { font: 12.5px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 3px 6px; color: var(--text); white-space: nowrap; }
+    code { font: 13.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel); padding: 1px 6px; border-radius: 4px; }
+    figure { margin: 14px 0 6px; }
+    figure img { display: block; width: 100%; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.4); }
+    figcaption { color: var(--dim); font-size: 13px; margin-top: 8px; }
+    .tip { border-left: 3px solid var(--warm); padding: 6px 14px; margin: 14px 0; color: var(--soft); background: var(--panel); border-radius: 0 6px 6px 0; }
+    .note-y, .note-g { display: inline-block; padding: 0 6px; border-radius: 4px; color: #222; font-weight: 600; }
+    .note-y { background: var(--yellow); } .note-g { background: var(--green); }
+    .toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 8px; padding: 0; list-style: none; font-size: 14px; }
+    .toc a { color: var(--soft); }
+    footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--dim); font-size: 13.5px; }
+    pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13.5px; line-height: 1.5; }
+    @media (prefers-color-scheme: light) { :root { --bg: #f6f5f1; --panel: #ffffff; --line: #ddd9cf; --text: #1d1f24; --soft: #4d525c; --dim: #7a7f89; --accent: #2b5bd7; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1><svg viewBox="0 0 16 16" fill="none" stroke="#e0894a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h10l-1.5 4h-7z"/><path d="M8 9v5M5 14h6"/></svg>Lectern in five minutes</h1>
+  <p class="lead">Lectern edits HTML slide decks the way a desktop presentation app does — click, drag, type — and writes the result straight back into the <code>.html</code> file. If you have used Keynote or PowerPoint, most of it will feel familiar. This page covers the rest, and how to work on a deck together with an AI assistant. <a href="./">Open the editor</a> in another tab and follow along.</p>
+  <ul class="toc">
+    <li><a href="#open">1 Open a deck</a></li><li><a href="#screen">2 The screen</a></li><li><a href="#move">3 Select &amp; move</a></li><li><a href="#text">4 Edit text</a></li>
+    <li><a href="#add">5 Add slides &amp; objects</a></li><li><a href="#save">6 Save &amp; present</a></li><li><a href="#ai">7 Notes for an AI</a></li><li><a href="#more">8 Everything else</a></li>
+  </ul>
+
+  <h2 id="open"><span class="n">1</span> Open a deck</h2>
+  <p>Three ways in from the welcome screen. <b>Open a folder…</b> picks the folder that holds your deck (Chrome or Edge; nothing is uploaded — the browser reads and writes the files on your disk). <b>New deck…</b> makes a folder with a title slide, a theme and a copy of reveal.js. <b>Preview</b> on an example opens a throw-away copy, which is the quickest way to try things; <b>Save to a folder</b> keeps it.</p>
+  <figure><img src="tutorial/welcome.jpg" alt="The welcome screen: Open a folder, New deck, Try the demo, and the example decks"><figcaption>The welcome screen. Your recently opened decks appear here too.</figcaption></figure>
+  <p class="tip">From a terminal, <code>npx lectern-editor path/to/deck.html</code> serves the editor for any browser, including Firefox and Safari.</p>
+
+  <h2 id="screen"><span class="n">2</span> The screen</h2>
+  <p>Slides down the left, the current slide in the middle, the inspector on the right. The slide is rendered by the deck's own reveal.js and stylesheet, so what you see is what the audience will see. The status bar shows the file you are editing; the toolbar's <b>Present</b> opens the real presentation.</p>
+  <figure><img src="tutorial/editor.jpg" alt="The editor with the navigator, the canvas and the inspector"><figcaption>Navigator, canvas, inspector. Drag thumbnails to reorder slides.</figcaption></figure>
+
+  <h2 id="move"><span class="n">3</span> Select and move things</h2>
+  <p><b>Click</b> anything to select it — a heading, a list, an image, a diagram. Handles appear, and the inspector shows its position, size, text and fill. <b>Drag</b> to move it; guides snap to the slide's edges, its centre lines and the edges of other objects (hold <kbd>⌥</kbd> to ignore them). Drag a handle to resize (images keep their proportions; <kbd>⇧</kbd> constrains anything). The small circle above the selection rotates. Arrow keys nudge by a pixel, <kbd>⇧</kbd>+arrows by ten.</p>
+  <figure><img src="tutorial/drag.jpg" alt="Dragging a diagram, with a snapping guide and the position readout"><figcaption>Mid-drag: the pink guide is a snap line, the readout is the new position in slide units.</figcaption></figure>
+  <p>Two ways an object can sit on a slide, shown as <b>In flow</b> / <b>Free</b> in the inspector. Text laid out by the deck's CSS stays <i>in flow</i>: dragging it nudges it without disturbing anything else. Objects you place by hand — an image, a shape, a caption — are <i>free</i>, at an exact position. Switch either way with the buttons. Drag on empty canvas to select several objects; <kbd>⌘A</kbd> selects everything on the slide; click a selected object again to select its parent (a column, a card).</p>
+
+  <h2 id="text"><span class="n">4</span> Edit text</h2>
+  <p><b>Double-click</b> text to edit it in place. The toolbar switches to bold, italic, underline, lists and links (<kbd>⌘B</kbd> <kbd>⌘I</kbd> <kbd>⌘U</kbd> <kbd>⌘K</kbd>); <kbd>Tab</kbd> indents a list item. <kbd>Esc</kbd> or clicking elsewhere finishes. With a text object selected, just typing replaces its text. Maths written as LaTeX stays LaTeX and is typeset again when you finish.</p>
+  <figure><img src="tutorial/text.jpg" alt="Editing a bullet list in place with the text toolbar"><figcaption>Editing a list in place. Font, size, colour and alignment are in the inspector.</figcaption></figure>
+
+  <h2 id="add"><span class="n">5</span> Add slides and objects</h2>
+  <p><b>Slide</b> in the toolbar (or <kbd>⌘⇧N</kbd>) adds a slide from a layout — title, bullets, two columns, section break, image — built from the deck's own classes so it matches the rest. <b>Text</b>, <b>Image</b> and <b>Shape</b> add objects to the current slide; images are copied into the deck folder. The <b>…</b> menu has tables, code, equations and web embeds. <kbd>⌘D</kbd> duplicates, <kbd>⌫</kbd> deletes, <kbd>⌘C</kbd>/<kbd>⌘V</kbd> copy and paste — objects and slides alike.</p>
+  <figure><img src="tutorial/layouts.jpg" alt="The new-slide layout picker"><figcaption>New slide layouts. "Duplicate current" is often the fastest start.</figcaption></figure>
+
+  <h2 id="save"><span class="n">6</span> Save and present</h2>
+  <p><kbd>⌘S</kbd> writes the changed slides back into the HTML file — only the changed ones, so the rest of the file stays byte-for-byte as it was. Autosave is on by default (menu ▸ <b>Autosave</b>), so usually you never press it. <kbd>⌘Z</kbd> undoes anything, including across saves. <b>Present</b> opens the deck as the audience will see it; print it to PDF from there with reveal's <code>?print-pdf</code> if you need a handout.</p>
+  <p class="tip">Because the file is the document, anything else can edit it too: a text editor, git, or an AI assistant. If a file changes on disk while you have no unsaved edits, the canvas reloads by itself and stays on the same slide.</p>
+
+  <h2 id="ai"><span class="n">7</span> Notes for an AI</h2>
+  <p>This is the part that is new. Press <kbd>N</kbd> on a slide (or double-click empty canvas) and write, at the spot it concerns, what you want done there: <i>"draw a whale here, facing left"</i>, <i>"this is too dense — split it"</i>, <i>"add the 1905 law here"</i>. The note is a <span class="note-y">yellow sticky</span> on the canvas, saved in the HTML (hidden when presenting) with its position on the slide.</p>
+  <figure><img src="tutorial/note.jpg" alt="A yellow note for the AI on a slide"><figcaption>A note, placed exactly where the whale should go.</figcaption></figure>
+  <p>Now ask your assistant to <b>do the notes</b>. It reads them from the file — <code>npx lectern-editor notes deck.html</code> lists them, and the <b>Notes for AI</b> panel in the toolbar copies a ready-made prompt — does what each asks, and marks it done. The note turns <span class="note-g">green</span> with the assistant's reply under yours. Click a green note to answer it (it becomes pending again, with the whole thread); double-click to dismiss it once you are happy.</p>
+  <figure><img src="tutorial/done.jpg" alt="A green note showing the conversation between the author and the AI"><figcaption>A finished note: the author's requests and the assistant's replies, in order.</figcaption></figure>
+  <p>To make an assistant fluent in this — the file format, the deck's classes, the notes protocol — give it <a href="AGENTS.md">AGENTS.md</a>. In Claude Code, install the skill: <code>/plugin marketplace add calumhrmurray/lectern</code> then <code>/plugin install lectern@lectern</code>. For other assistants, paste:</p>
+  <pre>Read https://calumhrmurray.github.io/lectern/AGENTS.md and make me a slide deck about … in a folder called talk.</pre>
+  <p>Then keep Lectern open on that folder. Its edits appear as they happen; yours reach the file a second after you make them.</p>
+
+  <h2 id="more"><span class="n">8</span> Everything else</h2>
+  <ul>
+    <li><b>Inspector tabs.</b> <i>Format</i> is the selected object; <i>Slide</i> has the background, transition, speaker notes and the raw HTML of the slide; <i>Deck</i> has the slide size and the deck's classes.</li>
+    <li><b>Classes.</b> The chips at the bottom of the inspector are the deck's own CSS classes (<code>.kicker</code>, <code>.card</code>, <code>.soft</code> …). One click toggles them — the easiest way to keep new things looking like the old ones.</li>
+    <li><b>Fragments.</b> <i>Build ▸ Appear on click</i> makes an object a reveal.js fragment; set the effect and order there.</li>
+    <li><b>Arrange.</b> Align, distribute and z-order for a multi-selection; <kbd>⌘]</kbd> / <kbd>⌘[</kbd> bring forward / send back.</li>
+    <li><b>Zoom.</b> <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd>, or the toolbar; <kbd>PgUp</kbd>/<kbd>PgDn</kbd> change slides.</li>
+    <li><b>Multi-file decks</b> (slides pulled in from part files) are edited as one deck and saved back to the right files.</li>
+    <li><kbd>?</kbd> shows the full list of shortcuts.</li>
+  </ul>
+
+  <footer>Lectern is open source (MIT): <a href="https://github.com/calumhrmurray/lectern">github.com/calumhrmurray/lectern</a> · <a href="README.md">README</a> · <a href="AGENTS.md">instructions for assistants</a></footer>
+</main>
+</body>
+</html>

@@ -250,6 +250,11 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-list-item .lec-icon { color: var(--text-soft); }
 .lec-list-item .lec-sub { color: var(--text-dim); font-size: 11.5px; }
 .lec-list-item .lec-spacer { flex: 1; }
+.lec-list-item > span:not(.lec-sub):not(.lec-spacer) { min-width: 0; }
+.lec-list-item .lec-btn { flex: none; }
+.lec-welcome .lec-links { margin: -14px 0 22px; font-size: 13px; }
+.lec-welcome .lec-links a { color: var(--accent); text-decoration: none; }
+.lec-welcome .lec-links a:hover { text-decoration: underline; }
 .lec-img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 360px; overflow-y: auto; padding: 2px; }
 .lec-img-cell { border: 2px solid transparent; border-radius: 8px; background: var(--bg); padding: 4px; text-align: center; cursor: pointer; }
 .lec-img-cell:hover { border-color: var(--line); }

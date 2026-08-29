@@ -9,6 +9,7 @@ into the file. **The HTML file is the document.** Comments, indentation and unto
 identical, so `git diff` stays readable and a coding assistant can keep editing the same file while you have it open.
 
 - **Try it now:** https://calumhrmurray.github.io/lectern/ — click *Open a folder…* (Chrome/Edge; nothing is uploaded).
+- **Five-minute tutorial:** https://calumhrmurray.github.io/lectern/tutorial.html
 - **No install, no server:** download [`Lectern.html`](https://calumhrmurray.github.io/lectern/Lectern.html) and double-click it.
 - **From a terminal:** `npx lectern-editor deck.html`
 - **With Claude Code / another assistant:** see [Slides with an AI](#slides-with-an-ai) below — the instructions it needs are in [`AGENTS.md`](AGENTS.md).
