@@ -219,13 +219,19 @@ export class Stage {
       .lec-editing .lec-slides:not(.lec-textmode) { user-select: none; }
       /* notes for an AI: visible only while editing */
       .lec-editing [data-ai-note] { display: block !important; box-sizing: border-box; background: #fff3a8; color: #4a3a00; border: 1px solid #e2c34e; border-radius: 6px; padding: 26px 12px 10px; font: 600 0.58em/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: left; box-shadow: 0 6px 18px rgba(80,60,0,.18); z-index: 50; transform: rotate(-1deg); }
-      .lec-editing [data-ai-note]::before { content: "✎ note for AI · hidden when presenting"; position: absolute; left: 12px; top: 8px; font-size: 0.62em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9a7a00; }
-      .lec-editing [data-ai-note] { min-height: 2.6em; }
-      .lec-editing [data-ai-note="done"] { background: #dff5dc; border-color: #7cc47a; color: #1f4d24; padding-top: 30px; }
-      .lec-editing [data-ai-note="done"]::before { content: "✓ done — click and type to reply · double-click to dismiss"; color: #2f7d3a; }
-      .lec-editing [data-ai-note="done"][data-ai-reply]::after { content: attr(data-ai-reply); display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #9ad197; font-weight: 500; font-size: 0.85em; color: #2f7d3a; }
-      .lec-editing [data-ai-note]:empty::after { content: "Describe what you want here…"; color: #b39a3a; font-weight: 500; }
-      .lec-editing [data-ai-note][data-lec-editing]:empty::after { content: ""; }
+      .lec-editing [data-ai-note]::before { content: "✎ note for AI · click to comment"; position: absolute; left: 12px; top: 8px; font-size: 0.62em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9a7a00; }
+      .lec-editing [data-ai-note] { min-height: 2.6em; cursor: default; }
+      .lec-editing [data-ai-note] > p { margin: 0; padding: 4px 0; font-size: 1em; line-height: 1.35; text-align: left; }
+      .lec-editing [data-ai-note] > p + p { border-top: 1px dashed rgba(120,100,20,.3); }
+      .lec-editing [data-ai-note] > p[data-by="ai"] { color: #2f7d3a; font-weight: 500; }
+      .lec-editing [data-ai-note] > p[data-by="ai"]::before { content: "✓ AI · "; font-size: .8em; font-weight: 700; letter-spacing: .06em; }
+      .lec-editing [data-ai-note] > p[data-by="author"]:empty::after { content: "Write a comment…"; color: #b39a3a; font-weight: 500; }
+      .lec-editing [data-ai-note] > p[data-by="author"][data-lec-editing] { cursor: text; }
+      .lec-editing [data-ai-note] > p[data-by="author"][data-lec-editing]:empty::after { content: ""; }
+      .lec-editing [data-ai-note="done"] { background: #dff5dc; border-color: #7cc47a; color: #1f4d24; }
+      .lec-editing [data-ai-note="done"]::before { content: "✓ done — click to comment · double-click to dismiss"; color: #2f7d3a; }
+      .lec-editing [data-ai-note="done"] > p + p { border-top-color: rgba(47,125,58,.3); }
+      .lec-editing [data-ai-note="done"][data-ai-reply]::after { content: "✓ AI · " attr(data-ai-reply); display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #9ad197; font-weight: 500; color: #2f7d3a; }
     `;
     this.doc.head.appendChild(style);
   }

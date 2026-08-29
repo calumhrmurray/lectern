@@ -42,6 +42,8 @@ export interface InteractionHost {
   dblClickEmpty?(clientX: number, clientY: number): void;
   /** Double-click on an object; return true to swallow it (no text editing). */
   dblClickTarget?(el: Element): boolean;
+  /** Plain click (no drag) on an object, after selection. */
+  clickTarget?(el: Element): void;
 }
 
 type State =
@@ -171,6 +173,7 @@ export class Interactions {
       if (s.target) {
         if (s.shift && s.wasSelected) this.host.select([s.target], 'toggle');
         else if (!s.shift && s.wasSelected && !s.handle) this.host.select([s.target], 'replace');
+        if (!s.shift && !s.handle) this.host.clickTarget?.(s.target);
       } else if (!s.shift) {
         this.host.clearSelection();
       }

@@ -79,6 +79,8 @@ export function isSelectableDisplay(el: Element, display: string): boolean {
 
 /** Maps an element to the object a user expects to grab (a list item → its list, a cell → its table). */
 export function selectionTarget(el: Element, section: Element): Element {
+  const note = el.closest('[data-ai-note]');
+  if (note && note !== section && section.contains(note)) return note;
   let cur: Element = el;
   while (cur !== section && CLIMB_TO_GROUP.has(cur.tagName.toLowerCase())) {
     const group = cur.parentElement?.closest('ul, ol, table, dl');

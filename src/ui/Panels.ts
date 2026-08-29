@@ -91,7 +91,7 @@ export class Panels {
       this.body.append(this.aiList, h('div', { class: 'lec-panel-side' },
         h('button', { class: 'lec-btn lec-primary', type: 'button', onclick: () => this.copyPrompt() }, 'Copy as prompt'),
         h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.editor.insertElement('ainote', { edit: true }) }, '+ Note on this slide'),
-        h('div', { class: 'lec-panel-hint' }, 'Yellow = waiting, green = done (with the assistant’s reply). Edit a green note to ask for more; double-click it on the slide to dismiss it. Notes never show when presenting.'),
+        h('div', { class: 'lec-panel-hint' }, 'Each note is a thread. Yellow = waiting, green = done (with the assistant’s reply). Click a note to add a comment — a green one turns yellow again; double-click a green note to dismiss it. Notes never show when presenting.'),
       ));
     } else {
       this.body.append(this.htmlArea, h('div', { class: 'lec-panel-side' },
@@ -139,7 +139,7 @@ export class Panels {
     }
     for (const n of notes) {
       this.aiList.appendChild(h('button', { class: `lec-ai-item${n.done ? ' lec-ai-done-item' : ''}`, type: 'button', onclick: () => { ed.goTo({ top: n.top, sub: null }); ed.select([n.el]); } },
-        h('span', { class: 'lec-ai-slide' }, n.done ? '✓ ' : '', `Slide ${n.top + 1}`), h('span', { class: 'lec-ai-text' }, n.text || '(empty)', n.reply ? h('span', { class: 'lec-ai-reply' }, ` — ${n.reply}`) : null),
+        h('span', { class: 'lec-ai-slide' }, n.done ? '✓ ' : '', `Slide ${n.top + 1}`), h('span', { class: 'lec-ai-text' }, ...n.entries.map((e, i) => h('span', { class: e.by === 'ai' ? 'lec-ai-reply' : '' }, (i ? ' → ' : '') + (e.by === 'ai' ? 'AI: ' : '') + e.text)), n.entries.length ? null : '(empty)'),
         h('span', { class: 'lec-ai-where' }, n.x !== null && n.y !== null ? `(${Math.round(n.x)}, ${Math.round(n.y)})` : ''),
         h('span', { class: 'lec-ai-done', title: 'Remove this note', onclick: (e: MouseEvent) => { e.stopPropagation(); ed.edit('Remove note', () => ed.stage.remove(n.el), { top: n.top }); } }, '✕')));
     }

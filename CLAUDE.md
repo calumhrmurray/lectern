@@ -31,7 +31,8 @@ Visual editor for HTML slide decks (reveal.js, or any page of <section> slides w
 Slides may contain `<div hidden data-ai-note style="position:absolute;left:Xpx;top:Ypx;…">instruction</div>`. Each one is a
 request from the author for that spot on the slide (coordinates in slide units, usually 1280×720). When asked to "do the
 notes" in a deck: act on each pending one (attribute value empty) in the file, matching the deck's existing style, then mark it
-done **without deleting it**: `data-ai-note="done" data-ai-reply="one sentence saying what you did"`. The author sees it turn
-green, may edit it to ask for more (it becomes pending again; `data-ai-reply` then tells you what was done before), and
-dismisses it themselves. Never leave notes visible in the presentation (they are `hidden` on purpose).
+done **without deleting it**: append `<p data-by="ai">one sentence saying what you did</p>` inside the note and set
+`data-ai-note="done"`. A note is a thread of `<p data-by="author">` / `<p data-by="ai">` comments (read them all; the last author
+comment is the current request). The author sees it turn green, may add a comment (it becomes pending again) and dismisses it
+themselves. Never leave notes visible in the presentation (they are `hidden` on purpose).
 `node scripts/ai-notes.mjs <deck.html>` lists the pending ones. The editor autosaves, so the file on disk is current.

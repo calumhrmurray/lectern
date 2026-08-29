@@ -118,11 +118,11 @@ test('notes for AI: placed on the slide, saved hidden, listed with a prompt', as
   await goToSlide(page, 1);
   await page.locator('.lec-overlay').focus();
   await page.keyboard.press('n');
-  await expect(frame.locator('section.present [data-ai-note][contenteditable="true"]')).toBeVisible();
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
   await page.keyboard.type('draw a whale here');
   await page.keyboard.press('Escape');
   const out = await serialized(page);
-  expect(out).toMatch(/<div hidden(="")? data-ai-note(="")? style="position:absolute;left:\d+px;top:\d+px;width:300px;">draw a whale here<\/div>/);
+  expect(out).toMatch(/<div hidden(="")? data-ai-note(="")? style="position:absolute;left:\d+px;top:\d+px;width:300px;"><p data-by="author">draw a whale here<\/p><\/div>/);
   // hidden in the file, visible while editing
   const shown = await frame.locator('section.present [data-ai-note]').evaluate((el) => getComputedStyle(el).display);
   expect(shown).toBe('block');
@@ -140,12 +140,12 @@ test('double-click on empty canvas creates a note there; an untouched note disap
   const c = await page.locator('.lec-canvas-outline').boundingBox();
   if (!c) throw new Error('no canvas');
   await page.mouse.dblclick(c.x + c.width * 0.7, c.y + c.height * 0.8);
-  await expect(frame.locator('section.present [data-ai-note][contenteditable="true"]')).toBeVisible();
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
   await page.keyboard.type('draw a whale here');
   await page.keyboard.press('Escape');
   let out = await serialized(page);
-  expect(out).toMatch(/<div hidden(="")? data-ai-note(="")? style="position:absolute;left:\d+px;top:\d+px;width:300px;">draw a whale here<\/div>/);
-  const m = /left:(\d+)px;top:(\d+)px;width:300px;">draw a whale here/.exec(out)!;
+  expect(out).toMatch(/<div hidden(="")? data-ai-note(="")? style="position:absolute;left:\d+px;top:\d+px;width:300px;"><p data-by="author">draw a whale here<\/p><\/div>/);
+  const m = /left:(\d+)px;top:(\d+)px;width:300px;"><p data-by="author">draw a whale here/.exec(out)!;
   expect(Number(m[1])).toBeGreaterThan(600);
   expect(Number(m[2])).toBeGreaterThan(400);
   // a second double-click, then clicking away without typing, leaves nothing behind
@@ -155,37 +155,42 @@ test('double-click on empty canvas creates a note there; an untouched note disap
   expect(out.match(/data-ai-note/g)?.length).toBe(1);
 });
 
-test('type-to-edit: typing on a selected note replaces its text', async ({ page }) => {
+test('a click on a note opens a new comment box; earlier comments stay fixed', async ({ page }) => {
   const frame = await openDeck(page);
   await goToSlide(page, 1);
   await page.locator('.lec-btn[data-action="ainote"]').click();
-  await page.keyboard.type('first');
+  await page.keyboard.type('first request');
   await page.keyboard.press('Escape');
   const note = await centerOf(page, 'section.present [data-ai-note]');
-  await page.mouse.click(note.x, note.y); // single click: selected, not editing
-  await page.keyboard.type('explain gigantism here');
+  await page.mouse.click(note.x, note.y);
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toHaveCount(1);
+  await page.keyboard.type('and a second one');
   await page.keyboard.press('Escape');
-  await expect(frame.locator('section.present [data-ai-note]')).toHaveText('explain gigantism here');
   const out = await serialized(page);
-  expect(out).toContain('>explain gigantism here</div>');
-  expect(out).not.toMatch(/data-ai-note[^>]*>first/);
+  expect(out).toMatch(/<p data-by="author">first request<\/p>\s*<p data-by="author">and a second one<\/p>/);
+  // clicking and leaving the box empty adds nothing
+  await page.mouse.click(note.x, note.y);
+  await page.keyboard.press('Escape');
+  expect((await serialized(page)).match(/<p data-by="author">/g)?.length).toBe(2);
 });
 
 test('done notes are green, a follow-up makes them pending again, double-click dismisses', async ({ page }) => {
   const frame = await openDeck(page);
   await goToSlide(page, 1);
-  await page.evaluate(() => (window as unknown as { lectern: { editor: { addSlide: (h: string) => number } } }).lectern.editor.addSlide('<section><h2>Notes</h2><div hidden data-ai-note="done" data-ai-reply="Added a whale silhouette." style="position:absolute;left:200px;top:200px;width:300px;">draw a whale here</div></section>'));
+  await page.evaluate(() => (window as unknown as { lectern: { editor: { addSlide: (h: string) => number } } }).lectern.editor.addSlide('<section><h2>Notes</h2><div hidden data-ai-note="done" style="position:absolute;left:200px;top:200px;width:300px;"><p data-by="author">draw a whale here</p><p data-by="ai">Added a whale silhouette.</p></div></section>'));
   const note = frame.locator('section.present [data-ai-note]');
   await expect(note).toHaveCSS('background-color', 'rgb(223, 245, 220)');
-  // follow-up: click and type appends, and the note becomes pending (yellow)
+  // a new comment: click opens a box; posting makes the note pending (yellow)
   const c = await centerOf(page, 'section.present [data-ai-note]');
   await page.mouse.click(c.x, c.y);
+  await expect(note.locator('p[contenteditable="true"]')).toBeVisible();
   await page.keyboard.type('make it bigger');
   await page.keyboard.press('Escape');
-  await expect(note).toHaveText('draw a whale here — make it bigger');
+  await expect(note.locator('p')).toHaveCount(3);
   await expect(note).toHaveCSS('background-color', 'rgb(255, 243, 168)');
   let out = await serialized(page);
-  expect(out).toMatch(/data-ai-note=""[^>]*data-ai-reply="Added a whale silhouette\."[^>]*>draw a whale here — make it bigger</);
+  expect(out).toContain('data-ai-note=""');
+  expect(out).toMatch(/<p data-by="author">draw a whale here<\/p>\s*<p data-by="ai">Added a whale silhouette\.<\/p>\s*<p data-by="author">make it bigger<\/p>/);
   // mark done again (as an assistant would) and dismiss by double-click
   await page.evaluate(() => { const ed = (window as unknown as { lectern: { editor: { currentSrcSection: () => Element; stage: { setAttr: (e: Element, n: string, v: string) => void }; refreshOverlay: () => void } } }).lectern.editor; ed.stage.setAttr(ed.currentSrcSection().querySelector('[data-ai-note]')!, 'data-ai-note', 'done'); });
   await expect(note).toHaveCSS('background-color', 'rgb(223, 245, 220)');

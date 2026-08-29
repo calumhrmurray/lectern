@@ -14,10 +14,13 @@ sections.forEach((sec, i) => {
     const x = /left\s*:\s*(-?[\d.]+)px/.exec(style)?.[1];
     const y = /top\s*:\s*(-?[\d.]+)px/.exec(style)?.[1];
     const title = /<h[12][^>]*>([\s\S]*?)<\/h[12]>/.exec(sec)?.[1]?.replace(/<[^>]+>/g, '').trim();
-    out.push(`- Slide ${i + 1}${title ? ` (“${title}”)` : ''}${x && y ? ` at (${x}, ${y})` : ''}: ${m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()}`);
+    const inner = m[1];
+    const ps = [...inner.matchAll(/<p[^>]*data-by="(author|ai)"[^>]*>([\s\S]*?)<\/p>/g)].map((q) => `${q[1] === 'ai' ? 'you (earlier)' : 'author'}: ${q[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()}`);
+    const thread = ps.length ? ps.join(' → ') : inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    out.push(`- Slide ${i + 1}${title ? ` (“${title}”)` : ''}${x && y ? ` at (${x}, ${y})` : ''}: ${thread}`);
   }
 });
 if (!n) { console.log('No pending notes for AI in', file); process.exit(0); }
 console.log(`${file}: ${n} note(s) for AI (elements marked data-ai-note; positions are slide coordinates):\n`);
 console.log(out.join('\n'));
-console.log('\nDo what each note asks in the file itself, keeping the deck\'s style. Do not delete notes: when one is done, set data-ai-note="done" and data-ai-reply="what you did" on it.');
+console.log('\nDo what each note asks in the file itself, keeping the deck\'s style. Do not delete notes: when one is done, append <p data-by="ai">what you did</p> inside it and set data-ai-note="done".');

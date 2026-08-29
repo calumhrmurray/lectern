@@ -43,7 +43,7 @@ test('autosave writes edits to disk without pressing save', async ({ page }) => 
     await page.keyboard.type('autosaved note');
     await page.keyboard.press('Escape');
     await expect(page.locator('.lec-status')).toContainText('autosave');
-    await expect.poll(() => readFileSync(FILE, 'utf8').includes('>autosaved note</div>'), { timeout: 8000 }).toBe(true);
+    await expect.poll(() => readFileSync(FILE, 'utf8').includes('>autosaved note</p></div>'), { timeout: 8000 }).toBe(true);
     await expect(page.locator('.lec-msg')).toContainText('Autosaved');
   } finally {
     writeFileSync(FILE, original);

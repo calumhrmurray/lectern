@@ -7,9 +7,9 @@
 
 import { DeckDocument, type Snapshot } from '../deck/DeckDocument';
 import { History } from '../deck/history';
-import { isSelectableDisplay, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
+import { escapeHtml, isSelectableDisplay, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
 import { ELEMENT_TEMPLATES, updateLineSvg } from '../deck/templates';
-import { isDoneNote } from '../deck/aiNotes';
+import { isAiNote, isDoneNote } from '../deck/aiNotes';
 import { angleDeg, resizeRect, snapEdge, snapLines, snapMove, unionRect, rectsIntersect, type Guide, type HandleName } from '../stage/geometry';
 import { Interactions, type DragSession, type InteractionHost } from '../stage/Interactions';
 import { Overlay, type OverlayBox } from '../stage/Overlay';
@@ -478,15 +478,46 @@ export class Editor implements InteractionHost {
   scale(): number { return this.stage.scale * (this.stage.frameTransform().k || 1); }
   setHover(el: Element | null): void { if (el !== this.hover) { this.hover = el; this.refreshOverlay(); } }
   setMarquee(rect: Rect | null): void { this.marquee = rect; this.refreshOverlay(); }
-  isTextEditable(el: Element): boolean { return isTextEditable(el); }
+  isTextEditable(el: Element): boolean { return isAiNote(el) || isTextEditable(el); }
 
-  /** Double-click on a done (green) note dismisses it. */
+  /** Double-click on a done (green) note dismisses it; on a pending note it opens a comment box. */
   dblClickTarget(el: Element): boolean {
-    if (!isDoneNote(el)) return false;
-    this.endTextEdit();
-    this.edit('Dismiss note', () => this.stage.remove(el), { top: this.topOf(el) });
-    this.clearSelection();
+    if (!isAiNote(el)) return false;
+    if (isDoneNote(el)) {
+      this.endTextEdit();
+      this.edit('Dismiss note', () => this.stage.remove(el), { top: this.topOf(el) });
+      this.clearSelection();
+    } else {
+      this.startComment(el);
+    }
     return true;
+  }
+
+  /** A plain click on a note opens a comment box under its thread. */
+  clickTarget(el: Element): void {
+    if (isAiNote(el) && !this.textSession) this.startComment(el);
+  }
+
+  /** Adds an empty author comment to a note thread and starts editing it. */
+  startComment(note: Element): void {
+    if (this.textSession) this.endTextEdit();
+    const paragraphs = () => Array.from(note.children).filter((c) => c.tagName.toLowerCase() === 'p');
+    const last = paragraphs().at(-1);
+    let box = last && last.getAttribute('data-by') === 'author' && !(last.textContent ?? '').trim() ? last : null;
+    if (!box) {
+      this.begin('Comment', { top: this.topOf(note) });
+      // Legacy notes: plain text becomes the first author comment; a data-ai-reply becomes an AI comment.
+      if (!paragraphs().length) {
+        const text = (note.textContent ?? '').trim();
+        const reply = note.getAttribute('data-ai-reply');
+        this.stage.setInnerHTML(note, (text ? `<p data-by="author">${escapeHtml(text)}</p>` : '') + (reply ? `<p data-by="ai">${escapeHtml(reply)}</p>` : ''));
+        if (reply) this.stage.setAttr(note, 'data-ai-reply', null);
+      }
+      box = this.stage.insertHtml(note, null, '<p data-by="author"></p>')[0];
+      this.end();
+    }
+    this.select([note]);
+    this.startTextEdit(box);
   }
 
   /** Double-click on empty canvas: a note for the AI, right there. */
@@ -935,9 +966,13 @@ export class Editor implements InteractionHost {
 
   startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }, opts: { replaceAll?: boolean; append?: boolean } = {}): void {
     if (this.textSession) this.endTextEdit();
+    if (isAiNote(el)) { this.startComment(el); return; }
     if (!isTextEditable(el) || !this.stage.liveOf(el)) return;
+    const note = el.closest('[data-ai-note]');
+    // Inside a note only the trailing author comment is editable; anything else opens a new comment.
+    if (note && !(el.tagName.toLowerCase() === 'p' && el.getAttribute('data-by') === 'author' && el === Array.from(note.children).filter((c) => c.tagName.toLowerCase() === 'p').at(-1))) { this.startComment(note); return; }
     const isPlaceholder = Editor.PLACEHOLDERS.has((el.textContent ?? '').replace(/\s+/g, ' ').trim());
-    const wasDone = isDoneNote(el);
+    const wasDone = isDoneNote(note);
     const caret = caretPage && !isPlaceholder && !opts.replaceAll ? (() => { const p = this.pageToFrame(caretPage.clientX, caretPage.clientY); return { clientX: p.x, clientY: p.y }; })() : undefined;
     const top = this.topOf(el);
     this.begin('Edit text', { top });
@@ -948,14 +983,19 @@ export class Editor implements InteractionHost {
         onEnd: (_committed, changed) => {
           this.textSession = null;
           this.overlay.setTextMode(false);
-          // Remove emptied text objects (and untouched notes) rather than leaving invisible husks.
-          const textLike = el.hasAttribute('data-ai-note') || /^(p|h[1-6]|pre|blockquote|li|ul|ol)$/i.test(el.tagName);
+          // Remove emptied text objects rather than leaving invisible husks.
+          const textLike = /^(p|h[1-6]|pre|blockquote|li|ul|ol)$/i.test(el.tagName);
           if (textLike && el.textContent?.trim() === '' && !el.querySelector('img, svg, video, iframe, table') && el.parentElement) {
             this.stage.remove(el);
             this.sel = this.sel.filter((s) => s !== el);
-          } else if (wasDone && changed && el.isConnected) {
-            // A follow-up comment on a done note makes it a pending request again.
-            this.stage.setAttr(el, 'data-ai-note', '');
+            // An abandoned note with no comments left goes too.
+            if (note && note.isConnected && !Array.from(note.children).some((c) => (c.textContent ?? '').trim())) {
+              this.stage.remove(note);
+              this.sel = this.sel.filter((s) => s !== note);
+            }
+          } else if (note && wasDone && changed && note.isConnected) {
+            // A new comment on a done note makes it a pending request again.
+            this.stage.setAttr(note, 'data-ai-note', '');
           }
           this.end();
           this.emit('textmode', false);
@@ -986,12 +1026,10 @@ export class Editor implements InteractionHost {
   typeIntoSelection(text: string): boolean {
     const el = this.primary;
     if (!el || this.sel.length !== 1 || !isTextEditable(el) || this.textSession) return false;
-    // On a done note, typing appends a follow-up rather than replacing the original request.
-    const append = isDoneNote(el);
-    this.startTextEdit(el, undefined, append ? { append: true } : { replaceAll: true });
+    if (isAiNote(el)) this.startComment(el); else this.startTextEdit(el, undefined, { replaceAll: true });
     const session = this.textSession as TextSession | null;
     if (!session) return false;
-    session.insertText((append && (el.textContent ?? '').trim() ? ' — ' : '') + text);
+    session.insertText(text);
     return true;
   }
 
