@@ -9,6 +9,7 @@ import { DeckDocument, type Snapshot } from '../deck/DeckDocument';
 import { History } from '../deck/history';
 import { isSelectableDisplay, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
 import { ELEMENT_TEMPLATES, updateLineSvg } from '../deck/templates';
+import { isDoneNote } from '../deck/aiNotes';
 import { angleDeg, resizeRect, snapEdge, snapLines, snapMove, unionRect, rectsIntersect, type Guide, type HandleName } from '../stage/geometry';
 import { Interactions, type DragSession, type InteractionHost } from '../stage/Interactions';
 import { Overlay, type OverlayBox } from '../stage/Overlay';
@@ -479,6 +480,15 @@ export class Editor implements InteractionHost {
   setMarquee(rect: Rect | null): void { this.marquee = rect; this.refreshOverlay(); }
   isTextEditable(el: Element): boolean { return isTextEditable(el); }
 
+  /** Double-click on a done (green) note dismisses it. */
+  dblClickTarget(el: Element): boolean {
+    if (!isDoneNote(el)) return false;
+    this.endTextEdit();
+    this.edit('Dismiss note', () => this.stage.remove(el), { top: this.topOf(el) });
+    this.clearSelection();
+    return true;
+  }
+
   /** Double-click on empty canvas: a note for the AI, right there. */
   dblClickEmpty(clientX: number, clientY: number): void {
     if (!this.doc.length) return;
@@ -923,10 +933,11 @@ export class Editor implements InteractionHost {
   /** Placeholder texts of freshly inserted objects: typing replaces them wholesale. */
   private static PLACEHOLDERS = new Set(['Text', 'Title', 'Note', '// code', 'First point Second point']);
 
-  startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }, opts: { replaceAll?: boolean } = {}): void {
+  startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }, opts: { replaceAll?: boolean; append?: boolean } = {}): void {
     if (this.textSession) this.endTextEdit();
     if (!isTextEditable(el) || !this.stage.liveOf(el)) return;
     const isPlaceholder = Editor.PLACEHOLDERS.has((el.textContent ?? '').replace(/\s+/g, ' ').trim());
+    const wasDone = isDoneNote(el);
     const caret = caretPage && !isPlaceholder && !opts.replaceAll ? (() => { const p = this.pageToFrame(caretPage.clientX, caretPage.clientY); return { clientX: p.x, clientY: p.y }; })() : undefined;
     const top = this.topOf(el);
     this.begin('Edit text', { top });
@@ -942,6 +953,9 @@ export class Editor implements InteractionHost {
           if (textLike && el.textContent?.trim() === '' && !el.querySelector('img, svg, video, iframe, table') && el.parentElement) {
             this.stage.remove(el);
             this.sel = this.sel.filter((s) => s !== el);
+          } else if (wasDone && changed && el.isConnected) {
+            // A follow-up comment on a done note makes it a pending request again.
+            this.stage.setAttr(el, 'data-ai-note', '');
           }
           this.end();
           this.emit('textmode', false);
@@ -962,7 +976,8 @@ export class Editor implements InteractionHost {
     this.textSession = session;
     this.overlay.setTextMode(true);
     session.start(caret);
-    if (!caret) session.selectAll();
+    if (opts.append || (!caret && wasDone && !opts.replaceAll)) session.caretToEnd();
+    else if (!caret) session.selectAll();
     this.emit('textmode', true);
     this.refreshOverlay();
   }
@@ -971,10 +986,12 @@ export class Editor implements InteractionHost {
   typeIntoSelection(text: string): boolean {
     const el = this.primary;
     if (!el || this.sel.length !== 1 || !isTextEditable(el) || this.textSession) return false;
-    this.startTextEdit(el, undefined, { replaceAll: true });
+    // On a done note, typing appends a follow-up rather than replacing the original request.
+    const append = isDoneNote(el);
+    this.startTextEdit(el, undefined, append ? { append: true } : { replaceAll: true });
     const session = this.textSession as TextSession | null;
     if (!session) return false;
-    session.insertText(text);
+    session.insertText((append && (el.textContent ?? '').trim() ? ' — ' : '') + text);
     return true;
   }
 

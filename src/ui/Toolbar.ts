@@ -136,6 +136,7 @@ export class Toolbar {
       { label: 'Try the demo deck', onSelect: () => void app.openDemo() },
       { separator: true },
       { label: 'Save', icon: 'save', shortcut: `${M}S`, disabled: !app.editor.ready, onSelect: () => void app.save() },
+      { label: 'Autosave', checked: app.autosave, onSelect: () => app.setAutosave(!app.autosave) },
       { label: 'Download a copy…', icon: 'download', disabled: !app.editor.ready, onSelect: () => app.download() },
       { label: 'Reload from disk', disabled: !app.editor.ready, onSelect: () => void app.reload() },
       { separator: true },

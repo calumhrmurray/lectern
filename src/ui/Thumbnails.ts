@@ -37,6 +37,7 @@ export class ThumbnailRenderer {
       .lec-slides section .fragment { visibility: visible !important; opacity: 1 !important; transform: none !important; }
       .lec-slides section aside.notes { display: none !important; }
       [data-ai-note] { display: block !important; background: #fff3a8; border: 1px solid #e2c34e; border-radius: 6px; padding: 10px; font: 600 0.58em/1.35 sans-serif; color: #4a3a00; box-sizing: border-box; min-height: 2em; }
+      [data-ai-note="done"] { background: #dff5dc; border-color: #7cc47a; color: #1f4d24; }
       .lec-bg { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
     </style>` : `<style>
       html, body { margin: 0; width: ${width}px; height: ${height}px; overflow: hidden; }
@@ -46,6 +47,7 @@ export class ThumbnailRenderer {
       .reveal .slides section .fragment { visibility: visible !important; opacity: 1 !important; transform: none !important; }
       .reveal .slides section aside.notes { display: none !important; }
       [data-ai-note] { display: block !important; background: #fff3a8; border: 1px solid #e2c34e; border-radius: 6px; padding: 10px; font: 600 0.58em/1.35 sans-serif; color: #4a3a00; box-sizing: border-box; }
+      [data-ai-note="done"] { background: #dff5dc; border-color: #7cc47a; color: #1f4d24; }
       .lec-bg { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
       .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
     </style>`);

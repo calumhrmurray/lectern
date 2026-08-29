@@ -8,6 +8,7 @@ let n = 0;
 const out = [];
 sections.forEach((sec, i) => {
   for (const m of sec.matchAll(/<div[^>]*\bdata-ai-note\b[^>]*>([\s\S]*?)<\/div>/g)) {
+    if (/data-ai-note="done"/.test(m[0])) continue;
     n++;
     const style = /style="([^"]*)"/.exec(m[0])?.[1] ?? '';
     const x = /left\s*:\s*(-?[\d.]+)px/.exec(style)?.[1];
@@ -16,7 +17,7 @@ sections.forEach((sec, i) => {
     out.push(`- Slide ${i + 1}${title ? ` (“${title}”)` : ''}${x && y ? ` at (${x}, ${y})` : ''}: ${m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()}`);
   }
 });
-if (!n) { console.log('No notes for AI in', file); process.exit(0); }
+if (!n) { console.log('No pending notes for AI in', file); process.exit(0); }
 console.log(`${file}: ${n} note(s) for AI (elements marked data-ai-note; positions are slide coordinates):\n`);
 console.log(out.join('\n'));
-console.log('\nDo what each note asks in the file itself, keeping the deck\'s style, and remove each note element once done.');
+console.log('\nDo what each note asks in the file itself, keeping the deck\'s style. Do not delete notes: when one is done, set data-ai-note="done" and data-ai-reply="what you did" on it.');

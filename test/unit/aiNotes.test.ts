@@ -8,13 +8,14 @@ const DECK = `<html><body><div class="reveal"><div class="slides">
 <section><h2>Pakicetus</h2><div hidden data-ai-note style="position:absolute;left:640px;top:200px;width:260px;">draw a whale here</div></section>
 <section><h2>Two</h2><p>x</p></section>
 <section><h2>Three</h2><div hidden data-ai-note style="position:absolute;left:100px;top:500px;width:300px;">explain <b>gigantism</b> here</div></section>
+<section><h2>Four</h2><div hidden data-ai-note="done" data-ai-reply="Added a silhouette." style="position:absolute;left:10px;top:20px;">draw a whale</div></section>
 </div></div></body></html>`;
 
 describe('notes for AI', () => {
   it('collects notes with their slide and position', () => {
     const d = new DeckDocument(DECK);
     const notes = collectAiNotes(d);
-    expect(notes.map((n) => [n.top, n.text, n.x, n.y])).toEqual([[0, 'draw a whale here', 640, 200], [2, 'explain gigantism here', 100, 500]]);
+    expect(notes.map((n) => [n.top, n.text, n.x, n.y, n.done, n.reply])).toEqual([[0, 'draw a whale here', 640, 200, false, null], [2, 'explain gigantism here', 100, 500, false, null], [3, 'draw a whale', 10, 20, true, 'Added a silhouette.']]);
   });
   it('writes a prompt an assistant can act on', () => {
     const d = new DeckDocument(DECK);
@@ -22,7 +23,9 @@ describe('notes for AI', () => {
     expect(p).toContain('talk/index.html');
     expect(p).toContain('- Slide 1 (“Pakicetus”) at (640, 200): draw a whale here');
     expect(p).toContain('- Slide 3 (“Three”) at (100, 500): explain gigantism here');
-    expect(p).toContain('Remove each note element once it is done');
+    expect(p).toContain('2 pending notes');
+    expect(p).not.toContain('draw a whale\n');
+    expect(p).toContain('set data-ai-note="done"');
     expect(aiNotesPrompt(new DeckDocument('<div class="slides"><section></section></div>'), 'x', { width: 1, height: 1 })).toBe('');
   });
   it('the template is hidden and marked, and keeps `hidden` through cleaning', () => {

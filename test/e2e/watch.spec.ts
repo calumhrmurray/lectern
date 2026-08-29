@@ -31,3 +31,21 @@ test('edits made on disk by another program are picked up automatically', async 
     writeFileSync(FILE, original);
   }
 });
+
+test('autosave writes edits to disk without pressing save', async ({ page }) => {
+  await openDeck(page);
+  const original = readFileSync(FILE, 'utf8');
+  try {
+    await page.evaluate(() => (window as unknown as { lectern: { setAutosave: (on: boolean) => void } }).lectern.setAutosave(true));
+    await goToSlide(page, 1);
+    await page.locator('.lec-overlay').focus();
+    await page.keyboard.press('n');
+    await page.keyboard.type('autosaved note');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.lec-status')).toContainText('autosave');
+    await expect.poll(() => readFileSync(FILE, 'utf8').includes('>autosaved note</div>'), { timeout: 8000 }).toBe(true);
+    await expect(page.locator('.lec-msg')).toContainText('Autosaved');
+  } finally {
+    writeFileSync(FILE, original);
+  }
+});

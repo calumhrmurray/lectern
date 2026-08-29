@@ -7,6 +7,11 @@
  * — so any tool can find them (`data-ai-note`), the `hidden` attribute keeps
  * them out of the presentation, and the inline position says *where* on the
  * slide (slide units, e.g. 1280×720) the request applies.
+ *
+ * Lifecycle: a pending note has `data-ai-note` (empty value). When an
+ * assistant has acted on it, it sets `data-ai-note="done"` and
+ * `data-ai-reply="what was done"` — the note turns green for the author, who
+ * can edit it to ask for more (it becomes pending again) or dismiss it.
  */
 
 import type { DeckDocument } from './DeckDocument';
@@ -20,12 +25,18 @@ export interface AiNote {
   x: number | null;
   y: number | null;
   el: Element;
+  done: boolean;
+  reply: string | null;
 }
 
 export const AI_NOTE_ATTR = 'data-ai-note';
 
 export function isAiNote(el: Element | null | undefined): boolean {
   return !!el && el.hasAttribute(AI_NOTE_ATTR);
+}
+
+export function isDoneNote(el: Element | null | undefined): boolean {
+  return !!el && el.getAttribute(AI_NOTE_ATTR) === 'done';
 }
 
 export function collectAiNotes(doc: DeckDocument): AiNote[] {
@@ -35,7 +46,7 @@ export function collectAiNotes(doc: DeckDocument): AiNote[] {
       const style = el.getAttribute('style') ?? '';
       const x = /left\s*:\s*(-?[\d.]+)px/.exec(style);
       const y = /top\s*:\s*(-?[\d.]+)px/.exec(style);
-      out.push({ top, slideLabel: slideLabel(rec.el, `Slide ${top + 1}`), text: (el.textContent ?? '').replace(/\s+/g, ' ').trim(), x: x ? Number(x[1]) : null, y: y ? Number(y[1]) : null, el });
+      out.push({ top, slideLabel: slideLabel(rec.el, `Slide ${top + 1}`), text: (el.textContent ?? '').replace(/\s+/g, ' ').trim(), x: x ? Number(x[1]) : null, y: y ? Number(y[1]) : null, el, done: isDoneNote(el), reply: el.getAttribute('data-ai-reply') });
     }
   });
   return out;
@@ -43,16 +54,17 @@ export function collectAiNotes(doc: DeckDocument): AiNote[] {
 
 /** A prompt an assistant can act on directly. */
 export function aiNotesPrompt(doc: DeckDocument, deckPath: string, size: { width: number; height: number }): string {
-  const notes = collectAiNotes(doc).filter((n) => n.text);
+  const notes = collectAiNotes(doc).filter((n) => n.text && !n.done);
   if (!notes.length) return '';
   const lines = [
-    `The slide deck ${deckPath} (slides are ${size.width}×${size.height}) has ${notes.length} note${notes.length === 1 ? '' : 's'} for you, marked in the HTML as <div hidden data-ai-note …> inside the slide's <section>:`,
+    `The slide deck ${deckPath} (slides are ${size.width}×${size.height}) has ${notes.length} pending note${notes.length === 1 ? '' : 's'} for you, marked in the HTML as <div hidden data-ai-note …> inside the slide's <section>:`,
     '',
   ];
   for (const n of notes) {
     const where = n.x !== null && n.y !== null ? ` at (${Math.round(n.x)}, ${Math.round(n.y)})` : '';
-    lines.push(`- Slide ${n.top + 1} (“${n.slideLabel}”)${where}: ${n.text}`);
+    const prior = n.reply ? ` (earlier you did: ${n.reply})` : '';
+    lines.push(`- Slide ${n.top + 1} (“${n.slideLabel}”)${where}: ${n.text}${prior}`);
   }
-  lines.push('', 'Do what each note asks, in the file itself, keeping the existing style of the deck. Remove each note element once it is done.');
+  lines.push('', 'Do what each note asks, in the file itself, keeping the existing style of the deck. Do not delete the notes: when one is done, set data-ai-note="done" on it and add data-ai-reply="a short sentence saying what you did". The author will dismiss it.');
   return lines.join('\n');
 }

@@ -66,6 +66,9 @@ export class App {
   private inlinedHtml = '';
   private toastTimer = 0;
   private saving = false;
+  /** Save automatically shortly after each change (default on; remembered). */
+  autosave = localStorage.getItem('lectern:autosave') !== 'off';
+  private autosaveTimer = 0;
 
   constructor(readonly root: HTMLElement) {
     const toolbarEl = h('div', { class: 'lec-toolbar', role: 'toolbar' });
@@ -427,14 +430,34 @@ export class App {
 
   // ---------------------------------------------------------------- saving
 
-  async save(): Promise<boolean> {
+  setAutosave(on: boolean): void {
+    this.autosave = on;
+    localStorage.setItem('lectern:autosave', on ? 'on' : 'off');
+    this.updateStatus();
+    if (on) this.scheduleAutosave();
+  }
+
+  private scheduleAutosave(): void {
+    clearTimeout(this.autosaveTimer);
+    if (!this.autosave || !this.workspace || this.workspace.kind === 'memory') return;
+    this.autosaveTimer = window.setTimeout(() => {
+      const ed = this.editor;
+      if (!ed.ready || !ed.doc.dirty || ed.textSession || ed.interactions.busy) { if (ed.ready && ed.doc.dirty) this.scheduleAutosave(); return; }
+      void this.save({ auto: true });
+    }, 1200);
+  }
+
+  async save(opts: { auto?: boolean } = {}): Promise<boolean> {
     if (!this.workspace || !this.editor.ready || this.saving) return false;
-    this.editor.endTextEdit();
+    if (!opts.auto) this.editor.endTextEdit();
     // Never silently overwrite someone else's edit.
     const changed = await this.changedOnDisk();
-    if (changed.length && !(await confirmDialog('Changed on disk', `${basename(changed[0])} was modified by another program since you opened it. Overwrite it with your version?`, 'Overwrite'))) {
-      this.showConflict(changed);
-      return false;
+    if (changed.length) {
+      if (opts.auto) { this.showConflict(changed); return false; }
+      if (!(await confirmDialog('Changed on disk', `${basename(changed[0])} was modified by another program since you opened it. Overwrite it with your version?`, 'Overwrite'))) {
+        this.showConflict(changed);
+        return false;
+      }
     }
     this.saving = true;
     try {
@@ -451,7 +474,7 @@ export class App {
       this.hideConflict();
       this.toolbar.update();
       this.updateStatus();
-      this.setMessage(dirty.length > 1 ? `Saved ${dirty.length} files` : 'Saved', 'ok');
+      this.setMessage(opts.auto ? `Autosaved ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : dirty.length > 1 ? `Saved ${dirty.length} files` : 'Saved', 'ok');
       return true;
     } catch (err) {
       this.toast(`Save failed: ${(err as Error).message}`, 'error');
@@ -627,7 +650,7 @@ export class App {
     const i = ed.currentIndexInList();
     const c = ed.current;
     const label = c.sub === null ? `${c.top + 1}` : `${c.top + 1}.${c.sub + 1}`;
-    this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? ' · unsaved' : ''}`;
+    this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
     this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}`;
   }
 
@@ -649,8 +672,8 @@ export class App {
       this.toolbar.update();
       this.updateStatus();
     });
-    ed.on('history', () => { this.toolbar.update(); this.updateStatus(); });
-    ed.on('textmode', () => { this.toolbar.update(); });
+    ed.on('history', () => { this.toolbar.update(); this.updateStatus(); this.scheduleAutosave(); });
+    ed.on('textmode', (on) => { this.toolbar.update(); if (!on) this.scheduleAutosave(); });
     ed.on('geometry', () => this.inspector.updateGeometry());
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
     ed.onTextKey = (ev) => this.handleTextKey(ev);

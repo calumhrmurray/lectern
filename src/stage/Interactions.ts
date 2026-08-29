@@ -40,6 +40,8 @@ export interface InteractionHost {
   contextMenu?(clientX: number, clientY: number, el: Element | null): void;
   /** Double-click on empty canvas. */
   dblClickEmpty?(clientX: number, clientY: number): void;
+  /** Double-click on an object; return true to swallow it (no text editing). */
+  dblClickTarget?(el: Element): boolean;
 }
 
 type State =
@@ -187,6 +189,7 @@ export class Interactions {
     if (this.overlay.isTextMode) return;
     ev.preventDefault();
     const target = this.host.hitTest(ev.clientX, ev.clientY);
+    if (target && this.host.dblClickTarget?.(target)) return;
     if (target && this.host.isTextEditable(target)) {
       this.host.select([target], 'replace');
       this.host.startTextEdit(target, { clientX: ev.clientX, clientY: ev.clientY });

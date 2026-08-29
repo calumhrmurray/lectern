@@ -154,6 +154,16 @@ export class TextSession {
     sel?.addRange(r);
   }
 
+  /** Moves the caret to the end of the content. */
+  caretToEnd(): void {
+    const sel = this.stage.win.getSelection();
+    const r = this.stage.doc.createRange();
+    r.selectNodeContents(this.live);
+    r.collapse(false);
+    sel?.removeAllRanges();
+    sel?.addRange(r);
+  }
+
   /** Inserts text at the caret. */
   insertText(text: string): void {
     this.live.focus({ preventScroll: true });

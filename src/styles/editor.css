@@ -318,3 +318,6 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-ai-where { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .lec-ai-done { flex: 0 0 auto; color: var(--text-dim); padding: 0 4px; }
 .lec-ai-done:hover { color: var(--danger); }
+.lec-ai-done-item { border-color: #3f7a45; }
+.lec-ai-done-item .lec-ai-slide { color: #6fbf76; }
+.lec-ai-reply { color: var(--text-dim); }

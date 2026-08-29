@@ -170,3 +170,27 @@ test('type-to-edit: typing on a selected note replaces its text', async ({ page 
   expect(out).toContain('>explain gigantism here</div>');
   expect(out).not.toMatch(/data-ai-note[^>]*>first/);
 });
+
+test('done notes are green, a follow-up makes them pending again, double-click dismisses', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 1);
+  await page.evaluate(() => (window as unknown as { lectern: { editor: { addSlide: (h: string) => number } } }).lectern.editor.addSlide('<section><h2>Notes</h2><div hidden data-ai-note="done" data-ai-reply="Added a whale silhouette." style="position:absolute;left:200px;top:200px;width:300px;">draw a whale here</div></section>'));
+  const note = frame.locator('section.present [data-ai-note]');
+  await expect(note).toHaveCSS('background-color', 'rgb(223, 245, 220)');
+  // follow-up: click and type appends, and the note becomes pending (yellow)
+  const c = await centerOf(page, 'section.present [data-ai-note]');
+  await page.mouse.click(c.x, c.y);
+  await page.keyboard.type('make it bigger');
+  await page.keyboard.press('Escape');
+  await expect(note).toHaveText('draw a whale here — make it bigger');
+  await expect(note).toHaveCSS('background-color', 'rgb(255, 243, 168)');
+  let out = await serialized(page);
+  expect(out).toMatch(/data-ai-note=""[^>]*data-ai-reply="Added a whale silhouette\."[^>]*>draw a whale here — make it bigger</);
+  // mark done again (as an assistant would) and dismiss by double-click
+  await page.evaluate(() => { const ed = (window as unknown as { lectern: { editor: { currentSrcSection: () => Element; stage: { setAttr: (e: Element, n: string, v: string) => void }; refreshOverlay: () => void } } }).lectern.editor; ed.stage.setAttr(ed.currentSrcSection().querySelector('[data-ai-note]')!, 'data-ai-note', 'done'); });
+  await expect(note).toHaveCSS('background-color', 'rgb(223, 245, 220)');
+  await page.mouse.dblclick(c.x, c.y);
+  await expect(frame.locator('section.present [data-ai-note]')).toHaveCount(0);
+  out = await serialized(page);
+  expect(out).not.toContain('data-ai-note');
+});

@@ -29,7 +29,11 @@ identical, so `git diff` stays readable and a coding assistant can keep editing 
   `<div hidden data-ai-note style="position:absolute;left:…;top:…">…</div>` — invisible when presenting,
   visible as sticky notes while editing, positioned in slide coordinates. The *Notes for AI* panel lists
   them all and copies a ready-made prompt; `node scripts/ai-notes.mjs deck.html` prints the same from a
-  terminal. Tell Claude Code "do the notes in index.html" and it can find, act on and remove them.
+  terminal. Tell Claude Code "do the notes in index.html": it acts on each and marks it
+  `data-ai-note="done" data-ai-reply="…"` — the note turns **green** with the reply. Edit a green note to ask
+  for more (it turns yellow again), or double-click it to dismiss it.
+- **Autosave** (on by default; toggle in the menu): edits reach the file a second after you make them, so an
+  assistant watching the folder sees your notes as you write them.
 - **Undo/redo everything**, including across saves.
 - **Multi-file decks** — a shell whose `<div class="slides">` is filled from part files
   (`const parts = ['slides/p0.html', …]` or `<div class="slides" data-parts="a.html b.html">`)
