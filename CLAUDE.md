@@ -1,5 +1,7 @@
 # Lectern — notes for coding assistants
 
+@AGENTS.md — the deck format, the notes-for-AI protocol and the rules for editing a deck the editor has open. The rest of this file is about working on Lectern itself.
+
 Visual editor for HTML slide decks (reveal.js, or any page of <section> slides with a custom driver — `Stage.kind` is 'reveal' | 'plain'). TypeScript + Vite, no UI framework. Read `README.md` first.
 
 ## Commands
@@ -28,11 +30,6 @@ Visual editor for HTML slide decks (reveal.js, or any page of <section> slides w
 
 ## Notes for AI inside decks
 
-Slides may contain `<div hidden data-ai-note style="position:absolute;left:Xpx;top:Ypx;…">instruction</div>`. Each one is a
-request from the author for that spot on the slide (coordinates in slide units, usually 1280×720). When asked to "do the
-notes" in a deck: act on each pending one (attribute value empty) in the file, matching the deck's existing style, then mark it
-done **without deleting it**: append `<p data-by="ai">one sentence saying what you did</p>` inside the note and set
-`data-ai-note="done"`. A note is a thread of `<p data-by="author">` / `<p data-by="ai">` comments (read them all; the last author
-comment is the current request). The author sees it turn green, may add a comment (it becomes pending again) and dismisses it
-themselves. Never leave notes visible in the presentation (they are `hidden` on purpose).
-`node scripts/ai-notes.mjs <deck.html>` lists the pending ones. The editor autosaves, so the file on disk is current.
+The protocol is in AGENTS.md (`<div hidden data-ai-note …>` threads of `<p data-by="author|ai">`; act, append your `<p data-by="ai">`,
+set `data-ai-note="done"`, never delete). `node cli/index.js notes <deck.html>` lists the pending ones; the editor autosaves, so the
+file on disk is current. `plugins/lectern/skills/slides/reference.md` must stay a copy of AGENTS.md (a unit test checks).

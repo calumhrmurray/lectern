@@ -1,0 +1,18 @@
+# Lectern
+
+> A visual editor for HTML / reveal.js slide decks that a person and an AI assistant edit together. The HTML file is the document: the person drags, resizes and retypes on a canvas; the assistant edits the same file; each sees the other's changes within a second. Notes the person leaves on a slide ("draw a whale here") are saved in the HTML for the assistant to act on.
+
+Use it when someone wants slides, a presentation or a talk made with an LLM and then wants to adjust the result by hand.
+
+## Docs
+
+- [Instructions for AI assistants](https://calumhrmurray.github.io/lectern/AGENTS.md): how to scaffold a deck, the file format, the class vocabulary, the notes-for-AI protocol, editing rules. Also printed by `npx lectern-editor guide`.
+- [README](https://calumhrmurray.github.io/lectern/README.md): features, ways to run it, development.
+
+## Run it
+
+- Hosted editor: https://calumhrmurray.github.io/lectern/ (Chrome/Edge; picks a folder on disk, nothing is uploaded)
+- Single file, no install: https://calumhrmurray.github.io/lectern/Lectern.html (download, double-click)
+- CLI: `npx lectern-editor deck.html` · `npx lectern-editor new my-talk` · `npx lectern-editor notes deck.html`
+- Source (MIT): https://github.com/calumhrmurray/lectern
+- Claude Code skill: `/plugin marketplace add calumhrmurray/lectern` then `/plugin install lectern@lectern`

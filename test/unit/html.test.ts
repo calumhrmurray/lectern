@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanRuntimeArtifacts, isSelectableDisplay, pathOf, resolvePath, selectionTarget, slideLabel, isStack } from '../../src/deck/html';
+import { cleanRuntimeArtifacts, isSelectableDisplay, pathOf, resolvePath, selectionTarget, slideLabel, isStack, unwrapBlocksInPhrasing } from '../../src/deck/html';
 
 function parse(html: string): Element {
   const t = document.createElement('template');
@@ -67,5 +67,34 @@ describe('labels', () => {
   it('detects stacks', () => {
     expect(isStack(parse('<section><section></section></section>'))).toBe(true);
     expect(isStack(parse('<section><p></p></section>'))).toBe(false);
+  });
+});
+
+describe('unwrapBlocksInPhrasing', () => {
+  // A parser closes <p> at a <div>; Chrome's contentEditable builds the invalid tree by DOM operations, so do the same here.
+  function paragraph(...lines: (string | null)[]): Element {
+    const p = document.createElement('p');
+    lines.forEach((line, i) => {
+      if (i === 0) { p.append(line ?? ''); return; }
+      const d = document.createElement('div');
+      if (line === null) d.appendChild(document.createElement('br')); else d.textContent = line;
+      p.appendChild(d);
+    });
+    return p;
+  }
+  it('turns Chrome\'s <div> lines inside a paragraph into <br>s and drops empty trailing ones', () => {
+    const p = paragraph('first', 'second', null);
+    unwrapBlocksInPhrasing(p);
+    expect(p.innerHTML).toBe('first<br>second');
+  });
+  it('keeps blank lines in the middle, once', () => {
+    const p = paragraph('a', null, 'b');
+    unwrapBlocksInPhrasing(p);
+    expect(p.innerHTML).toBe('a<br>b');
+  });
+  it('leaves block containers alone', () => {
+    const d = parse('<div><div>x</div></div>');
+    unwrapBlocksInPhrasing(d);
+    expect(d.innerHTML).toBe('<div>x</div>');
   });
 });

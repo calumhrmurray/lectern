@@ -1,0 +1,10 @@
+{
+  "name": "lectern",
+  "description": "Slides with Lectern: scaffold a reveal.js/HTML deck, open the visual editor for the person, do the notes they leave on the slides.",
+  "version": "1.0.0",
+  "author": { "name": "Calum Murray" },
+  "homepage": "https://github.com/calumhrmurray/lectern",
+  "repository": "https://github.com/calumhrmurray/lectern",
+  "license": "MIT",
+  "keywords": ["slides", "presentation", "reveal.js", "editor"]
+}

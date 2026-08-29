@@ -48,6 +48,40 @@ export function cleanRuntimeArtifacts(root: Element, opts: { keepFragmentIndex?:
   }
 }
 
+/** Elements whose content is phrasing-only: Enter inside them must not create block children. */
+const PHRASING_HOSTS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'b', 'i', 'em', 'strong', 'small', 'code', 'label', 'figcaption', 'td', 'th', 'dt', 'dd', 'caption', 'summary']);
+
+export function isPhrasingHost(el: Element): boolean {
+  return PHRASING_HOSTS.has(el.tagName.toLowerCase());
+}
+
+/**
+ * Chrome's contentEditable answers Enter inside a <p> with <div>…</div> children, which
+ * a parser then reads as the end of the paragraph. Turns such blocks into line breaks
+ * (and drops the empty trailing ones) so the element stays valid phrasing content.
+ */
+export function unwrapBlocksInPhrasing(el: Element): void {
+  if (!isPhrasingHost(el)) return;
+  const doc = el.ownerDocument;
+  for (const block of Array.from(el.children).filter((c) => c.tagName.toLowerCase() === 'div')) {
+    const frag = doc.createDocumentFragment();
+    frag.appendChild(doc.createElement('br'));
+    while (block.firstChild) frag.appendChild(block.firstChild);
+    block.replaceWith(frag);
+  }
+  // A bare <br> inside a block is Chrome's "empty line" marker; two in a row become one.
+  for (const br of Array.from(el.querySelectorAll(':scope > br'))) {
+    const next = br.nextSibling;
+    if (next && next.nodeType === 1 && (next as Element).tagName.toLowerCase() === 'br') br.remove();
+  }
+  let last = el.lastChild;
+  while (last && ((last.nodeType === 1 && (last as Element).tagName.toLowerCase() === 'br') || (last.nodeType === 3 && !(last.textContent ?? '').trim()))) {
+    const prev = last.previousSibling;
+    last.remove();
+    last = prev;
+  }
+}
+
 export function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

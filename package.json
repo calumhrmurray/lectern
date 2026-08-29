@@ -1,28 +1,57 @@
 {
   "name": "lectern-editor",
-  "version": "0.1.0",
-  "description": "A visual, Keynote-style editor for reveal.js presentations. The HTML file is the document.",
-  "type": "module",
+  "version": "1.0.0",
+  "description": "Visual editor for HTML / reveal.js slide decks that an AI assistant and a person edit together \u2014 the HTML file is the document.",
+  "keywords": [
+    "reveal.js",
+    "revealjs",
+    "slides",
+    "presentation",
+    "slide-editor",
+    "visual-editor",
+    "wysiwyg",
+    "html-slides",
+    "ai",
+    "llm",
+    "claude-code",
+    "agents",
+    "coding-assistant",
+    "keynote",
+    "powerpoint-alternative"
+  ],
+  "homepage": "https://calumhrmurray.github.io/lectern/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/calumhrmurray/lectern.git"
+  },
+  "bugs": {
+    "url": "https://github.com/calumhrmurray/lectern/issues"
+  },
+  "author": "Calum Murray",
   "license": "MIT",
+  "type": "module",
   "bin": {
     "lectern": "cli/index.js"
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "cli",
+    "AGENTS.md",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/copy-reveal.js && tsc --noEmit && vite build && node scripts/bundle-single.mjs",
+    "build": "node scripts/copy-reveal.js && tsc --noEmit && vite build && node scripts/build-cli-lib.mjs && node scripts/bundle-single.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "npm run build && playwright test",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit",
-    "start": "node cli/index.js"
+    "start": "node cli/index.js",
+    "notes": "node cli/index.js notes"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

@@ -1,0 +1,11 @@
+{
+  "name": "lectern",
+  "owner": { "name": "Calum Murray" },
+  "plugins": [
+    {
+      "name": "lectern",
+      "source": "./plugins/lectern",
+      "description": "Make slide decks with the person, not for them: write reveal.js/HTML slides that the Lectern visual editor opens, and act on the notes they leave for you on the slides."
+    }
+  ]
+}

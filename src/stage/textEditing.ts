@@ -5,6 +5,7 @@
  */
 
 import type { Stage } from './Stage';
+import { isPhrasingHost, unwrapBlocksInPhrasing } from '../deck/html';
 
 export interface TextSessionOptions {
   onChange?: () => void;
@@ -91,6 +92,8 @@ export class TextSession {
     const mod = ev.metaKey || ev.ctrlKey;
     if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); this.commit(); return; }
     if (mod && ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); this.commit(); return; }
+    // Enter inside a <p>/<h2>/… must not create <div> children (invalid, and a parser would close the paragraph there).
+    if (ev.key === 'Enter' && !mod && !ev.altKey && isPhrasingHost(this.live)) { ev.preventDefault(); this.stage.doc.execCommand('insertLineBreak'); return; }
     if (mod && !ev.shiftKey && !ev.altKey) {
       const k = ev.key.toLowerCase();
       if (k === 'b') { ev.preventDefault(); this.exec('bold'); return; }
@@ -188,6 +191,7 @@ export class TextSession {
     this.teardown();
     // Chrome sometimes leaves a trailing <br> in emptied blocks.
     if (this.live.innerHTML === '<br>') this.live.innerHTML = '';
+    unwrapBlocksInPhrasing(this.live);
     this.stage.commitLiveInnerHTML(this.src);
     const changed = this.src.innerHTML !== this.before;
     if (this.hasMath || changed) this.stage.typeset(this.live);

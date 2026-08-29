@@ -1,11 +1,39 @@
 # Lectern
 
-A visual, canvas-style editor for HTML presentations — [reveal.js](https://revealjs.com) decks
-and any hand-rolled page of `<section>` slides. **The HTML file is the document.** Lectern opens your deck, renders it with the deck's own
-reveal.js, theme and plugins, lets you move, resize, restyle and retype things like you would
-in a desktop presentation app — and writes only the slides you changed back into the file.
-Comments between slides, indentation, entity spellings and untouched slides stay byte-for-byte
-identical, so `git diff` stays readable and a coding assistant can keep editing the same file.
+**A visual editor for HTML slide decks — built so a person and an AI assistant can make a presentation together.**
+Works with [reveal.js](https://revealjs.com) decks and any hand-rolled page of `<section>` slides.
+
+Lectern opens your deck, renders it with the deck's own reveal.js, theme and plugins, and lets you move, resize,
+restyle and retype things like you would in Keynote or PowerPoint — then writes only the slides you changed back
+into the file. **The HTML file is the document.** Comments, indentation and untouched slides stay byte-for-byte
+identical, so `git diff` stays readable and a coding assistant can keep editing the same file while you have it open.
+
+- **Try it now:** https://calumhrmurray.github.io/lectern/ — click *Open a folder…* (Chrome/Edge; nothing is uploaded).
+- **No install, no server:** download [`Lectern.html`](https://calumhrmurray.github.io/lectern/Lectern.html) and double-click it.
+- **From a terminal:** `npx lectern-editor deck.html`
+- **With Claude Code / another assistant:** see [Slides with an AI](#slides-with-an-ai) below — the instructions it needs are in [`AGENTS.md`](AGENTS.md).
+
+## Slides with an AI
+
+Ask your assistant for a deck; it writes an HTML file. Open that file in Lectern and fix the layout by hand while
+the assistant keeps working on the content. Where you want something changed, press **`N`** on the slide and write
+it there — *"draw a whale here"*, *"this is too dense, split it"*. The note is saved in the HTML; the assistant
+lists the notes, does them, and marks each one done (it turns green). Both of you edit the same file, and each sees
+the other's changes within a second.
+
+To make an assistant fluent in this, give it [`AGENTS.md`](AGENTS.md) — one document with the deck format, the
+class vocabulary, the notes protocol and the editing rules:
+
+- **Claude Code:** `/plugin marketplace add calumhrmurray/lectern` then `/plugin install lectern@lectern` — adds a
+  `slides` skill that is picked up whenever you ask for a presentation. Or copy `plugins/lectern/skills/slides/` into
+  `~/.claude/skills/`.
+- **Codex, Cursor, Copilot, Gemini CLI, …:** they read `AGENTS.md` from the working folder — copy it into your
+  project, or paste this into the chat:
+
+  > Read https://calumhrmurray.github.io/lectern/AGENTS.md and make me a slide deck about … in a folder called `talk`.
+
+- **Any agent with a shell:** `npx lectern-editor guide` prints the same document; `npx lectern-editor new talk`
+  scaffolds a deck; `npx lectern-editor notes talk/index.html` lists what you asked for on the slides.
 
 ## What it does
 
@@ -28,7 +56,7 @@ identical, so `git diff` stays readable and a coding assistant can keep editing 
   "draw a whale here", "explain the 1905 law here". Notes are saved in the HTML as
   `<div hidden data-ai-note style="position:absolute;left:…;top:…">…</div>` — invisible when presenting,
   visible as sticky notes while editing, positioned in slide coordinates. The *Notes for AI* panel lists
-  them all and copies a ready-made prompt; `node scripts/ai-notes.mjs deck.html` prints the same from a
+  them all and copies a ready-made prompt; `npx lectern-editor notes deck.html` prints the same from a
   terminal. Tell Claude Code "do the notes in index.html": it acts on each, appends its reply as
   `<p data-by="ai">…</p>` and marks the note `data-ai-note="done"` — it turns **green**. A note is a thread like a
   document comment: click it to add a comment (a green one turns yellow again), double-click a green one to dismiss it.
@@ -42,12 +70,21 @@ identical, so `git diff` stays readable and a coding assistant can keep editing 
 
 ## Use it
 
+### In the browser — https://calumhrmurray.github.io/lectern/
+
+1. Open the page in Chrome, Edge or another Chromium browser (they have the folder picker; Firefox and Safari
+   need the CLI below).
+2. Click **Open a folder…** and pick the folder that contains your deck; choose the HTML file
+   if the folder has several.
+3. Edit. **`⌘S`** writes straight back to the file on disk (and autosave does it for you).
+
 ### Double-click `Lectern.html` — nothing to install, no server
 
-On a Mac, `sh scripts/make-app.sh` builds **`Lectern.app`**, a launcher you can drag to the Dock; it
-opens `Lectern.html` in Chrome. Otherwise:
+The same editor as one self-contained file: [download it](https://calumhrmurray.github.io/lectern/Lectern.html)
+(or build it: `npm run build` writes `Lectern.html` here). On a Mac, `sh scripts/make-app.sh` builds **`Lectern.app`**,
+a launcher you can drag to the Dock; it opens `Lectern.html` in Chrome. Otherwise:
 
-1. Open **`Lectern.html`** (from this folder) in Chrome, Edge or another Chromium browser.
+1. Open **`Lectern.html`** in Chrome, Edge or another Chromium browser.
 2. Click **Open a folder…** and pick the folder that contains your deck; choose the HTML file
    if the folder has several.
 3. Edit. **`⌘S`** writes straight back to the file on disk.
@@ -61,11 +98,17 @@ stays on the same slide. With unsaved edits, a banner offers to reload or keep y
 overwrites a newer file without asking. So: keep Lectern open, ask the assistant for changes, watch
 them appear; drag things around, `⌘S`, and the assistant reads your version.
 
-### Other ways to run it
+### From a terminal — `npx lectern-editor`
 
-- `npx lectern-editor path/to/deck.html` — a tiny local server, for Firefox/Safari (which lack the
-  folder picker) or when you prefer a URL.
-- Any static host can serve `dist/` (it needs HTTPS for the folder-serving worker).
+```bash
+npx lectern-editor deck.html            # serve the editor for a deck (or a folder) and open the browser
+npx lectern-editor new my-talk          # scaffold a deck: index.html, theme.css, reveal/ (--title --author --theme --size)
+npx lectern-editor notes deck.html      # list the pending notes for an AI, as a prompt
+npx lectern-editor guide                # print AGENTS.md, the instructions for assistants
+```
+
+The server is a tiny local one (`127.0.0.1:8765`); it works in Firefox and Safari too, which lack the folder picker.
+Needs Node 18+. Any static host can also serve `dist/` (HTTPS is required for the folder-serving worker).
 
 ### New deck and templates
 
@@ -156,8 +199,9 @@ you select and never disturb the paths. Undo is a whole-section snapshot restore
 
 ## Deploying the web editor
 
-The `dist/` folder is a static site; the GitHub Actions workflow in `.github/workflows/pages.yml`
-publishes it to GitHub Pages. It needs HTTPS (or localhost) for the service worker.
+The `dist/` folder is a static site; `.github/workflows/pages.yml` builds it on every push to `main` and publishes it
+to GitHub Pages together with `AGENTS.md`, `README.md` and `llms.txt`. The service worker needs HTTPS (or localhost).
+`npm publish` ships the CLI, `dist/` and `AGENTS.md` as the `lectern-editor` package.
 
 ## Licence
 
