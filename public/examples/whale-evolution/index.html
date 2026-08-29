@@ -19,23 +19,49 @@
 
       <!-- 1 · title -->
       <section class="title-slide" data-ref="Uhen 2010; Thewissen et al. 2009">
-        <div class="wash deep" style="left:-120px;top:60px;width:560px;height:420px;"></div>
-        <div class="wash light" style="left:760px;top:-80px;width:620px;height:520px;"></div>
-        <div class="wash warm" style="left:980px;top:520px;width:320px;height:220px;"></div>
-        <svg class="whale-art" viewBox="0 0 400 160" width="560" height="224" style="position:absolute;left:700px;top:400px;" aria-label="Stylised baleen whale silhouette">
-          <path d="M14,84 C36,58 110,44 200,52 C260,58 300,66 336,72 C350,74 356,76 360,80 C356,84 350,86 336,88 C300,98 250,110 190,112 C110,114 40,104 14,84 Z" fill="#1d4f74"/>
-          <path d="M356,80 C372,66 396,60 398,66 C388,72 378,78 372,80 C378,82 388,88 398,94 C396,100 372,94 356,80 Z" fill="#1d4f74"/>
-          <path d="M270,66 C284,54 300,52 306,58 C296,62 286,68 278,72 Z" fill="#1d4f74"/>
-          <path d="M150,110 C162,126 186,130 202,120 C186,118 168,114 150,110 Z" fill="#1d4f74"/>
-          <circle cx="48" cy="78" r="3.5" fill="#eef4f8"/>
+        <div class="wash deep" style="left:-120px;top:40px;width:520px;height:380px;"></div>
+        <div class="wash light" style="left:760px;top:-100px;width:620px;height:480px;"></div>
+        <svg class="whale-art" viewBox="0 0 1200 205" width="1200" height="205" style="position:absolute;left:40px;top:470px;" aria-label="The main steps of whale evolution drawn to scale by body length, from the raccoon-sized Indohyus to the 30-metre blue whale" font-family="inherit">
+          <defs>
+            <!-- silhouettes in a 100-unit-long box; scaled per species so lengths are to scale -->
+            <symbol id="s-quad" viewBox="0 0 100 40"><path d="M30,26 C28,16 34,10 46,9 C60,8 78,9 88,7 C96,6 100,10 96,13 C88,15 80,16 74,18 C70,22 66,26 64,28 L67,38 L63,38 L60,29 C52,30 44,30 38,29 L40,38 L36,38 L33,29 C31,29 30,28 30,26 Z M30,25 C20,26 10,30 4,36" fill="#1d4f74" stroke="#1d4f74" stroke-width="2.5" stroke-linecap="round"/></symbol>
+            <symbol id="s-ambulo" viewBox="0 0 100 40"><path d="M6,24 C14,18 30,15 46,15 C62,15 80,13 98,10 C100,13 96,17 90,19 C78,22 62,24 50,26 L54,36 L49,36 L45,27 C36,28 26,28 18,27 L20,36 L15,36 L12,27 C8,27 4,27 6,24 Z" fill="#1d4f74"/></symbol>
+            <symbol id="s-proto" viewBox="0 0 100 40"><path d="M2,22 C10,12 30,8 52,10 C70,12 86,14 98,10 C100,13 96,18 88,20 C72,26 56,30 40,30 L42,38 L37,38 L34,30 C22,30 10,29 2,22 Z" fill="#1d4f74"/></symbol>
+            <symbol id="s-whale" viewBox="0 0 100 40"><path d="M3,21 C9,14 27,11 50,13 C65,14 75,16 84,18 C87,19 89,19 90,20 C89,21 87,22 84,22 C75,25 62,28 47,28 C27,28 10,26 3,21 Z M89,20 C93,16 99,15 100,17 C97,18 95,20 93,20 C95,21 97,22 100,23 C99,25 93,24 89,20 Z M67,17 C71,14 75,13 76,15 C74,16 71,18 69,19 Z M37,28 C40,32 46,33 50,30 C46,30 42,29 37,28 Z" fill="#1d4f74"/></symbol>
+          </defs>
+          <!-- size row: 13 px per metre; baseline y = 122 -->
+          <g id="sizes">
+            <use href="#s-quad" x="40" y="117" width="13" height="5"/>
+            <use href="#s-quad" x="120" y="112" width="23" height="10"/>
+            <use href="#s-ambulo" x="210" y="106" width="39" height="16"/>
+            <use href="#s-proto" x="310" y="106" width="39" height="16"/>
+            <use href="#s-whale" x="405" y="96" width="65" height="26"/>
+            <use href="#s-whale" x="510" y="65" width="221" height="57" preserveAspectRatio="none"/>
+            <use href="#s-whale" x="770" y="21" width="390" height="101" preserveAspectRatio="none"/>
+          </g>
+          <line x1="40" y1="128" x2="1160" y2="128" stroke="#c9d9e4" stroke-width="1"/>
+          <g font-size="12" fill="#17303f" text-anchor="middle">
+            <text x="46" y="146" font-weight="700" font-style="italic">Indohyus</text><text x="46" y="161" font-size="11" fill="#4f6b7d">~48 Ma · 1 m</text>
+            <text x="132" y="176" font-weight="700" font-style="italic">Pakicetus</text><text x="132" y="191" font-size="11" fill="#4f6b7d">~50 Ma · 1.8 m</text>
+            <text x="230" y="146" font-weight="700" font-style="italic">Ambulocetus</text><text x="230" y="161" font-size="11" fill="#4f6b7d">~49 Ma · 3 m</text>
+            <text x="330" y="176" font-weight="700" font-style="italic">Rodhocetus</text><text x="330" y="191" font-size="11" fill="#4f6b7d">~47 Ma · 3 m</text>
+            <text x="438" y="146" font-weight="700" font-style="italic">Dorudon</text><text x="438" y="161" font-size="11" fill="#4f6b7d">~40 Ma · 5 m</text>
+            <text x="620" y="146" font-weight="700" font-style="italic">Basilosaurus</text><text x="620" y="161" font-size="11" fill="#4f6b7d">~37 Ma · 17 m</text>
+            <text x="965" y="146" font-weight="700">Blue whale</text><text x="965" y="161" font-size="11" fill="#4f6b7d">today · up to 30 m</text>
+          </g>
+          <!-- scale bar -->
+          <g stroke="#17303f" stroke-width="2"><line x1="1030" y1="20" x2="1160" y2="20"/><line x1="1030" y1="15" x2="1030" y2="25"/><line x1="1160" y1="15" x2="1160" y2="25"/></g>
+          <text x="1095" y="38" font-size="12" fill="#4f6b7d" text-anchor="middle">10 m — lengths to scale</text>
+          <text x="600" y="196" font-size="12" fill="#4f6b7d" text-anchor="middle">Lengths to scale (adult sizes from the cited papers); silhouettes schematic.</text>
         </svg>
         <h1>From land to sea.</h1>
         <p class="sub">The evolutionary pathways of whales</p>
-        <p class="meta"><b>Cetacean evolution</b>, before and after the return to water · out of the sea ~375 Ma, back in ~50 Ma<br><span class="soft">Every slide carries its sources in the speaker notes (press S) and in <code>data-ref</code>.</span></p>
+        <p class="meta"><b>Cetacean evolution</b>, before and after the return to water · out of the sea ~375 Ma, back in ~50 Ma · <span class="soft">sources on every slide (notes, <code>data-ref</code>)</span></p>
         <aside class="notes">
           Overview sources: Uhen, M.D. (2010) "The origin(s) of whales", Annual Review of Earth and Planetary Sciences 38:189–219.
           Thewissen, J.G.M., Cooper, L.N., George, J.C. &amp; Bajpai, S. (2009) "From land to water: the origin of whales, dolphins, and porpoises", Evolution: Education and Outreach 2:272–288.
           Marx, F.G., Lambert, O. &amp; Uhen, M.D. (2016) Cetacean Paleobiology, Wiley-Blackwell.
+          Sizes in the title graphic: Indohyus ~1 m and Pakicetus wolf-sized (~1.8 m) (Thewissen et al. 2007, 2001); Ambulocetus ~3 m (Thewissen et al. 1994); Rodhocetus ~3 m (Gingerich et al. 1994); Dorudon ~5 m (Uhen 2004); Basilosaurus ~16–18 m (Gingerich et al. 1990); blue whale up to ~30 m. Ages as on the timeline slide.
         </aside>
       </section>
 
