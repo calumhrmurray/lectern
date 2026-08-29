@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Parts deck</title>
+  <link rel="stylesheet" href="reveal/dist/reset.css">
+  <link rel="stylesheet" href="reveal/dist/reveal.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides"><!-- fragments injected here --></div>
+  </div>
+  <script src="reveal/dist/reveal.js"></script>
+  <script>
+    const parts = [
+      'slides/p0_intro.html',
+      'slides/p1_more.html',
+    ];
+    (async () => {
+      const container = document.querySelector('.slides');
+      for (const p of parts) {
+        const r = await fetch(p);
+        if (!r.ok) { console.error('Could not load', p); continue; }
+        container.insertAdjacentHTML('beforeend', await r.text());
+      }
+      Reveal.initialize({ width: 1280, height: 720, margin: 0.06, center: false, hash: true, transition: 'none', controls: false });
+    })();
+  </script>
+</body>
+</html>

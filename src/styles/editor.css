@@ -1,0 +1,294 @@
+/* Lectern editor chrome. Original look: warm dark UI, blue selection, magenta guides. */
+
+:root {
+  --bg: #1b1d22;
+  --panel: #22252c;
+  --panel-2: #2a2e36;
+  --line: #34383f;
+  --line-soft: #2c3037;
+  --text: #dcdfe4;
+  --text-soft: #9aa0ab;
+  --text-dim: #6b717c;
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.25);
+  --warm: #e0894a;
+  --danger: #e5534b;
+  --ok: #5fbf7a;
+  --guide: #ff3fa4;
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --toolbar-h: 46px;
+  --status-h: 26px;
+  --nav-w: 216px;
+  --insp-w: 292px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--text); font: 13px/1.4 var(--font);
+  -webkit-font-smoothing: antialiased; overflow: hidden; user-select: none;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent); }
+::selection { background: var(--accent-soft); }
+
+#app { display: flex; flex-direction: column; height: 100%; }
+
+/* ---------------------------------------------------------------- toolbar */
+.lec-toolbar {
+  flex: 0 0 var(--toolbar-h); display: flex; align-items: center; gap: 4px; padding: 0 10px;
+  background: var(--panel); border-bottom: 1px solid var(--line);
+}
+.lec-toolbar .lec-group { display: flex; align-items: center; gap: 2px; }
+.lec-toolbar .lec-sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
+.lec-toolbar .lec-spacer { flex: 1; }
+.lec-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 30px; min-width: 30px;
+  padding: 0 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--text);
+  white-space: nowrap;
+}
+.lec-btn:hover { background: var(--panel-2); }
+.lec-btn:active, .lec-btn.lec-active { background: #33373f; border-color: var(--line); }
+.lec-btn.lec-on { color: #fff; background: var(--accent-soft); border-color: rgba(59,130,246,.5); }
+.lec-btn:disabled { opacity: .38; cursor: default; background: transparent; }
+.lec-btn.lec-primary { background: var(--accent); color: #fff; font-weight: 600; }
+.lec-btn.lec-primary:hover { background: #2f6fdc; }
+.lec-btn.lec-warm { background: var(--warm); color: #1b1d22; font-weight: 600; }
+.lec-btn.lec-warm:hover { background: #ea9a62; }
+.lec-btn .lec-icon { display: inline-flex; width: 16px; height: 16px; }
+.lec-btn .lec-icon svg { width: 16px; height: 16px; }
+.lec-btn .lec-caret { width: 10px; height: 10px; margin-left: -2px; opacity: .7; }
+.lec-btn .lec-caret svg { width: 10px; height: 10px; }
+.lec-btn.lec-dirty::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--warm); margin-left: 2px; }
+.lec-brand { font-weight: 700; letter-spacing: .02em; }
+.lec-brand .lec-icon { color: var(--warm); }
+.lec-zoom { display: flex; align-items: center; gap: 2px; }
+.lec-zoom .lec-zoom-val { min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; color: var(--text-soft); font-size: 12px; }
+
+/* ---------------------------------------------------------------- main layout */
+.lec-main { flex: 1; display: flex; min-height: 0; }
+.lec-navigator {
+  flex: 0 0 var(--nav-w); background: var(--panel); border-right: 1px solid var(--line);
+  overflow-y: auto; overflow-x: hidden; padding: 10px 8px 40px; outline: none;
+}
+.lec-navigator.lec-hidden, .lec-inspector.lec-hidden { display: none; }
+.lec-center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.lec-stage-wrap { flex: 1; position: relative; overflow: auto; background: var(--bg);
+  background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px); background-size: 18px 18px; }
+.lec-stage { position: relative; width: 100%; height: 100%; }
+.lec-stage-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; display: block; }
+.lec-stage.lec-empty .lec-stage-frame { visibility: hidden; }
+.lec-inspector {
+  flex: 0 0 var(--insp-w); background: var(--panel); border-left: 1px solid var(--line);
+  overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column;
+}
+
+/* ---------------------------------------------------------------- overlay */
+.lec-overlay { position: absolute; inset: 0; outline: none; touch-action: none; }
+.lec-overlay.lec-textmode { pointer-events: none; }
+.lec-overlay > div { position: absolute; }
+.lec-canvas-outline { position: absolute; pointer-events: none; box-shadow: 0 10px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06); }
+.lec-hover { position: absolute; pointer-events: none; outline: 1px solid rgba(59,130,246,.75); outline-offset: 0; }
+.lec-boxes, .lec-guides { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: visible; }
+.lec-box { position: absolute; pointer-events: none; outline: 1.5px solid var(--accent); transform-origin: center; }
+.lec-box.lec-primary { outline-width: 2px; }
+.lec-box.lec-editing { outline: 1.5px dashed var(--accent); }
+.lec-handle {
+  position: absolute; width: 9px; height: 9px; background: #fff; border: 1.5px solid var(--accent); border-radius: 2px;
+  pointer-events: auto; transform: translate(-50%, -50%);
+}
+.lec-handle.lec-disabled { display: none; }
+.lec-h-nw { left: 0; top: 0; } .lec-h-n { left: 50%; top: 0; } .lec-h-ne { left: 100%; top: 0; }
+.lec-h-e { left: 100%; top: 50%; } .lec-h-se { left: 100%; top: 100%; } .lec-h-s { left: 50%; top: 100%; }
+.lec-h-sw { left: 0; top: 100%; } .lec-h-w { left: 0; top: 50%; }
+.lec-rotate { left: 50%; top: -22px; width: 11px; height: 11px; border-radius: 50%; cursor: grab; }
+.lec-rotate::before { content: ""; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 12px; background: var(--accent); transform: translateX(-50%); }
+.lec-guide { position: absolute; pointer-events: none; background: var(--guide); }
+.lec-guide-x { width: 1px; }
+.lec-guide-y { height: 1px; }
+.lec-guide-center { background: var(--guide); opacity: .85; }
+.lec-guide-canvas { background: var(--guide); opacity: .55; }
+.lec-marquee { position: absolute; pointer-events: none; background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.7); }
+.lec-size-label {
+  position: absolute; pointer-events: none; transform: translate(0, 0); background: #111; color: #fff; font-size: 11px;
+  padding: 2px 6px; border-radius: 4px; white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- navigator */
+.lec-slide-card { position: relative; display: flex; gap: 6px; padding: 6px 4px; border-radius: 8px; cursor: default; }
+.lec-slide-card:hover { background: var(--panel-2); }
+.lec-slide-card.lec-current { background: var(--accent-soft); }
+.lec-slide-card.lec-sub { padding-left: 22px; }
+.lec-slide-card.lec-drop-before::before, .lec-slide-card.lec-drop-after::after {
+  content: ""; position: absolute; left: 30px; right: 4px; height: 3px; background: var(--accent); border-radius: 2px;
+}
+.lec-slide-card.lec-drop-before::before { top: -2px; }
+.lec-slide-card.lec-drop-after::after { bottom: -2px; }
+.lec-slide-card.lec-dragging { opacity: .4; }
+.lec-slide-num { flex: 0 0 20px; font-size: 11px; color: var(--text-soft); text-align: right; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.lec-slide-card.lec-current .lec-slide-num { color: #fff; }
+.lec-thumb { flex: 1; min-width: 0; }
+.lec-thumb-wrap { position: relative; width: 100%; background: #fff; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.lec-slide-card.lec-current .lec-thumb-wrap { box-shadow: 0 0 0 2px var(--accent), 0 1px 3px rgba(0,0,0,.5); }
+.lec-thumb-wrap iframe { position: absolute; left: 0; top: 0; border: 0; pointer-events: none; transform-origin: 0 0; background: #fff; }
+.lec-thumb-label { font-size: 10.5px; color: var(--text-dim); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lec-slide-card.lec-current .lec-thumb-label { color: var(--text-soft); }
+.lec-slide-badge { position: absolute; right: 8px; top: 8px; font-size: 9px; background: rgba(0,0,0,.6); color: #fff; padding: 1px 5px; border-radius: 3px; }
+.lec-nav-empty { color: var(--text-dim); padding: 20px 10px; text-align: center; font-size: 12px; }
+.lec-nav-add { margin: 8px 4px 0 28px; }
+
+/* ---------------------------------------------------------------- inspector */
+.lec-tabs { display: flex; border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+.lec-tab { flex: 1; padding: 9px 4px; text-align: center; color: var(--text-soft); background: transparent; border: 0; border-bottom: 2px solid transparent; font-weight: 500; }
+.lec-tab:hover { color: var(--text); }
+.lec-tab.lec-active { color: #fff; border-bottom-color: var(--accent); }
+.lec-insp-body { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+.lec-section { border-bottom: 1px solid var(--line-soft); padding: 8px 12px 10px; }
+.lec-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin: 2px 0 8px; display: flex; align-items: center; justify-content: space-between; }
+.lec-section-title .lec-btn { height: 22px; min-width: 22px; padding: 0 5px; font-size: 11px; text-transform: none; letter-spacing: 0; }
+.lec-row { display: flex; align-items: center; gap: 6px; margin: 4px 0; min-height: 26px; }
+.lec-row > label { flex: 0 0 64px; color: var(--text-soft); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lec-row.lec-row-wide > label { flex-basis: 100%; }
+.lec-row .lec-fill { flex: 1; min-width: 0; }
+.lec-field {
+  height: 26px; padding: 0 7px; background: var(--bg); border: 1px solid var(--line); border-radius: 5px; color: var(--text);
+  min-width: 0; width: 100%; outline: none;
+}
+.lec-field:focus { border-color: var(--accent); }
+.lec-field[type=number] { -moz-appearance: textfield; padding-right: 2px; }
+.lec-field::-webkit-inner-spin-button { opacity: .6; }
+.lec-field.lec-num { width: 62px; flex: 0 0 62px; text-align: right; font-variant-numeric: tabular-nums; }
+.lec-unit { font-size: 11px; color: var(--text-dim); margin-left: -2px; }
+.lec-mini-label { font-size: 11px; color: var(--text-dim); width: 12px; text-align: right; }
+select.lec-field { appearance: auto; padding-right: 2px; }
+textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-family: var(--mono); font-size: 12px; line-height: 1.45; }
+.lec-color { display: inline-flex; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+.lec-color input[type=color] { width: 28px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); cursor: pointer; }
+.lec-color input[type=color]::-webkit-color-swatch-wrapper { padding: 3px; }
+.lec-color input[type=color]::-webkit-color-swatch { border: 0; border-radius: 3px; }
+.lec-color .lec-field { flex: 1; font-family: var(--mono); font-size: 12px; }
+.lec-color.lec-none input[type=color] { background: repeating-linear-gradient(45deg, #444 0 4px, #333 4px 8px); }
+.lec-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.lec-seg button { height: 26px; min-width: 28px; padding: 0 8px; background: var(--bg); border: 0; color: var(--text-soft); border-right: 1px solid var(--line); display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.lec-seg button:last-child { border-right: 0; }
+.lec-seg button:hover { color: var(--text); }
+.lec-seg button.lec-active { background: var(--accent-soft); color: #fff; }
+.lec-seg button .lec-icon svg { width: 14px; height: 14px; display: block; }
+.lec-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.lec-chip { height: 22px; padding: 0 8px; border-radius: 11px; border: 1px solid var(--line); background: var(--bg); color: var(--text-soft); font-size: 11.5px; font-family: var(--mono); }
+.lec-chip:hover { color: var(--text); border-color: var(--text-dim); }
+.lec-chip.lec-active { background: var(--accent-soft); border-color: rgba(59,130,246,.6); color: #fff; }
+.lec-chip.lec-custom { border-style: dashed; }
+.lec-crumbs { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; font-family: var(--mono); font-size: 11.5px; color: var(--text-dim); }
+.lec-crumb { background: transparent; border: 0; padding: 2px 4px; border-radius: 4px; color: var(--text-soft); font-family: var(--mono); font-size: 11.5px; }
+.lec-crumb:hover { background: var(--panel-2); color: var(--text); }
+.lec-crumb.lec-active { color: #fff; font-weight: 600; }
+.lec-insp-empty { padding: 30px 16px; color: var(--text-dim); text-align: center; font-size: 12.5px; line-height: 1.6; }
+.lec-kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 12px; }
+.lec-kv dt { color: var(--text-dim); }
+.lec-kv dd { margin: 0; color: var(--text); word-break: break-all; }
+.lec-help { color: var(--text-dim); font-size: 11.5px; line-height: 1.5; margin: 4px 0; }
+.lec-check { display: inline-flex; align-items: center; gap: 6px; }
+.lec-check input { margin: 0; accent-color: var(--accent); }
+.lec-btn-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.lec-btn-row .lec-btn { height: 26px; min-width: 26px; padding: 0 6px; border: 1px solid var(--line); background: var(--bg); }
+.lec-btn-row .lec-btn:hover { background: var(--panel-2); }
+
+/* ---------------------------------------------------------------- bottom panel */
+.lec-panels { flex: 0 0 auto; height: 210px; border-top: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; }
+.lec-panels.lec-hidden { display: none; }
+.lec-panel-head { display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-bottom: 1px solid var(--line-soft); }
+.lec-panel-head .lec-tab { flex: 0 0 auto; padding: 5px 10px; }
+.lec-panel-body { flex: 1; display: flex; min-height: 0; }
+.lec-panel-body textarea { flex: 1; border: 0; border-radius: 0; background: var(--bg); padding: 10px 12px; resize: none; outline: none; }
+.lec-panel-body textarea.lec-notes-text { font-family: var(--font); font-size: 13px; }
+.lec-panel-side { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; padding: 8px; border-left: 1px solid var(--line-soft); min-width: 120px; }
+.lec-panel-error { color: var(--danger); font-size: 11.5px; }
+.lec-panel-hint { color: var(--text-dim); font-size: 11.5px; }
+
+/* ---------------------------------------------------------------- status bar */
+.lec-status { flex: 0 0 var(--status-h); display: flex; align-items: center; gap: 12px; padding: 0 12px; background: var(--panel); border-top: 1px solid var(--line); font-size: 11.5px; color: var(--text-soft); }
+.lec-status .lec-spacer { flex: 1; }
+.lec-status .lec-msg { color: var(--text); transition: opacity .3s; }
+.lec-status .lec-msg.lec-error { color: var(--danger); }
+.lec-status .lec-msg.lec-ok { color: var(--ok); }
+.lec-status .lec-path { font-family: var(--mono); color: var(--text-dim); }
+
+/* ---------------------------------------------------------------- menus */
+.lec-menu-backdrop { position: fixed; inset: 0; z-index: 900; }
+.lec-menu {
+  position: fixed; z-index: 901; min-width: 180px; max-height: 70vh; overflow-y: auto; padding: 4px; background: #2b2f37;
+  border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+.lec-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; height: 28px; padding: 0 10px 0 8px; border: 0; border-radius: 5px; background: transparent; color: var(--text); text-align: left; white-space: nowrap; }
+.lec-menu-item:hover:not(:disabled) { background: var(--accent); color: #fff; }
+.lec-menu-item:disabled { opacity: .4; cursor: default; }
+.lec-menu-item .lec-icon { width: 16px; height: 16px; display: inline-flex; flex: 0 0 16px; }
+.lec-menu-item .lec-icon svg { width: 16px; height: 16px; }
+.lec-menu-item .lec-check-mark { width: 14px; flex: 0 0 14px; }
+.lec-menu-item .lec-shortcut { margin-left: auto; padding-left: 20px; font-size: 11px; opacity: .6; }
+.lec-menu-item .lec-hint { font-size: 11px; opacity: .55; margin-left: 6px; }
+.lec-menu-sep { height: 1px; background: var(--line); margin: 4px 6px; }
+.lec-menu-title { font-size: 11px; color: var(--text-dim); padding: 6px 8px 2px; text-transform: uppercase; letter-spacing: .06em; }
+
+/* ---------------------------------------------------------------- dialogs */
+.lec-modal-backdrop { position: fixed; inset: 0; z-index: 800; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; }
+.lec-modal { width: 520px; max-width: calc(100vw - 40px); max-height: calc(100vh - 60px); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+.lec-modal.lec-wide { width: 760px; }
+.lec-modal-head { display: flex; align-items: center; padding: 14px 18px 8px; font-size: 15px; font-weight: 600; }
+.lec-modal-head .lec-spacer { flex: 1; }
+.lec-modal-body { padding: 4px 18px 10px; overflow-y: auto; user-select: text; }
+.lec-modal-foot { display: flex; justify-content: flex-end; gap: 6px; padding: 10px 18px 14px; }
+.lec-modal .lec-row > label { flex-basis: 90px; }
+.lec-list { display: flex; flex-direction: column; gap: 2px; max-height: 320px; overflow-y: auto; }
+.lec-list-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--text); text-align: left; width: 100%; }
+.lec-list-item:hover { background: var(--panel-2); }
+.lec-list-item.lec-active { border-color: var(--accent); background: var(--accent-soft); }
+.lec-list-item .lec-icon { color: var(--text-soft); }
+.lec-list-item .lec-sub { color: var(--text-dim); font-size: 11.5px; }
+.lec-list-item .lec-spacer { flex: 1; }
+.lec-img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 360px; overflow-y: auto; padding: 2px; }
+.lec-img-cell { border: 2px solid transparent; border-radius: 8px; background: var(--bg); padding: 4px; text-align: center; cursor: pointer; }
+.lec-img-cell:hover { border-color: var(--line); }
+.lec-img-cell.lec-active { border-color: var(--accent); }
+.lec-img-cell img { width: 100%; height: 80px; object-fit: contain; background: repeating-conic-gradient(#3a3d44 0 25%, #2f3238 0 50%) 0 0/12px 12px; border-radius: 4px; }
+.lec-img-cell .lec-name { font-size: 10.5px; color: var(--text-soft); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lec-layout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.lec-layout-card { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 8px; text-align: left; color: var(--text); }
+.lec-layout-card:hover { border-color: var(--accent); }
+.lec-layout-card .lec-layout-pv { height: 58px; background: #f2efe8; border-radius: 4px; margin-bottom: 6px; position: relative; overflow: hidden; }
+.lec-layout-card .lec-layout-pv i { position: absolute; background: #999; border-radius: 1px; }
+.lec-layout-card b { font-weight: 600; font-size: 12px; display: block; }
+.lec-layout-card span { font-size: 11px; color: var(--text-dim); }
+.lec-kbd { display: inline-block; min-width: 20px; padding: 1px 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; background: var(--bg); font-family: var(--mono); font-size: 11px; text-align: center; }
+.lec-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 12.5px; }
+.lec-shortcuts div { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid var(--line-soft); }
+
+/* ---------------------------------------------------------------- welcome */
+.lec-welcome { position: absolute; inset: 0; z-index: 700; background: var(--bg); display: flex; align-items: center; justify-content: center; overflow: auto; }
+.lec-welcome.lec-hidden { display: none; }
+.lec-welcome-card { width: 640px; max-width: calc(100vw - 40px); padding: 36px 40px; }
+.lec-welcome h1 { font-size: 34px; margin: 0 0 4px; display: flex; align-items: center; gap: 12px; }
+.lec-welcome h1 .lec-icon { color: var(--warm); }
+.lec-welcome h1 .lec-icon svg { width: 34px; height: 34px; }
+.lec-welcome .lec-tagline { color: var(--text-soft); font-size: 15px; margin: 0 0 26px; }
+.lec-welcome-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 26px; }
+.lec-welcome-actions .lec-btn { height: auto; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border: 1px solid var(--line); background: var(--panel); text-align: left; white-space: normal; }
+.lec-welcome-actions .lec-btn:hover { border-color: var(--accent); }
+.lec-welcome-actions .lec-btn b { font-size: 14px; }
+.lec-welcome-actions .lec-btn span { color: var(--text-soft); font-size: 12px; line-height: 1.4; }
+.lec-welcome-actions .lec-btn .lec-icon { color: var(--warm); }
+.lec-welcome-actions .lec-btn .lec-icon svg { width: 22px; height: 22px; }
+.lec-welcome h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin: 18px 0 6px; }
+.lec-welcome .lec-note { color: var(--text-dim); font-size: 12px; line-height: 1.6; margin-top: 22px; }
+.lec-welcome code { font-family: var(--mono); background: var(--panel); padding: 1px 5px; border-radius: 4px; color: var(--text); }
+
+/* ---------------------------------------------------------------- misc */
+.lec-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-soft); font-size: 14px; z-index: 5; pointer-events: none; }
+.lec-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 950; background: #111; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.5); max-width: 70vw; }
+.lec-toast.lec-error { background: var(--danger); }
+.lec-dropzone { position: absolute; inset: 0; z-index: 6; background: rgba(59,130,246,.12); border: 3px dashed var(--accent); display: none; align-items: center; justify-content: center; color: #fff; font-size: 18px; pointer-events: none; }
+.lec-dropzone.lec-on { display: flex; }

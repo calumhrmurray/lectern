@@ -1,0 +1,108 @@
+/**
+ * Slide thumbnails: each is a small `srcdoc` iframe that loads the deck's own
+ * stylesheets and shows a clone of the *rendered* slide (so KaTeX output,
+ * theme fonts and inline styles all match the canvas), scaled with a CSS
+ * transform.
+ */
+
+import type { Editor } from '../app/Editor';
+import type { SlideRef } from '../stage/Stage';
+
+export class ThumbnailRenderer {
+  private headCache: string | null = null;
+
+  constructor(readonly editor: Editor) {}
+
+  invalidate(): void { this.headCache = null; }
+
+  /** Stylesheets and inline styles from the live deck, plus a <base> for relative URLs. */
+  private headHtml(): string {
+    if (this.headCache) return this.headCache;
+    const stage = this.editor.stage;
+    const doc = stage.doc;
+    const parts: string[] = [`<base href="${escapeAttr(stage.iframe.src)}">`];
+    for (const node of Array.from(doc.querySelectorAll('link[rel~="stylesheet"], style'))) {
+      if (node.id === 'lec-editing-styles') continue;
+      if (node instanceof HTMLLinkElement) {
+        parts.push(`<link rel="stylesheet" href="${escapeAttr(node.href)}">`);
+      } else {
+        parts.push(`<style>${node.textContent ?? ''}</style>`);
+      }
+    }
+    const { width, height } = stage.slideSize;
+    parts.push(`<style>
+      html, body { margin: 0; width: ${width}px; height: ${height}px; overflow: hidden; }
+      .reveal { position: relative; width: ${width}px; height: ${height}px; overflow: hidden; }
+      .reveal .slides { position: absolute; left: 0; top: 0; width: ${width}px; height: ${height}px; margin: 0; transform: none !important; zoom: 1; overflow: hidden; pointer-events: none; }
+      .reveal .slides > section, .reveal .slides > section > section { display: block !important; visibility: visible !important; opacity: 1 !important; position: absolute; left: 0; width: 100%; transform: none !important; transition: none !important; }
+      .reveal .slides section .fragment { visibility: visible !important; opacity: 1 !important; transform: none !important; }
+      .reveal .slides section aside.notes { display: none !important; }
+      .lec-bg { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+      .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
+    </style>`);
+    this.headCache = parts.join('\n');
+    return this.headCache;
+  }
+
+  /** Renders the given slide into `iframe` (whose size is the full slide size; scale it with CSS). */
+  render(ref: SlideRef, iframe: HTMLIFrameElement): void {
+    const stage = this.editor.stage;
+    if (!stage.ready) return;
+    let live: Element;
+    try { live = stage.liveSection(ref); } catch { return; }
+    const clone = live.cloneNode(true) as HTMLElement;
+    clone.classList.remove('past', 'future', 'stack');
+    clone.classList.add('present');
+    clone.removeAttribute('hidden');
+    clone.removeAttribute('aria-hidden');
+    clone.style.display = 'block';
+    for (const sub of Array.from(clone.querySelectorAll(':scope > section'))) sub.remove();
+    for (const f of Array.from(clone.querySelectorAll('.fragment'))) f.classList.add('visible');
+    for (const ed of Array.from(clone.querySelectorAll('[contenteditable]'))) ed.removeAttribute('contenteditable');
+    // Canvas content does not survive cloning; snapshot it.
+    const liveCanvases = Array.from(live.querySelectorAll('canvas'));
+    const cloneCanvases = Array.from(clone.querySelectorAll('canvas'));
+    cloneCanvases.forEach((c, i) => {
+      const src = liveCanvases[i];
+      try {
+        const img = clone.ownerDocument.createElement('img');
+        img.src = src.toDataURL();
+        img.setAttribute('style', c.getAttribute('style') ?? '');
+        img.className = c.className;
+        img.width = src.width; img.height = src.height;
+        c.replaceWith(img);
+      } catch { /* tainted canvas: leave blank */ }
+    });
+    const bg = backgroundStyle(live);
+    const htmlEl = stage.doc.documentElement;
+    const body = stage.doc.body;
+    const html = `<!doctype html><html class="${escapeAttr(htmlEl.className)}"><head>${this.headHtml()}</head>` +
+      `<body class="${escapeAttr(body.className)}"><div class="reveal"><div class="slides">` +
+      `<div class="lec-bg" style="${escapeAttr(bg)}"></div>${clone.outerHTML}</div></div></body></html>`;
+    iframe.srcdoc = html;
+  }
+}
+
+function backgroundStyle(section: Element): string {
+  const get = (n: string) => section.getAttribute(n);
+  const out: string[] = [];
+  const color = get('data-background-color') ?? get('data-background');
+  if (color && !/^(https?:|\.|\/|[\w-]+\.(png|jpe?g|gif|svg|webp))/i.test(color)) out.push(`background-color:${color}`);
+  const image = get('data-background-image') ?? (get('data-background') && /\.(png|jpe?g|gif|svg|webp)(\?|$)/i.test(get('data-background')!) ? get('data-background') : null);
+  if (image) out.push(`background-image:url("${image.replace(/"/g, '%22')}")`);
+  const gradient = get('data-background-gradient');
+  if (gradient) out.push(`background-image:${gradient}`);
+  const size = get('data-background-size');
+  if (size) out.push(`background-size:${size}`);
+  const pos = get('data-background-position');
+  if (pos) out.push(`background-position:${pos}`);
+  const repeat = get('data-background-repeat');
+  if (repeat) out.push(`background-repeat:${repeat}`);
+  const opacity = get('data-background-opacity');
+  if (opacity) out.push(`opacity:${opacity}`);
+  return out.join(';');
+}
+
+function escapeAttr(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}

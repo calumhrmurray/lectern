@@ -1,0 +1,24 @@
+# Lectern — notes for coding assistants
+
+Visual editor for reveal.js decks. TypeScript + Vite, no UI framework. Read `README.md` first.
+
+## Commands
+
+- `npm test` — unit tests (vitest, jsdom). Fast; run after any change in `src/deck` or `src/stage/geometry.ts`.
+- `npm run build` — typecheck + Vite build into `dist/` (also refreshes `public/reveal`).
+- `npx playwright test` — end-to-end tests. Needs `dist/` (run the build first) and a free local port; the
+  CLI server is started automatically on `test/.tmp/demo` (created by `test/e2e/prepare.js`).
+- `node scripts/shot.mjs <folder> <deck.html> out.png [slide] [selector]` — headless screenshot of the
+  editor on any deck; the quickest way to eyeball a change or a user's real deck.
+- `LECTERN_DIR=path npm run dev` — Vite dev server with the folder API; open `/?ws=local`.
+
+## Invariants worth keeping
+
+- The source DOM (`DeckDocument.doc`) is the truth; the iframe DOM is a rendering. Edit both through
+  `Stage.setStyle/setAttr/toggleClass/setInnerHTML/insertHtml/remove/move`, never the live DOM alone.
+- Every user-visible change goes through `Editor.edit()`/`begin()`/`end()` so it is undoable.
+- Saving must keep untouched sections byte-identical (`DeckDocument.serializeSource`); inline styles are
+  patched textually (`patchInlineStyle`), never via `el.style` on the source element.
+- Pointer events arrive in page coordinates; the iframe has its own client coordinates. Convert with
+  `Editor.frameOffset()` (see `hitTest`, `toSlide`, `beginRotate`, `startTextEdit`).
+- Stylesheet rules from the iframe are a different JS realm: use duck typing, not `instanceof`.

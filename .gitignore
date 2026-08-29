@@ -1,0 +1,10 @@
+node_modules/
+dist/
+public/reveal/
+test-results/
+playwright-report/
+.playwright/
+*.log
+.DS_Store
+test/.tmp/
+test/.shots/

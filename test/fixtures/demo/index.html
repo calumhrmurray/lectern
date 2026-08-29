@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo deck — Lectern</title>
+  <link rel="stylesheet" href="reveal/dist/reset.css">
+  <link rel="stylesheet" href="reveal/dist/reveal.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============ 1 · title ============ -->
+      <section class="title-slide">
+        <h1>A deck you can edit.</h1>
+        <p class="sub">reveal.js slides, edited like a canvas</p>
+        <p class="meta"><b>Calum Murray</b> &middot; CEA Paris-Saclay<br>Somewhere &middot; Someday</p>
+        <aside class="notes">
+          Open on the title. Say who you are.
+        </aside>
+      </section>
+
+      <!-- ============ 2 · bullets ============ -->
+      <section>
+        <div class="kicker">Introduction</div>
+        <h2>Three things to remember.</h2>
+        <ul>
+          <li>Double-click any text to edit it in place</li>
+          <li>Drag objects; <span class="tide">guides</span> snap to the slide and to each other</li>
+          <li class="fragment">Fragments are shown while editing</li>
+        </ul>
+        <p class="cite">A citation line, absolutely positioned by the theme.</p>
+      </section>
+
+      <!-- ============ 3 · two columns ============ -->
+      <section>
+        <div class="kicker">Layout</div>
+        <h2>Two columns, one figure.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li>Left column text</li>
+              <li>with <strong>emphasis</strong></li>
+            </ul>
+          </div>
+          <div class="col">
+            <img class="fig" src="figures/plot.svg" alt="A plot">
+            <p class="caption">Figure 1 — a line going up.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 4 · free objects ============ -->
+      <section data-background-color="#0e0c1a">
+        <h2 style="color:#fff">Free objects on a dark slide.</h2>
+        <div style="position:absolute;left:120px;top:220px;width:300px;height:180px;background:#4a7bd0;border-radius:12px;"></div>
+        <p style="position:absolute;left:480px;top:260px;width:600px;margin:0;color:#fff;">A free text box next to a shape.</p>
+      </section>
+
+      <!-- ============ 5 · equation ============ -->
+      <section>
+        <div class="kicker">Math</div>
+        <h2>An equation, typeset by KaTeX.</h2>
+        <p class="eq">\[ \xi_{g+}(r_p) = \frac{S_+D - S_+R}{RR} \]</p>
+        <p>Inline math like $\gamma_{\rm IA}$ stays LaTeX in the file.</p>
+      </section>
+
+      <!-- ============ 6 · vertical stack ============ -->
+      <section>
+        <section>
+          <h2>Vertical 1</h2>
+          <p>The first of two stacked slides.</p>
+        </section>
+        <section>
+          <h2>Vertical 2</h2>
+          <p>The second one.</p>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="reveal/dist/reveal.js"></script>
+  <script src="reveal/plugin/notes/notes.js"></script>
+  <script src="reveal/plugin/math/math.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280, height: 720, margin: 0.06,
+      center: false, hash: true, transition: 'none',
+      controls: false, slideNumber: 'c/t', progress: true,
+      plugins: [ RevealNotes, RevealMath.KaTeX ],
+      katex: { local: 'katex' },
+    });
+  </script>
+</body>
+</html>
