@@ -146,6 +146,14 @@ plain CSS file with `:root` variables at the top — edit `theme.css` for anythi
 (a backup slide), speaker notes in `<aside class="notes">`, vertical stacks (`<section><section>…</section><section>…</section></section>`),
 math as `\( … \)` / `\[ … \]` or `$…$` (KaTeX plugin, typeset from the source on every edit), code in `<pre><code>`.
 
+**Sections.** A talk usually falls into a few parts, and Lectern's compass and map read them from the file.
+Name one on the first slide of the run — `<section data-section="Anatomy">` — and every slide after it belongs to
+that section until the next one is named; `data-section=""` starts a new, unnamed section (a seam without a label).
+Nothing else is needed: naming a twenty-slide talk costs three attributes, and it is worth doing, because it is the
+only structure above "slide" the person can navigate by. Where nothing is declared, a `break` slide and a run of
+slides sharing one `.kicker` are read as sections too. A section belongs to the top-level `<section>`, so on a
+vertical stack the attribute goes on the wrapper.
+
 **Diagrams.** Inline `<svg>` is the best way to draw: it scales with the slide, needs no files, and Lectern selects,
 moves and resizes it like any object. Give it a `viewBox`, `width`/`height` in slide units, and `position:absolute` if
 it is placed by hand. Use the theme's colours (read `theme.css`).

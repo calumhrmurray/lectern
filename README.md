@@ -46,6 +46,11 @@ class vocabulary, the notes protocol and the editing rules:
 - **Layout-aware** — elements laid out by your CSS are *nudged* (`position: relative`) so
   nothing else jumps; new objects are free-floating (`position: absolute`). Switch either way
   from the inspector.
+- **Quiet mode and the map** — `Q` hides the panels and gives the slide the whole window, leaving a
+  *compass* in the corner: one dot per slide, a descender under any slide with a vertical stack, a seam
+  between sections. `M` opens the map — the deck laid out the way reveal walks it, sections left to right
+  and stacks downward — where you reorder slides, name sections (`data-section`) and drop one slide under
+  another to make it a sub-slide. Hold `Space` to bring the chrome back for a look.
 - **Insert** — text, headings, bullet lists, images (copied into the deck folder), shapes
   (rectangle, ellipse, outline, line, arrow, callout), tables, code, equations, web embeds.
 - **Slides** — thumbnails rendered with the deck's own stylesheet, drag to reorder, add from
@@ -155,7 +160,7 @@ your own.
 `⌘C/X/V/D` copy/cut/paste/duplicate · `⌫` delete · arrows nudge (`⇧` 10 px) ·
 `⇧`-drag constrain / keep aspect · `⌥`-drag ignore snapping · `PgUp/PgDn` slides ·
 `⌘⇧N` new slide · `⌘]`/`⌘[` forward/backward · typing with a text object selected edits it ·
-`N` new note for AI · `+ − 0` zoom · `?` full list.
+`N` new note for AI · `M` map · `Q` quiet mode · `Space` (hold) show the chrome · `+ − 0` zoom · `?` full list.
 
 ## Development
 

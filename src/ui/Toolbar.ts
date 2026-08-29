@@ -76,10 +76,12 @@ export class Toolbar {
       sep(),
       group(
         this.btn('navigator', 'navigator', null, 'Show/hide slide navigator', () => app.toggle('navigator')),
+        this.btn('map', 'map', null, 'Map of the deck — sections across, stacks down (M)', () => app.map.toggle()),
         this.btn('notes', 'notes', null, 'Speaker notes', () => app.panels.toggle('notes')),
         this.btn('code', 'code', null, 'Slide HTML', () => app.panels.toggle('html')),
         this.btn('ainotes', 'sparkle', null, 'All notes for AI in this deck', () => app.panels.toggle('ai')),
         this.btn('inspector', 'inspector', null, 'Show/hide inspector', () => app.toggle('inspector')),
+        this.btn('quiet', 'quiet', null, 'Quiet mode — hide the panels, keep the compass (Q)', () => app.toggleQuiet()),
       ),
       sep(),
       group(
@@ -118,6 +120,8 @@ export class Toolbar {
     set('present', has); set('save', ed.ready && !!app.workspace?.writable);
     this.buttons.get('save')!.classList.toggle('lec-dirty', ed.ready && ed.doc.dirty);
     set('navigator', true, app.visible.navigator);
+    set('map', has, app.map.visible);
+    set('quiet', true, app.quiet);
     set('inspector', true, app.visible.inspector);
     set('notes', has, app.panels.visible && app.panels.tab === 'notes');
     set('code', has, app.panels.visible && app.panels.tab === 'html');

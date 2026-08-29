@@ -77,6 +77,8 @@ export const icons = {
   ellipse: wrap('<ellipse cx="8" cy="8" rx="5.5" ry="4.5"/>'),
   outline: wrap('<rect x="2.5" y="3.5" width="11" height="9" rx="1" stroke-dasharray="3 2"/>'),
   callout: wrap('<path d="M2.5 3.5h11v7h-6l-3 3v-3h-2z"/>'),
+  map: wrap('<rect x="2" y="3" width="5" height="4" rx="1"/><rect x="9" y="3" width="5" height="4" rx="1"/><rect x="9" y="9" width="5" height="4" rx="1"/><path d="M7 5h2M11.5 7v2"/>'),
+  quiet: wrap('<rect x="2.5" y="3.5" width="11" height="7" rx="1"/><path d="M4 13h3M9 13h3"/>'),
   embed: wrap('<rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12M5 4.5h.01M7 4.5h.01"/>'),
 };
 

@@ -28,6 +28,13 @@ Visual editor for HTML slide decks (reveal.js, or any page of <section> slides w
   (`src/workspace/inline.ts`: blob URLs + fetch/setter shims in a `srcdoc` iframe) when there is no worker, i.e. `Lectern.html` on `file://`.
   `Stage.liveUrlResolver` keeps relative `src` attributes loadable in inline mode.
 
+## Sections, compass and map
+
+`src/deck/sections.ts` derives the deck's sections (runs of top-level slides) from `data-section`, falling back to a
+`break` slide or a repeated `.kicker`. `Compass` (always on screen) and `MapView` (the `M` overlay) both read it, and
+the map is the only place that edits deck *structure*: reorder, name a section, `Editor.nestSlide` / `unnestSlide` for
+reveal's vertical axis. Quiet mode is `.lec-quiet` on the app root plus `.lec-peek` while space is held.
+
 ## Notes for AI inside decks
 
 The protocol is in AGENTS.md (`<div hidden data-ai-note …>` threads of `<p data-by="author|ai">`; act, append your `<p data-by="ai">`,

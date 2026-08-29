@@ -7,7 +7,8 @@
 
 import { DeckDocument, type Snapshot } from '../deck/DeckDocument';
 import { History } from '../deck/history';
-import { escapeHtml, isSelectableDisplay, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
+import { escapeHtml, isSelectableDisplay, isStack, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
+import { SECTION_ATTR } from '../deck/sections';
 import { ELEMENT_TEMPLATES, updateLineSvg } from '../deck/templates';
 import { isAiNote, isDoneNote } from '../deck/aiNotes';
 import { angleDeg, resizeRect, snapEdge, snapLines, snapMove, unionRect, rectsIntersect, type Guide, type HandleName } from '../stage/geometry';
@@ -209,6 +210,97 @@ export class Editor implements InteractionHost {
       this.stage.renderSection(top);
     }, { top });
     this.goTo({ top, sub: to });
+  }
+
+  /**
+   * Makes top-level slide `from` the last sub-slide of top-level slide `into` —
+   * reveal's second axis, the one you reach with ↓ while presenting.
+   *
+   * A plain target is wrapped into a stack first: the wrapper keeps the section
+   * name (a section is a property of the running order, so it belongs to the
+   * top-level slide) and the slide itself becomes the first sub-slide.
+   */
+  nestSlide(from: number, into: number): void {
+    if (from === into || from < 0 || into < 0 || from >= this.doc.length || into >= this.doc.length) return;
+    const moved = this.doc.slides[from].el;
+    if (isStack(moved)) return; // a stack inside a stack is not a thing reveal has
+    this.endTextEdit();
+    this.clearSelection();
+
+    const target = this.doc.slides[into].el;
+    const pad = '\n' + this.doc.indent + '  ';
+    const movedClone = moved.cloneNode(true) as Element;
+    let html: string;
+    if (isStack(target)) {
+      const clone = target.cloneNode(true) as Element;
+      clone.append(this.doc.doc.createTextNode(pad), movedClone, this.doc.doc.createTextNode('\n' + this.doc.indent));
+      html = clone.outerHTML;
+    } else {
+      const wrap = this.doc.doc.createElement('section');
+      const name = target.getAttribute(SECTION_ATTR);
+      if (name !== null) wrap.setAttribute(SECTION_ATTR, name);
+      const first = target.cloneNode(true) as Element;
+      first.removeAttribute(SECTION_ATTR);
+      wrap.append(
+        this.doc.doc.createTextNode(pad), first,
+        this.doc.doc.createTextNode(pad), movedClone,
+        this.doc.doc.createTextNode('\n' + this.doc.indent),
+      );
+      html = wrap.outerHTML;
+    }
+
+    const at = from < into ? into - 1 : into;
+    this.edit('Nest slide', () => {
+      this.doc.removeSlide(from);
+      this.stage.removeLiveSection(from);
+      this.doc.replaceSlide(at, html);
+      this.stage.renderSection(at);
+    }, { deck: true });
+    const subs = this.subSections(this.doc.slides[at]?.el).length;
+    this.goTo({ top: at, sub: subs ? subs - 1 : null });
+  }
+
+  /** Promotes a sub-slide out of its stack, to a top-level slide right after it. */
+  unnestSlide(top: number, sub: number): void {
+    const stack = this.doc.slides[top]?.el;
+    if (!stack || !isStack(stack)) return;
+    const subs = this.subSections(stack);
+    const el = subs[sub];
+    if (!el || subs.length < 2) return; // the last one out would leave an empty stack
+    this.endTextEdit();
+    this.clearSelection();
+    const movedHtml = el.outerHTML;
+
+    const clone = stack.cloneNode(true) as Element;
+    const target = this.subSections(clone)[sub];
+    const prev = target.previousSibling;
+    if (prev && prev.nodeType === 3 && /^\s*$/.test(prev.textContent ?? '')) prev.remove();
+    target.remove();
+    const rest = this.subSections(clone);
+    let stackHtml: string;
+    if (rest.length === 1) {
+      // One sub-slide left is not a stack: unwrap it, and let it keep the name.
+      const only = rest[0];
+      const name = clone.getAttribute(SECTION_ATTR);
+      if (name !== null && !only.hasAttribute(SECTION_ATTR)) only.setAttribute(SECTION_ATTR, name);
+      stackHtml = only.outerHTML;
+    } else {
+      stackHtml = clone.outerHTML;
+    }
+
+    this.edit('Promote slide', () => {
+      this.doc.replaceSlide(top, stackHtml);
+      this.stage.renderSection(top);
+      this.doc.insertSlide(top + 1, movedHtml);
+      this.stage.insertLiveSection(top + 1);
+    }, { deck: true });
+    this.goTo({ top: top + 1, sub: null });
+  }
+
+  /** The `<section>` children of a stack, in order. */
+  private subSections(el: Element | undefined): Element[] {
+    if (!el) return [];
+    return Array.from(el.children).filter((c) => c.tagName.toLowerCase() === 'section');
   }
 
   /** Replaces the current slide's HTML from the code view. */

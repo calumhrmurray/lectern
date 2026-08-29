@@ -75,7 +75,7 @@ a { color: var(--accent); }
   overflow-y: auto; overflow-x: hidden; padding: 10px 8px 40px; outline: none;
 }
 .lec-navigator.lec-hidden, .lec-inspector.lec-hidden { display: none; }
-.lec-center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.lec-center { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
 .lec-stage-wrap { flex: 1; position: relative; overflow: auto; background: var(--bg);
   background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px); background-size: 18px 18px; }
 .lec-stage { position: relative; width: 100%; height: 100%; }
@@ -326,3 +326,108 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-ai-done-item { border-color: #3f7a45; }
 .lec-ai-done-item .lec-ai-slide { color: #6fbf76; }
 .lec-ai-reply { color: var(--text-dim); }
+
+
+/* ------------------------------------------------------- compass & cluster */
+/* The two things that stay on screen when the panels are gone: where you are
+   in the deck (left) and the state of your work (right). */
+.lec-compass, .lec-cluster {
+  position: absolute; bottom: 10px; z-index: 5; display: flex; align-items: center; gap: 8px;
+  opacity: .45; transition: opacity .16s ease; pointer-events: auto;
+}
+.lec-compass { left: 12px; max-width: 60%; }
+.lec-cluster { right: 12px; gap: 4px; }
+.lec-compass:hover, .lec-cluster:hover, .lec-peek .lec-compass, .lec-peek .lec-cluster { opacity: 1; }
+/* Keep clear of the bottom drawer when it is open. */
+.lec-center:has(.lec-panels:not(.lec-hidden)) .lec-compass,
+.lec-center:has(.lec-panels:not(.lec-hidden)) .lec-cluster { bottom: 220px; }
+
+.lec-compass-svg { overflow: visible; display: block; }
+.lec-compass-dot { fill: var(--text-soft); }
+.lec-compass-dot.lec-hollow { fill: none; stroke: var(--text-dim); stroke-width: 1.2; }
+.lec-compass-sub { fill: var(--text-soft); opacity: .55; }
+.lec-compass-stem { stroke: var(--text-soft); stroke-width: .8; opacity: .35; }
+.lec-compass-hit { fill: transparent; cursor: pointer; }
+.lec-compass-mark.lec-on .lec-compass-dot { fill: var(--accent); }
+.lec-compass-mark.lec-on .lec-compass-dot.lec-hollow { fill: none; stroke: var(--accent); }
+.lec-compass-mark.lec-on .lec-compass-sub, .lec-compass-mark.lec-on .lec-compass-stem { stroke: var(--accent); fill: var(--accent); }
+.lec-compass-mark.lec-on .lec-compass-sub.lec-on { opacity: 1; }
+.lec-compass-mark:hover .lec-compass-dot { fill: var(--text); }
+.lec-compass-label {
+  background: transparent; border: 0; color: var(--text-dim); font-size: 11px; font-family: var(--mono);
+  display: flex; gap: 6px; align-items: baseline; cursor: pointer; padding: 2px 4px; border-radius: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lec-compass-label:hover { color: var(--text); background: var(--panel-2); }
+.lec-compass-section { color: var(--text-soft); font-family: var(--font); font-size: 11.5px; }
+.lec-compass-num { font-variant-numeric: tabular-nums; }
+
+.lec-cluster-btn {
+  background: transparent; border: 0; color: var(--text-dim); font-size: 11px; font-family: var(--mono);
+  padding: 3px 6px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+}
+.lec-cluster-btn:hover { color: var(--text); background: var(--panel-2); }
+.lec-cluster-btn.lec-dirty { color: var(--warm); }
+.lec-cluster-notes { color: var(--warm); }
+.lec-cluster-btn .lec-icon { width: 14px; height: 14px; }
+
+/* ------------------------------------------------------------- quiet mode */
+/* Nothing but the slide. Hold space (.lec-peek) to bring it all back. */
+.lec-quiet .lec-toolbar, .lec-quiet .lec-navigator, .lec-quiet .lec-inspector, .lec-quiet .lec-status { display: none; }
+.lec-quiet.lec-peek .lec-toolbar { display: flex; }
+.lec-quiet.lec-peek .lec-navigator { display: block; }
+.lec-quiet.lec-peek .lec-inspector { display: flex; }
+.lec-quiet.lec-peek .lec-status { display: flex; }
+.lec-quiet .lec-stage-wrap { background-image: none; }
+
+/* -------------------------------------------------------------------- map */
+/* The deck the way reveal walks it: sections left to right, stacks downward. */
+.lec-map { position: absolute; inset: 0; z-index: 600; background: var(--bg); display: flex; flex-direction: column; }
+.lec-map.lec-hidden { display: none; }
+.lec-map-head {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  border-bottom: 1px solid var(--line); background: var(--panel);
+}
+.lec-map-title { font-weight: 600; }
+.lec-map-count, .lec-map-hint { color: var(--text-dim); font-size: 11.5px; }
+.lec-map-hint { font-family: var(--mono); }
+.lec-map-grid {
+  flex: 1; min-height: 0; display: flex; align-items: flex-start; gap: 14px;
+  padding: 20px 16px 40px; overflow: auto; outline: none;
+}
+.lec-map-col { flex: 0 0 190px; display: flex; flex-direction: column; gap: 6px; }
+.lec-map-sec {
+  background: transparent; border: 0; border-bottom: 1px solid var(--line); text-align: left;
+  color: var(--accent); font-size: 10.5px; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  padding: 0 2px 5px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lec-map-sec:hover { color: var(--text); background: var(--panel-2); }
+.lec-map-sec.lec-inferred { color: var(--text-soft); font-style: italic; }
+.lec-map-sec.lec-map-sec-none { color: transparent; border-bottom-color: transparent; }
+.lec-map-col:hover .lec-map-sec-none { color: var(--text-dim); border-bottom-color: var(--line-soft); }
+.lec-map-card {
+  position: relative; border-radius: 6px; padding: 4px; cursor: pointer; background: var(--panel);
+  border: 1px solid var(--line-soft);
+}
+.lec-map-card:hover { border-color: var(--line); background: var(--panel-2); }
+.lec-map-card.lec-current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.lec-map-card.lec-dim { opacity: .45; }
+.lec-map-card.lec-dragging { opacity: .35; }
+.lec-map-card.lec-drop-before::before, .lec-map-card.lec-drop-after::after {
+  content: ""; position: absolute; top: -4px; bottom: -4px; width: 3px; background: var(--accent); border-radius: 2px;
+}
+.lec-map-card.lec-drop-before::before { left: -9px; }
+.lec-map-card.lec-drop-after::after { right: -9px; }
+.lec-map-cardlabel { font-size: 10.5px; color: var(--text-dim); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lec-map-badge { position: absolute; right: 8px; top: 8px; font-size: 9px; background: rgba(0,0,0,.6); color: #fff; padding: 1px 5px; border-radius: 3px; }
+.lec-map-note { position: absolute; right: 8px; bottom: 24px; width: 9px; height: 9px; border-radius: 50%; background: var(--warm); }
+.lec-map-down { display: flex; justify-content: center; color: var(--accent); opacity: .8; }
+.lec-map-down .lec-icon { width: 14px; height: 14px; }
+.lec-map-nest {
+  height: 0; overflow: hidden; border: 1px dashed var(--line); border-radius: 6px; color: var(--text-dim);
+  font-size: 10.5px; font-family: var(--mono); display: flex; align-items: center; justify-content: center;
+  transition: height .12s ease;
+}
+.lec-map.lec-dragging-on .lec-map-nest { height: 34px; }
+.lec-map-nest.lec-on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.lec-map-num { font-size: 10.5px; color: var(--text-dim); font-family: var(--mono); font-variant-numeric: tabular-nums; }
