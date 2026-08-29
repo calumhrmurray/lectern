@@ -122,7 +122,7 @@ test('notes for AI: placed on the slide, saved hidden, listed with a prompt', as
   await page.keyboard.type('draw a whale here');
   await page.keyboard.press('Escape');
   const out = await serialized(page);
-  expect(out).toMatch(/<div hidden data-ai-note style="position:absolute;left:\d+px;top:\d+px;width:300px;">draw a whale here<\/div>/);
+  expect(out).toMatch(/<div hidden(="")? data-ai-note(="")? style="position:absolute;left:\d+px;top:\d+px;width:300px;">draw a whale here<\/div>/);
   // hidden in the file, visible while editing
   const shown = await frame.locator('section.present [data-ai-note]').evaluate((el) => getComputedStyle(el).display);
   expect(shown).toBe('block');
