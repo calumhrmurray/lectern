@@ -133,7 +133,10 @@ export class Stage {
         await new Promise((r) => setTimeout(r, 50));
       }
       if (!this.reveal) {
-        throw new Error('No reveal.js instance found in this page. The deck must expose a global `Reveal` (the usual `Reveal.initialize({...})` does).');
+        const errors = ((win as unknown as { __lecternErrors?: string[] }).__lecternErrors ?? []).slice(0, 5);
+        const R = (win as unknown as { Reveal?: unknown }).Reveal;
+        const detail = errors.length ? ` Details: ${errors.join('; ')}.` : R ? ' reveal.js loaded but never reported ready (Reveal.initialize may have thrown — see the browser console).' : ' The reveal.js script did not run.';
+        throw new Error('No reveal.js instance found in this page. The deck must expose a global `Reveal` (the usual `Reveal.initialize({...})` does).' + detail);
       }
       this.liveRoot = this.reveal.getSlidesElement();
       this.configureReveal();

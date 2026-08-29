@@ -36,12 +36,32 @@ export class BlobUrlCache {
     const p = normalizePath(path);
     const cached = this.urls.get(p);
     if (cached) return cached;
-    let text: string;
-    try { text = await this.ws.readText(p); } catch { return null; }
-    const rewritten = depth < 4 ? await this.rewriteCss(text, dirname(p), depth) : text;
+    const rewritten = await this.cssText(p, depth);
+    if (rewritten === null) return null;
     const url = URL.createObjectURL(new Blob([rewritten], { type: 'text/css' }));
     this.urls.set(p, url);
     return url;
+  }
+
+  /** A CSS file's text with its relative `url()` references resolved. */
+  async cssText(path: string, depth = 0): Promise<string | null> {
+    let text: string;
+    try { text = await this.ws.readText(normalizePath(path)); } catch { return null; }
+    return depth < 4 ? await this.rewriteCss(text, dirname(path), depth) : text;
+  }
+
+  /** data: URL for small assets referenced from CSS (fonts, icons) — no object URL involved. */
+  async dataUrlFor(path: string, maxBytes = 4 * 1024 * 1024): Promise<string | null> {
+    const p = normalizePath(path);
+    try {
+      const bytes = await this.ws.readBytes(p);
+      if (bytes.byteLength > maxBytes) return this.urlFor(p);
+      let bin = '';
+      for (let i = 0; i < bytes.byteLength; i += 0x8000) bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 0x8000)));
+      return `data:${mimeFor(p)};base64,${btoa(bin)}`;
+    } catch {
+      return null;
+    }
   }
 
   async rewriteCss(css: string, baseDir: string, depth: number): Promise<string> {
@@ -53,7 +73,7 @@ export class BlobUrlCache {
       if (ABSOLUTE.test(raw) || raw.startsWith('data:')) continue;
       const clean = raw.split(/[?#]/)[0];
       const path = joinPath(baseDir, clean);
-      if (!refs.has(path)) refs.set(path, /\.css$/i.test(clean) ? await this.cssUrlFor(path, depth + 1) : await this.urlFor(path));
+      if (!refs.has(path)) refs.set(path, /\.css$/i.test(clean) ? await this.cssUrlFor(path, depth + 1) : await this.dataUrlFor(path));
     }
     return css.replace(re, (whole, q1, u1, q3, u3) => {
       const raw = (u1 ?? u3).trim();
@@ -121,14 +141,46 @@ export async function inlineDeck(ws: Workspace, deckPath: string, html: string, 
   const baseDir = dirname(deckPath);
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
+  // Scripts and stylesheets are inlined by content (no URL of any kind is needed for them to run);
+  // other resources get blob URLs.
+  for (const el of Array.from(doc.querySelectorAll('script[src]'))) {
+    const raw = el.getAttribute('src')!;
+    if (ABSOLUTE.test(raw) || raw.startsWith('data:')) continue;
+    const path = joinPath(baseDir, raw.split(/[?#]/)[0]);
+    let text: string | null = null;
+    try { text = await ws.readText(path); } catch { text = null; }
+    if (text === null) continue;
+    const inline = doc.createElement('script');
+    for (const a of Array.from(el.attributes)) if (a.name !== 'src' && a.name !== 'async' && a.name !== 'defer') inline.setAttribute(a.name, a.value);
+    inline.setAttribute('data-lec-src', raw);
+    inline.textContent = '\n' + text.replace(/<\/script/gi, '<\\/script') + '\n';
+    el.replaceWith(inline);
+  }
+  for (const el of Array.from(doc.querySelectorAll('link[href]'))) {
+    const raw = el.getAttribute('href')!;
+    if (ABSOLUTE.test(raw) || raw.startsWith('data:')) continue;
+    const clean = raw.split(/[?#]/)[0];
+    const path = joinPath(baseDir, clean);
+    const isCss = /\.css$/i.test(clean) || (el.getAttribute('rel') ?? '').includes('stylesheet');
+    if (isCss) {
+      const text = await cache.cssText(path);
+      if (text === null) continue;
+      const style = doc.createElement('style');
+      style.setAttribute('data-lec-href', raw);
+      if (el.getAttribute('media')) style.setAttribute('media', el.getAttribute('media')!);
+      style.textContent = '\n' + text.replace(/<\/style/gi, '<\\/style') + '\n';
+      el.replaceWith(style);
+    } else {
+      const url = await cache.urlFor(path);
+      if (url) el.setAttribute('href', url);
+    }
+  }
   for (const [selector, attr] of URL_ATTRS) {
+    if (selector === 'script[src]' || selector === 'link[href]') continue;
     for (const el of Array.from(doc.querySelectorAll(selector))) {
       const raw = el.getAttribute(attr);
       if (!raw || ABSOLUTE.test(raw) || raw.startsWith('data:')) continue;
-      const clean = raw.split(/[?#]/)[0];
-      const path = joinPath(baseDir, clean);
-      const isCss = el.tagName.toLowerCase() === 'link' && (/\.css$/i.test(clean) || (el.getAttribute('rel') ?? '').includes('stylesheet'));
-      const url = isCss ? await cache.cssUrlFor(path) : await cache.urlFor(path);
+      const url = await cache.urlFor(joinPath(baseDir, raw.split(/[?#]/)[0]));
       if (url) el.setAttribute(attr, url);
     }
   }
@@ -153,6 +205,13 @@ export async function inlineDeck(ws: Workspace, deckPath: string, html: string, 
   const shim = doc.createElement('script');
   shim.id = 'lec-fetch-shim';
   shim.textContent = `(function(){
+    // Record failures so the editor can explain what went wrong.
+    window.__lecternErrors = [];
+    window.addEventListener('error', function(e){
+      var t = e && e.target;
+      var what = t && t !== window && (t.src || t.href) ? 'failed to load ' + String(t.src || t.href).slice(0, 120) : (e && e.message) || 'error';
+      window.__lecternErrors.push(what);
+    }, true);
     // about:srcdoc has no URL to write to: make history writes harmless (reveal's hash option, custom drivers).
     try {
       var h = window.history, rs = h.replaceState.bind(h), ps = h.pushState.bind(h);
