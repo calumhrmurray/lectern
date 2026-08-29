@@ -54,11 +54,18 @@
 .reveal section.break .big { font-size: 1.9em; line-height: 1.16; max-width: 22ch; }
 .reveal section.break .sub { font-size: 0.72em; margin-top: 0.8em; }
 
-/* deck-specific: tricolore accents */
-:root { --accent: #1f4fa3; --accent-2: #c1272d; }
+/* deck-specific: pale pink paper, rose accents, tricolore flag */
+:root {
+  --paper: #fbeff2; --paper-2: #f6e0e6; --rule: #e9c9d3;
+  --ink: #2b1e25; --ink-soft: #6d5560;
+  --accent: #b5385f; --accent-2: #2b4a8b;
+}
+.reveal-viewport { background: var(--paper); background-image: radial-gradient(55% 40% at 100% 0%, rgba(233,201,211,.55), transparent 70%), radial-gradient(45% 35% at 0% 100%, rgba(246,224,230,.9), transparent 70%); }
 .reveal .tricolore { display: inline-block; width: 54px; height: 14px; background: linear-gradient(90deg, #0055a4 0 33.3%, #fff 33.3% 66.6%, #ef4135 66.6%); border: 1px solid var(--rule); vertical-align: middle; margin-right: 10px; }
 .reveal .refs li { font-size: 0.46em; margin: 0.25em 0; }
-.reveal .warn { background: #fff4d6; border: 1px solid #e6c46a; border-radius: 8px; padding: 10px 14px; font-size: 0.56em; }
+.reveal .warn { background: #fff3d6; border: 1px solid #e3c06a; border-radius: 8px; padding: 10px 14px; font-size: 0.56em; }
 .reveal .q { font-style: italic; color: var(--accent); }
+.reveal .card { background: rgba(255,255,255,.55); border: 1px solid var(--rule); }
+.reveal table th { border-bottom-color: var(--accent); }
 .reveal table td, .reveal table th { font-size: 0.95em; }
 .reveal .card h3 { margin-top: 0; font-size: 0.9em; }
