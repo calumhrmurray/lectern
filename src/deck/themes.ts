@@ -179,7 +179,8 @@ ${SHARED}`,
 /* washes must not bleed outside the slide */
 .reveal .slides > section { height: 100%; overflow: hidden; }
 /* watercolour wash: a soft irregular blob, e.g. behind a title or as a decorative shape */
-.reveal .wash { position: absolute; border-radius: 45% 55% 50% 50% / 55% 45% 55% 45%; background: var(--wash); opacity: .28; filter: url(#wc-edge); pointer-events: none; }
+.reveal .wash { position: absolute; z-index: -1; border-radius: 45% 55% 50% 50% / 55% 45% 55% 45%; background: var(--wash); opacity: .28; filter: url(#wc-edge); pointer-events: none; }
+.reveal .slides > section { isolation: isolate; }
 .reveal .wash.light { background: var(--wash-2); opacity: .45; }
 .reveal .wash.deep { background: var(--wash-deep); opacity: .22; }
 .reveal .wash.warm { background: var(--accent-2); opacity: .22; }
