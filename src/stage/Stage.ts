@@ -222,7 +222,7 @@ export class Stage {
       .lec-editing [data-ai-note]::before { content: "✎ note for AI · hidden when presenting"; position: absolute; left: 12px; top: 8px; font-size: 0.62em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9a7a00; }
       .lec-editing [data-ai-note] { min-height: 2.6em; }
       .lec-editing [data-ai-note="done"] { background: #dff5dc; border-color: #7cc47a; color: #1f4d24; padding-top: 30px; }
-      .lec-editing [data-ai-note="done"]::before { content: "✓ done — double-click to dismiss, or add a comment"; color: #2f7d3a; }
+      .lec-editing [data-ai-note="done"]::before { content: "✓ done — click and type to reply · double-click to dismiss"; color: #2f7d3a; }
       .lec-editing [data-ai-note="done"][data-ai-reply]::after { content: attr(data-ai-reply); display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #9ad197; font-weight: 500; font-size: 0.85em; color: #2f7d3a; }
       .lec-editing [data-ai-note]:empty::after { content: "Describe what you want here…"; color: #b39a3a; font-weight: 500; }
       .lec-editing [data-ai-note][data-lec-editing]:empty::after { content: ""; }

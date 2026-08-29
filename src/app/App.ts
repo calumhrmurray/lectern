@@ -651,7 +651,7 @@ export class App {
     const c = ed.current;
     const label = c.sub === null ? `${c.top + 1}` : `${c.top + 1}.${c.sub + 1}`;
     this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
-    this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}`;
+    this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern build ${__LECTERN_BUILD__}`;
   }
 
   // ---------------------------------------------------------------- events
