@@ -483,6 +483,7 @@ export class Editor implements InteractionHost {
   /** Double-click on a done (green) note dismisses it; on a pending note it opens a comment box. */
   dblClickTarget(el: Element): boolean {
     if (!isAiNote(el)) return false;
+    clearTimeout(this.commentTimer);
     if (isDoneNote(el)) {
       this.endTextEdit();
       this.edit('Dismiss note', () => this.stage.remove(el), { top: this.topOf(el) });
@@ -493,9 +494,14 @@ export class Editor implements InteractionHost {
     return true;
   }
 
-  /** A plain click on a note opens a comment box under its thread. */
+  private commentTimer = 0;
+
+  /** A plain click on a note opens a comment box under its thread (after the double-click window, so a double-click can dismiss instead). */
   clickTarget(el: Element): void {
-    if (isAiNote(el) && !this.textSession) this.startComment(el);
+    clearTimeout(this.commentTimer);
+    if (isAiNote(el) && !this.textSession) {
+      this.commentTimer = window.setTimeout(() => { if (this.sel[0] === el && !this.textSession && el.isConnected) this.startComment(el); }, 260);
+    }
   }
 
   /** Adds an empty author comment to a note thread and starts editing it. */

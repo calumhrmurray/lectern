@@ -17,7 +17,7 @@ describe('notes for AI', () => {
     const d = new DeckDocument(DECK);
     const notes = collectAiNotes(d);
     expect(notes.map((n) => [n.top, n.text, n.x, n.y, n.done, n.reply])).toEqual([[0, 'draw a whale here', 640, 200, false, null], [2, 'explain gigantism here', 100, 500, false, null], [3, 'draw a whale', 10, 20, true, 'Added a silhouette.'], [4, 'make it bigger', 10, 20, false, 'Added a silhouette.']]);
-    expect(notes[4].entries).toEqual([{ by: 'author', text: 'draw a whale' }, { by: 'ai', text: 'Added a silhouette.' }, { by: 'author', text: 'make it bigger' }]);
+    expect(notes[3].entries).toEqual([{ by: 'author', text: 'draw a whale' }, { by: 'ai', text: 'Added a silhouette.' }, { by: 'author', text: 'make it bigger' }]);
   });
   it('writes a prompt an assistant can act on', () => {
     const d = new DeckDocument(DECK);
