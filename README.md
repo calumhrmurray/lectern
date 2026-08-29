@@ -34,6 +34,9 @@ identical, so `git diff` stays readable and a coding assistant can keep editing 
 
 ### Double-click `Lectern.html` — nothing to install, no server
 
+On a Mac, `sh scripts/make-app.sh` builds **`Lectern.app`**, a launcher you can drag to the Dock; it
+opens `Lectern.html` in Chrome. Otherwise:
+
 1. Open **`Lectern.html`** (from this folder) in Chrome, Edge or another Chromium browser.
 2. Click **Open a folder…** and pick the folder that contains your deck; choose the HTML file
    if the folder has several.
@@ -64,7 +67,9 @@ so slide layouts and inspector chips behave the same everywhere.
 
 ### Example decks
 
-The welcome screen lists two complete, referenced decks you can open, edit and download:
+The welcome screen lists two complete, referenced decks. **Save to a folder…** copies one (with its
+own reveal.js) into a folder you choose and opens it from there — from then on it is an ordinary HTML
+deck on your disk; **Preview** opens a throw-away copy in memory.
 
 - **From land to sea — the evolutionary pathways of whales** (English, Aquarelle theme): 15 slides
   from raoellids and *Pakicetus* to baleen-whale gigantism and genome-level gene loss. Every slide has a

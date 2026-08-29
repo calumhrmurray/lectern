@@ -8,3 +8,4 @@ playwright-report/
 .DS_Store
 test/.tmp/
 test/.shots/
+Lectern.app/
