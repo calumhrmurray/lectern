@@ -1,7 +1,7 @@
 # Lectern
 
-A visual, canvas-style editor for [reveal.js](https://revealjs.com) presentations.
-**The HTML file is the document.** Lectern opens your deck, renders it with the deck's own
+A visual, canvas-style editor for HTML presentations — [reveal.js](https://revealjs.com) decks
+and any hand-rolled page of `<section>` slides. **The HTML file is the document.** Lectern opens your deck, renders it with the deck's own
 reveal.js, theme and plugins, lets you move, resize, restyle and retype things like you would
 in a desktop presentation app — and writes only the slides you changed back into the file.
 Comments between slides, indentation, entity spellings and untouched slides stay byte-for-byte
@@ -52,13 +52,18 @@ to the files, so an assistant editing the same HTML sees your changes and vice v
 **New deck…** creates a folder with `index.html`, a clean `theme.css` and a copy of reveal.js
 (so it works offline). Slide size and author are asked up front.
 
-## Requirements for a deck
+## What counts as a deck
 
-- One HTML file with `<div class="reveal"><div class="slides">…</div></div>` and a global
-  `Reveal` (the usual `<script src="…/reveal.js">` + `Reveal.initialize({...})`).
-- Slides are `<section>` elements directly inside the container (vertical stacks are fine).
-- Decks that use `import Reveal from 'reveal.esm.js'` must expose the instance as
-  `window.Reveal` for the editor to drive it.
+- **reveal.js**: `<div class="reveal"><div class="slides">…</div></div>` and a global `Reveal`
+  (the usual `<script src="…/reveal.js">` + `Reveal.initialize({...})`). Vertical stacks,
+  fragments, backgrounds, transitions and speaker notes are all edited. Decks that use
+  `import Reveal from 'reveal.esm.js'` must expose the instance as `window.Reveal`.
+- **Plain HTML**: any page whose slides are `<section>` elements in a container, driven by your
+  own script (e.g. `#deck > section.slide` with an `.active` class and `#3`-style hashes).
+  Lectern learns the deck's "active" class from whichever slide is showing, shows slides itself
+  while you edit, keeps the deck's keyboard/click handlers from interfering, and renders the page
+  in a fixed viewport (1280×720 by default, changeable in the Deck tab) so `vw`/`vh` layouts look
+  as they would on a projector. reveal-only features (backgrounds, transitions) are hidden.
 
 ## Keyboard
 

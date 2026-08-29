@@ -41,7 +41,7 @@ export class TextSession {
     live.setAttribute('contenteditable', 'true');
     live.setAttribute('spellcheck', 'false');
     live.setAttribute('data-lec-editing', '1');
-    stage.reveal.getRevealElement().classList.add('lec-textmode');
+    stage.setTextMode(true);
     const doc = stage.doc;
 
     const onInput = () => this.opts.onChange?.();
@@ -86,6 +86,8 @@ export class TextSession {
   }
 
   private handleKey(ev: KeyboardEvent): void {
+    // The deck's own document-level handlers must not see typing (arrow keys would flip slides).
+    ev.stopPropagation();
     const mod = ev.metaKey || ev.ctrlKey;
     if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); this.commit(); return; }
     if (mod && ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); this.commit(); return; }
@@ -190,7 +192,7 @@ export class TextSession {
     this.live.removeAttribute('contenteditable');
     this.live.removeAttribute('spellcheck');
     this.live.removeAttribute('data-lec-editing');
-    this.stage.reveal.getRevealElement().classList.remove('lec-textmode');
+    this.stage.setTextMode(false);
     this.stage.win.getSelection()?.removeAllRanges();
     this.live.blur();
   }

@@ -1,13 +1,21 @@
 /**
- * Stage — hosts the deck in an iframe running the real reveal.js, and keeps
- * that *live* DOM mirrored with the *source* DOM held by DeckDocument.
+ * Stage — hosts the deck in an iframe and keeps that *live* DOM mirrored
+ * with the *source* DOM held by DeckDocument.
+ *
+ * Two kinds of deck are driven:
+ *  - `reveal`: the page runs reveal.js; we reconfigure it for editing and
+ *    navigate through its API. The slide canvas is reveal's `.slides` box.
+ *  - `plain`: any HTML page whose slides are `<section>`s in a container
+ *    (a home-grown driver). We show the current section ourselves — through
+ *    the deck's own "active" class when it has one, plus inline display —
+ *    and treat the iframe viewport as a fixed-size canvas so `vw`/`vh`
+ *    layouts render as they would on a projector.
  *
  * Every edit is applied to the source element (truth) and to its live
  * counterpart (rendering). Live elements are located by index path from the
  * top-level section, which stays valid because both trees receive identical
  * structural edits; content that plugins rewrite in place (KaTeX, code
- * highlighting) lives *below* the elements a user selects, so it never
- * disturbs the paths.
+ * highlighting) lives *below* the elements a user selects.
  */
 
 import { DeckDocument } from '../deck/DeckDocument';
@@ -16,7 +24,7 @@ import { cleanRuntimeArtifacts, isStack, patchInlineStyle, pathOf, resolvePath }
 export interface RevealApi {
   isReady(): boolean;
   configure(options: Record<string, unknown>): void;
-  getConfig(): Record<string, unknown> & { width?: number | string; height?: number | string; katex?: Record<string, unknown>; math?: Record<string, unknown> };
+  getConfig(): Record<string, unknown> & { width?: number | string; height?: number | string; katex?: Record<string, unknown>; math?: Record<string, unknown>; center?: boolean };
   slide(h: number, v?: number, f?: number): void;
   sync(): void;
   syncSlide(slide?: Element): void;
@@ -29,7 +37,6 @@ export interface RevealApi {
   getScale(): number;
   on(type: string, fn: (e: unknown) => void): void;
   off(type: string, fn: (e: unknown) => void): void;
-  removeKeyBinding?(key: number): void;
 }
 
 export interface SlideRef {
@@ -49,18 +56,34 @@ export interface StageEvents {
 
 type Listener<T> = (payload: T) => void;
 
+const NAV_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'PageUp', 'PageDown', 'Home', 'End', 'Enter', 'Escape', 'f', 'F', 'o', 'O', 's', 'S', 'b', 'B', '.']);
+
 export class Stage {
   readonly iframe: HTMLIFrameElement;
+  readonly container: HTMLElement;
   win!: Window;
   doc!: Document;
-  reveal!: RevealApi;
+  /** Present for reveal decks only. */
+  reveal?: RevealApi;
+  kind: 'reveal' | 'plain' = 'reveal';
   document!: DeckDocument;
+  /** Handler for keyboard events arriving inside the iframe (set by the app). */
+  keyHandler: ((ev: KeyboardEvent) => void) | null = null;
   private listeners = new Map<keyof StageEvents, Set<Listener<never>>>();
   private _current: SlideRef = { top: 0, sub: null };
   private resizeObserver?: ResizeObserver;
+  private liveRoot!: HTMLElement;
+  /** Plain decks: how the deck marks the visible slide. */
+  private activeClass: string | null = null;
+  private activeDisplay = 'block';
+  /** Plain decks: logical viewport size. */
+  private logical = { width: 1280, height: 720 };
+  private frameK = 1;
+  private zoom = 1;
   ready = false;
 
   constructor(container: HTMLElement) {
+    this.container = container;
     this.iframe = document.createElement('iframe');
     this.iframe.className = 'lec-stage-frame';
     this.iframe.setAttribute('title', 'Slide canvas');
@@ -80,10 +103,14 @@ export class Stage {
 
   // ---------------------------------------------------------------- loading
 
-  /** Loads the deck URL into the iframe and waits for reveal.js to be ready. */
+  /** Loads the deck URL into the iframe and waits for it to be ready. */
   async load(url: string, document: DeckDocument, timeoutMs = 20000): Promise<void> {
     this.ready = false;
     this.document = document;
+    this.reveal = undefined;
+    this.kind = document.info.kind;
+    this.logical = { width: document.info.width, height: document.info.height };
+    this.fit(this.zoom);
     await new Promise<void>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error('The deck did not finish loading.')), timeoutMs);
       this.iframe.addEventListener('load', () => { clearTimeout(t); resolve(); }, { once: true });
@@ -94,43 +121,81 @@ export class Stage {
     this.win = win;
     this.doc = win.document;
 
-    // Wait for a ready Reveal instance (decks often initialise asynchronously).
-    const start = performance.now();
-    while (performance.now() - start < timeoutMs) {
-      const R = (win as unknown as { Reveal?: RevealApi }).Reveal;
-      if (R && typeof R.isReady === 'function' && R.isReady()) { this.reveal = R; break; }
-      await new Promise((r) => setTimeout(r, 50));
+    if (this.kind === 'reveal') {
+      // Wait for a ready Reveal instance (decks often initialise asynchronously).
+      const start = performance.now();
+      while (performance.now() - start < timeoutMs) {
+        const R = (win as unknown as { Reveal?: RevealApi }).Reveal;
+        if (R && typeof R.isReady === 'function' && R.isReady()) { this.reveal = R; break; }
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      if (!this.reveal) {
+        throw new Error('No reveal.js instance found in this page. The deck must expose a global `Reveal` (the usual `Reveal.initialize({...})` does).');
+      }
+      this.liveRoot = this.reveal.getSlidesElement();
+      this.configureReveal();
+    } else {
+      // Give the deck's own scripts a moment to run (they may set up the DOM on DOMContentLoaded).
+      await new Promise((r) => setTimeout(r, 60));
+      const root = findContainer(this.doc);
+      if (!root) throw new Error('No slides found: the page needs <section> elements inside a container.');
+      this.liveRoot = root as HTMLElement;
+      this.learnPlainConventions();
     }
-    if (!this.reveal) {
-      throw new Error('No reveal.js instance found in this page. The deck must expose a global `Reveal` (the usual `Reveal.initialize({...})` does).');
-    }
-
-    this.configureForEditing();
+    this.liveRoot.classList.add('lec-slides');
     this.reconcile();
     this.doc.documentElement.classList.add('lec-editing');
     this.injectEditingStyles();
+    this.installGuards();
 
-    this.reveal.on('slidechanged', () => {
-      this.syncCurrentFromReveal();
-      this.showAllFragments();
-      this.emit('slidechanged', this._current);
-    });
-    this.resizeObserver = new ResizeObserver(() => { this.reveal.layout(); this.emit('resize', undefined); });
-    this.resizeObserver.observe(this.iframe);
+    if (this.reveal) {
+      this.reveal.on('slidechanged', () => {
+        this.syncCurrentFromReveal();
+        this.showAllFragments();
+        this.emit('slidechanged', this._current);
+      });
+    } else {
+      this.win.addEventListener('hashchange', () => this.applyVisibility());
+    }
+    this.resizeObserver = new ResizeObserver(() => { this.fit(this.zoom); this.reveal?.layout(); this.emit('resize', undefined); });
+    this.resizeObserver.observe(this.container);
     this.ready = true;
-    this.syncCurrentFromReveal();
+    if (this.reveal) this.syncCurrentFromReveal(); else this.applyVisibility();
     this.showAllFragments();
     this.emit('ready', undefined);
   }
 
-  private configureForEditing(): void {
-    this.reveal.configure({
+  private configureReveal(): void {
+    this.reveal!.configure({
       controls: false, progress: false, keyboard: false, touch: false, hash: false, history: false,
       respondToHashChanges: false, overview: false, transition: 'none', backgroundTransition: 'none',
       autoSlide: 0, help: false, autoAnimate: false, mouseWheel: false, previewLinks: false,
       hideInactiveCursor: false, slideNumber: false, loop: false, showNotes: false, embedded: false,
-      fragments: true, center: this.reveal.getConfig().center,
+      fragments: true, center: this.reveal!.getConfig().center,
     });
+  }
+
+  /** Plain decks: discover the "active" class and display mode from whichever slide is showing. */
+  private learnPlainConventions(): void {
+    const sections = this.liveTopSections();
+    const visible = sections.find((s) => this.isShowing(s));
+    if (!visible) { this.activeClass = null; this.activeDisplay = 'block'; return; }
+    this.activeDisplay = this.win.getComputedStyle(visible).display || 'block';
+    const hidden = sections.filter((s) => s !== visible);
+    const candidates = Array.from(visible.classList).filter((c) => hidden.some((h) => !h.classList.contains(c)));
+    this.activeClass = candidates.find((c) => /^(active|present|current|is-active|show|visible)$/.test(c)) ?? candidates[0] ?? null;
+  }
+
+  private isShowing(el: Element): boolean {
+    const cs = this.win.getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+
+  /** Plain decks: the deck's own "active" class, if any (used by thumbnails). */
+  get plainConventions(): { activeClass: string | null; display: string } {
+    return { activeClass: this.activeClass, display: this.activeDisplay };
   }
 
   private injectEditingStyles(): void {
@@ -138,18 +203,30 @@ export class Stage {
     style.id = 'lec-editing-styles';
     style.textContent = `
       /* No transitions while editing: measurements right after a style change must be final. */
-      .lec-editing .reveal .slides section, .lec-editing .reveal .slides section * { transition: none !important; }
-      .lec-editing .reveal .slides section .fragment { visibility: visible !important; opacity: 1 !important; transform: none !important; }
-      .lec-editing .reveal .slides section .fragment.visible { visibility: visible !important; }
-      .lec-editing .reveal [data-lec-editing] { outline: none; cursor: text; caret-color: auto; }
-      .lec-editing .reveal [data-lec-editing] * { pointer-events: auto; }
-      .lec-editing .reveal .slides section [data-lec-editing] .katex-display { display: inline-block; }
-      .lec-editing .reveal .slides section img { -webkit-user-drag: none; user-select: none; }
+      .lec-editing .lec-slides section, .lec-editing .lec-slides section * { transition: none !important; }
+      .lec-editing .lec-slides section .fragment { visibility: visible !important; opacity: 1 !important; transform: none !important; }
+      .lec-editing [data-lec-editing] { outline: none; cursor: text; caret-color: auto; }
+      .lec-editing [data-lec-editing] * { pointer-events: auto; }
+      .lec-editing .lec-slides section [data-lec-editing] .katex-display { display: inline-block; }
+      .lec-editing .lec-slides section img { -webkit-user-drag: none; user-select: none; }
       .lec-editing .reveal .controls, .lec-editing .reveal .progress, .lec-editing .reveal .slide-number, .lec-editing .reveal .speaker-notes { display: none !important; }
-      .lec-editing .reveal:not(.lec-textmode) .slides { user-select: none; }
-      .lec-editing .reveal .slides section [data-lec-placeholder]::before { content: attr(data-lec-placeholder); color: rgba(120,120,120,.6); }
+      .lec-editing .lec-slides:not(.lec-textmode) { user-select: none; }
     `;
     this.doc.head.appendChild(style);
+  }
+
+  /** Keeps the deck's own click/keyboard handlers from navigating while we edit. */
+  private installGuards(): void {
+    this.doc.addEventListener('keydown', (ev) => {
+      this.keyHandler?.(ev);
+      const editing = this.liveRoot.classList.contains('lec-textmode');
+      if (this.kind === 'plain' && !editing && NAV_KEYS.has(ev.key)) ev.stopPropagation();
+    }, true);
+    this.doc.addEventListener('click', (ev) => {
+      if ((ev.target as Element | null)?.closest?.('a')) ev.preventDefault();
+      if (this.kind === 'plain') ev.stopPropagation();
+    }, true);
+    this.doc.addEventListener('wheel', (ev) => { if (this.kind === 'plain') ev.stopPropagation(); }, true);
   }
 
   /**
@@ -175,12 +252,54 @@ export class Stage {
     this.iframe.remove();
   }
 
+  // ---------------------------------------------------------------- frame layout
+
+  /**
+   * Sizes the iframe. reveal decks fill the container and scale themselves;
+   * plain decks get a fixed logical viewport scaled with a CSS transform.
+   */
+  fit(zoom: number): void {
+    this.zoom = zoom;
+    const f = this.iframe;
+    if (this.kind === 'reveal') {
+      f.style.width = ''; f.style.height = ''; f.style.transform = ''; f.style.left = ''; f.style.top = '';
+      this.frameK = 1;
+      return;
+    }
+    const cw = this.container.clientWidth || 1, ch = this.container.clientHeight || 1;
+    const { width, height } = this.logical;
+    const margin = 0.04;
+    const k = Math.min((cw * (1 - 2 * margin)) / width, (ch * (1 - 2 * margin)) / height) * zoom;
+    this.frameK = k;
+    f.style.width = `${width}px`; f.style.height = `${height}px`;
+    f.style.transformOrigin = '0 0';
+    f.style.transform = `scale(${k})`;
+    f.style.left = `${Math.max(0, (cw - width * k) / 2)}px`;
+    f.style.top = `${Math.max(0, (ch - height * k) / 2)}px`;
+  }
+
+  /** Offset of the iframe inside the stage container and its CSS scale. */
+  frameTransform(): { x: number; y: number; k: number } {
+    const fr = this.iframe.getBoundingClientRect();
+    const cr = this.container.getBoundingClientRect();
+    return { x: fr.left - cr.left, y: fr.top - cr.top, k: this.frameK };
+  }
+
+  /** Logical size of a plain deck's viewport (ignored for reveal decks). */
+  setLogicalSize(width: number, height: number): void {
+    this.logical = { width, height };
+    this.fit(this.zoom);
+    this.emit('resize', undefined);
+  }
+
+  get logicalSize(): { width: number; height: number } { return this.logical; }
+
   // ---------------------------------------------------------------- slide access
 
-  get liveSlidesRoot(): HTMLElement { return this.reveal.getSlidesElement(); }
+  get liveSlidesRoot(): HTMLElement { return this.liveRoot; }
 
   liveTopSections(): Element[] {
-    return Array.from(this.liveSlidesRoot.children).filter((c) => c.tagName.toLowerCase() === 'section');
+    return Array.from(this.liveRoot.children).filter((c) => c.tagName.toLowerCase() === 'section');
   }
 
   liveTopSection(top: number): Element {
@@ -204,11 +323,11 @@ export class Stage {
     return subs[ref.sub] ?? top;
   }
 
-  /** All slides in presentation order, flattening vertical stacks. */
+  /** All slides in presentation order, flattening vertical stacks (reveal only). */
   slideRefs(): SlideRef[] {
     const out: SlideRef[] = [];
     this.document.slides.forEach((rec, top) => {
-      if (isStack(rec.el)) {
+      if (this.kind === 'reveal' && isStack(rec.el)) {
         const subs = Array.from(rec.el.children).filter((c) => c.tagName.toLowerCase() === 'section');
         subs.forEach((_, sub) => out.push({ top, sub }));
       } else {
@@ -221,7 +340,7 @@ export class Stage {
   get current(): SlideRef { return this._current; }
 
   private syncCurrentFromReveal(): void {
-    const idx = this.reveal.getIndices();
+    const idx = this.reveal!.getIndices();
     const top = this.document.slides[idx.h];
     const sub = top && isStack(top.el) ? idx.v : null;
     this._current = { top: Math.min(idx.h, Math.max(0, this.document.length - 1)), sub };
@@ -231,9 +350,35 @@ export class Stage {
   goTo(ref: SlideRef): void {
     if (!this.document.length) return;
     const top = Math.max(0, Math.min(ref.top, this.document.length - 1));
-    const sub = ref.sub ?? 0;
-    this.reveal.slide(top, sub);
-    this.syncCurrentFromReveal();
+    if (this.reveal) {
+      this.reveal.slide(top, ref.sub ?? 0);
+      this.syncCurrentFromReveal();
+    } else {
+      this._current = { top, sub: null };
+      // Let the deck's own chrome (progress bar, page number) follow along.
+      try { this.win.history.replaceState(null, '', `#${top + 1}`); this.win.dispatchEvent(new Event('hashchange')); } catch { /* ignore */ }
+      this.applyVisibility();
+    }
+    this.showAllFragments();
+  }
+
+  /** Plain decks: show exactly the current top-level section. */
+  private applyVisibility(): void {
+    if (this.reveal) return;
+    const sections = this.liveTopSections();
+    sections.forEach((s, i) => {
+      const el = s as HTMLElement;
+      const on = i === this._current.top;
+      if (this.activeClass) el.classList.toggle(this.activeClass, on);
+      el.style.setProperty('display', on ? this.activeDisplay : 'none', 'important');
+      if (on) {
+        el.style.setProperty('opacity', '1', 'important');
+        el.style.setProperty('visibility', 'visible', 'important');
+      } else {
+        el.style.removeProperty('opacity');
+        el.style.removeProperty('visibility');
+      }
+    });
     this.showAllFragments();
   }
 
@@ -242,6 +387,10 @@ export class Stage {
     if (!this.document.length) return;
     const section = this.liveSection(this._current);
     section.querySelectorAll('.fragment').forEach((f) => f.classList.add('visible'));
+  }
+
+  setTextMode(on: boolean): void {
+    this.liveRoot.classList.toggle('lec-textmode', on);
   }
 
   // ---------------------------------------------------------------- src <-> live mapping
@@ -271,7 +420,7 @@ export class Stage {
   srcOf(live: Element): Element | null {
     const liveTops = this.liveTopSections();
     let cur: Element | null = live;
-    while (cur && cur.parentElement !== this.liveSlidesRoot) cur = cur.parentElement;
+    while (cur && cur.parentElement !== this.liveRoot) cur = cur.parentElement;
     if (!cur) return null;
     const top = liveTops.indexOf(cur);
     if (top === -1) return null;
@@ -293,7 +442,7 @@ export class Stage {
     const fresh = this.doc.importNode(src, true) as Element;
     const old = this.liveTopSections()[top];
     if (old) old.replaceWith(fresh);
-    else this.liveSlidesRoot.appendChild(fresh);
+    else this.liveRoot.appendChild(fresh);
     this.afterStructureChange();
     this.typeset(fresh);
     return fresh;
@@ -303,10 +452,10 @@ export class Stage {
   renderAll(): void {
     for (const s of this.liveTopSections()) s.remove();
     for (const rec of this.document.slides) {
-      this.liveSlidesRoot.appendChild(this.doc.importNode(rec.el, true));
+      this.liveRoot.appendChild(this.doc.importNode(rec.el, true));
     }
     this.afterStructureChange();
-    this.typeset(this.liveSlidesRoot);
+    this.typeset(this.liveRoot);
   }
 
   /** Inserts a live copy of source slide `top` (which must already exist in the source). */
@@ -314,7 +463,7 @@ export class Stage {
     const src = this.document.slides[top].el;
     const fresh = this.doc.importNode(src, true) as Element;
     const ref = this.liveTopSections()[top] ?? null;
-    this.liveSlidesRoot.insertBefore(fresh, ref);
+    this.liveRoot.insertBefore(fresh, ref);
     this.afterStructureChange();
     this.typeset(fresh);
   }
@@ -330,24 +479,30 @@ export class Stage {
     if (!el) return;
     el.remove();
     const rest = this.liveTopSections();
-    this.liveSlidesRoot.insertBefore(el, rest[to] ?? null);
+    this.liveRoot.insertBefore(el, rest[to] ?? null);
     this.afterStructureChange();
   }
 
   private afterStructureChange(): void {
-    if (!this.reveal) return;
-    try {
-      this.reveal.sync();
-    } catch (err) {
-      console.warn('Reveal.sync failed', err);
-    }
     const cur = this._current;
-    if (this.document.length) {
-      const top = Math.min(cur.top, this.document.length - 1);
-      this.reveal.slide(top, cur.sub ?? 0);
-      this.syncCurrentFromReveal();
-      this.showAllFragments();
+    if (this.reveal) {
+      try { this.reveal.sync(); } catch (err) { console.warn('Reveal.sync failed', err); }
+      if (this.document.length) {
+        const top = Math.min(cur.top, this.document.length - 1);
+        this.reveal.slide(top, cur.sub ?? 0);
+        this.syncCurrentFromReveal();
+      }
+    } else if (this.document.length) {
+      this._current = { top: Math.min(cur.top, this.document.length - 1), sub: null };
+      this.applyVisibility();
     }
+    this.showAllFragments();
+  }
+
+  /** Refreshes reveal's per-slide state (backgrounds etc.) after attribute edits. */
+  syncSlide(ref: SlideRef): void {
+    if (!this.reveal) return;
+    try { this.reveal.syncSlide(this.liveSection(ref)); } catch { /* ignore */ }
   }
 
   /** Typesets math inside `el` using whatever the deck loaded (KaTeX auto-render or MathJax). */
@@ -358,7 +513,7 @@ export class Stage {
     };
     try {
       if (typeof w.renderMathInElement === 'function') {
-        const cfg = this.reveal.getConfig();
+        const cfg = this.reveal?.getConfig() ?? {};
         const user = (cfg.katex ?? {}) as Record<string, unknown>;
         const opts = {
           delimiters: [
@@ -393,7 +548,6 @@ export class Stage {
   /** Sets inline style properties on both trees. `null`/'' removes a property. */
   setStyle(src: Element, props: Record<string, string | null | undefined>): void {
     const live = this.liveOf(src);
-    // Source: textual patch keeps the author's untouched declarations verbatim.
     patchInlineStyle(src, props);
     if (live) {
       const s = (live as HTMLElement).style;
@@ -454,7 +608,6 @@ export class Stage {
     const els = nodes.filter((n): n is Element => n.nodeType === 1);
     const liveParent = this.liveOf(parentSrc);
     const liveBefore = beforeSrc ? this.liveOf(beforeSrc) : null;
-    // Keep the source readable: put each element on its own line.
     const indent = this.indentFor(parentSrc);
     for (const n of nodes) {
       if (n.nodeType === 1) {
@@ -500,38 +653,37 @@ export class Stage {
   }
 
   private indentFor(parentSrc: Element): string {
-    // Look at the first whitespace text node child to guess the indentation.
     for (const n of Array.from(parentSrc.childNodes)) {
       if (n.nodeType === 3) {
         const m = /\n([ \t]+)\S/.exec(n.textContent ?? '');
         if (m) return m[1];
       }
     }
-    // Derive from the parent's own indentation.
     const top = this.topIndexOf(parentSrc);
     const depth = top === -1 ? 1 : (pathOf(parentSrc, this.document.slides[top].el)?.length ?? 0) + 1;
     return this.document.indent + '  '.repeat(depth);
   }
 
-  // ---------------------------------------------------------------- geometry
+  // ---------------------------------------------------------------- geometry (iframe client coordinates)
 
-  /** Scale between slide units and iframe CSS pixels. */
+  /** Scale between slide units and iframe CSS pixels (reveal scales its `.slides` box). */
   get scale(): number {
-    const slides = this.liveSlidesRoot;
-    const rect = slides.getBoundingClientRect();
-    const w = slides.offsetWidth || 1;
+    const el = this.liveRoot;
+    const rect = el.getBoundingClientRect();
+    const w = el.offsetWidth || 1;
     return rect.width / w || 1;
   }
 
   /** The slide canvas in iframe client coordinates. */
   canvasClientRect(): DOMRect {
-    return this.liveSlidesRoot.getBoundingClientRect();
+    return this.liveRoot.getBoundingClientRect();
   }
 
   /** Slide size in slide units. */
   get slideSize(): { width: number; height: number } {
-    const slides = this.liveSlidesRoot;
-    return { width: slides.offsetWidth, height: slides.offsetHeight };
+    const el = this.liveRoot;
+    if (this.kind === 'plain') return { width: el.offsetWidth || this.logical.width, height: el.offsetHeight || this.logical.height };
+    return { width: el.offsetWidth, height: el.offsetHeight };
   }
 
   /** Rect of a live element in slide units (relative to the canvas origin). */
@@ -565,4 +717,12 @@ export class Stage {
   computed(live: Element): CSSStyleDeclaration {
     return this.win.getComputedStyle(live);
   }
+}
+
+/** The slides container of a page: `.slides`, else the parent of the first `<section>`. */
+export function findContainer(doc: Document): Element | null {
+  const slides = doc.querySelector('.slides');
+  if (slides) return slides;
+  const first = doc.querySelector('section');
+  return first?.parentElement ?? null;
 }

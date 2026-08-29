@@ -217,6 +217,8 @@ export class App {
       this.thumbs.invalidate();
       document.title = `${doc.info.title} — Lectern`;
       this.els.path.textContent = `${ws.name} / ${deckPath}`;
+      const savedSize = localStorage.getItem(`lectern:size:${ws.name}/${deckPath}`);
+      if (savedSize && doc.info.kind === 'plain') { const [w, h] = savedSize.split('x').map(Number); if (w && h) this.editor.stage.setLogicalSize(w, h); }
       if (ws instanceof FsaWorkspace) void rememberRecent({ id: ws.id, name: ws.name, deckPath, handle: ws.handle, openedAt: Date.now() });
       this.navigator.render();
       this.inspector.render();
@@ -287,7 +289,7 @@ export class App {
     if (!this.workspace || !this.editor.ready) return;
     const open = () => {
       const c = this.editor.current;
-      const hash = `#/${c.top}${c.sub !== null ? '/' + c.sub : ''}`;
+      const hash = this.editor.stage.kind === 'reveal' ? `#/${c.top}${c.sub !== null ? '/' + c.sub : ''}` : `#${c.top + 1}`;
       window.open(this.workspace!.urlFor(this.deckPath) + hash, '_blank');
     };
     if (this.editor.doc.dirty) void this.save().then((ok) => { if (ok) open(); });
@@ -381,6 +383,7 @@ export class App {
       stage.style.width = `${Math.round(wrap.clientWidth * this.zoom)}px`;
       stage.style.height = `${Math.round(wrap.clientHeight * this.zoom)}px`;
     }
+    this.editor.stage.fit(1);
     this.toolbar.update();
     this.updateStatus();
     this.editor.refreshOverlay();
@@ -451,8 +454,8 @@ export class App {
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
     ed.onTextKey = (ev) => this.handleTextKey(ev);
     // Keyboard shortcuts also arrive from inside the iframe (when it has focus).
+    ed.stage.keyHandler = (ev) => { if (!ed.textSession) this.handleKey(ev); };
     ed.stage.on('ready', () => {
-      ed.stage.doc.addEventListener('keydown', (ev) => { if (!ed.textSession) this.handleKey(ev); });
       ed.stage.doc.addEventListener('paste', (ev) => { if (!ed.textSession) this.handlePaste(ev); });
       ed.stage.doc.addEventListener('selectionchange', () => { if (ed.textSession) this.toolbar.update(); });
     });

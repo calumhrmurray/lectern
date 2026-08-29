@@ -35,7 +35,7 @@ describe('DeckDocument', () => {
     const d = new DeckDocument(DECK);
     expect(d.length).toBe(3);
     expect(d.spliceable).toBe(true);
-    expect(d.info).toEqual({ title: 'My deck', width: 1280, height: 720 });
+    expect(d.info).toEqual({ title: 'My deck', width: 1280, height: 720, kind: 'reveal' });
     expect(d.dirty).toBe(false);
   });
 
@@ -316,5 +316,20 @@ describe('History', () => {
     expect(h.canRedo).toBe(false);
     h.undo(); h.undo();
     expect(h.canUndo).toBe(false);
+  });
+});
+
+describe('plain decks', () => {
+  it('detects the kind and edits sections in a custom container', () => {
+    const html = '<html><head><title>P</title></head><body><div id="deck">\n  <section class="slide"><h1>a</h1></section>\n  <section class="slide"><h1>b</h1></section>\n</div><script>custom()</script></body></html>';
+    const d = new DeckDocument(html);
+    expect(d.info.kind).toBe('plain');
+    expect(d.info.width).toBe(1280);
+    expect(d.length).toBe(2);
+    d.slides[1].el.querySelector('h1')!.textContent = 'c';
+    const out = d.serialize();
+    expect(out).toContain('<section class="slide"><h1>c</h1></section>');
+    expect(out).toContain('<script>custom()</script>');
+    expect(new DeckDocument('<div class="reveal"><div class="slides"><section></section></div></div><script>Reveal.initialize({})</script>').info.kind).toBe('reveal');
   });
 });

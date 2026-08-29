@@ -115,3 +115,13 @@ describe('multi-file helpers', () => {
     expect(detectParts('<div class="slides" data-parts="a.html, b.html"></div>')).toEqual(['a.html', 'b.html']);
   });
 });
+
+describe('plain decks', () => {
+  it('uses the parent of the first section as the container', () => {
+    const html = '<html><body><div id="deck">\n  <!-- 1 -->\n  <section class="slide"><h1>a</h1></section>\n  <section class="slide"><h1>b</h1></section>\n</div><div id="progress"></div></body></html>';
+    const r = scanDeck(html)!;
+    expect(r.sections).toHaveLength(2);
+    expect(html.slice(r.containerOpen.start, r.containerOpen.end)).toBe('<div id="deck">');
+    expect(html.slice(r.contentEnd, r.contentEnd + 6)).toBe('</div>');
+  });
+});

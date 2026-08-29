@@ -30,7 +30,14 @@ export class ThumbnailRenderer {
       }
     }
     const { width, height } = stage.slideSize;
-    parts.push(`<style>
+    const plain = stage.kind === 'plain';
+    parts.push(plain ? `<style>
+      html, body { margin: 0; width: ${width}px; height: ${height}px; overflow: hidden; }
+      .lec-slides > section { display: ${escapeAttr(stage.plainConventions.display)} !important; opacity: 1 !important; visibility: visible !important; transition: none !important; }
+      .lec-slides section .fragment { visibility: visible !important; opacity: 1 !important; transform: none !important; }
+      .lec-slides section aside.notes { display: none !important; }
+      .lec-bg { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+    </style>` : `<style>
       html, body { margin: 0; width: ${width}px; height: ${height}px; overflow: hidden; }
       .reveal { position: relative; width: ${width}px; height: ${height}px; overflow: hidden; }
       .reveal .slides { position: absolute; left: 0; top: 0; width: ${width}px; height: ${height}px; margin: 0; transform: none !important; zoom: 1; overflow: hidden; pointer-events: none; }
@@ -76,9 +83,23 @@ export class ThumbnailRenderer {
     const bg = backgroundStyle(live);
     const htmlEl = stage.doc.documentElement;
     const body = stage.doc.body;
-    const html = `<!doctype html><html class="${escapeAttr(htmlEl.className)}"><head>${this.headHtml()}</head>` +
-      `<body class="${escapeAttr(body.className)}"><div class="reveal"><div class="slides">` +
-      `<div class="lec-bg" style="${escapeAttr(bg)}"></div>${clone.outerHTML}</div></div></body></html>`;
+    let html: string;
+    if (stage.kind === 'plain') {
+      // Replicate the deck's own container (tag, id, classes) so its CSS applies.
+      const root = stage.liveSlidesRoot;
+      const conv = stage.plainConventions;
+      if (conv.activeClass) clone.classList.add(conv.activeClass);
+      clone.classList.remove('lec-textmode');
+      const attrs = Array.from(root.attributes).filter((a) => a.name !== 'style').map((a) => `${a.name}="${escapeAttr(a.name === 'class' ? a.value.replace(/\blec-\S+/g, '') : a.value)}"`).join(' ');
+      const tag = root.tagName.toLowerCase();
+      html = `<!doctype html><html class="${escapeAttr(htmlEl.className.replace(/\blec-\S+/g, ''))}"><head>${this.headHtml()}</head>` +
+        `<body class="${escapeAttr(body.className)}"><${tag} ${attrs} class="lec-slides ${escapeAttr(root.className.replace(/\blec-\S+/g, ''))}">` +
+        `<div class="lec-bg" style="${escapeAttr(bg)}"></div>${clone.outerHTML}</${tag}></body></html>`;
+    } else {
+      html = `<!doctype html><html class="${escapeAttr(htmlEl.className)}"><head>${this.headHtml()}</head>` +
+        `<body class="${escapeAttr(body.className)}"><div class="reveal"><div class="slides">` +
+        `<div class="lec-bg" style="${escapeAttr(bg)}"></div>${clone.outerHTML}</div></div></body></html>`;
+    }
     iframe.srcdoc = html;
   }
 }

@@ -37,7 +37,7 @@ describe('templates', () => {
     const html = starterDeckHtml({ title: 'My <talk>', author: 'Me', width: 1280, height: 720, revealPath: 'reveal' });
     const d = new DeckDocument(html);
     expect(d.length).toBe(2);
-    expect(d.info).toEqual({ title: 'My <talk>', width: 1280, height: 720 });
+    expect(d.info).toEqual({ title: 'My <talk>', width: 1280, height: 720, kind: 'reveal' });
     expect(html).toContain('reveal/dist/reveal.js');
   });
 });

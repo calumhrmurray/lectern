@@ -87,9 +87,6 @@ export class Editor implements InteractionHost {
     await this.stage.load(url, doc);
     this.stage.on('slidechanged', (ref) => { this.emit('slide', ref); this.refreshOverlay(); });
     this.stage.on('resize', () => this.refreshOverlay());
-    this.stage.doc.addEventListener('click', (e) => {
-      if ((e.target as Element | null)?.closest?.('a')) e.preventDefault();
-    }, true);
     this.refreshOverlay();
   }
 
@@ -240,8 +237,7 @@ export class Editor implements InteractionHost {
     const section = this.stage.srcSection(ref);
     this.edit(`Slide ${name.replace(/^data-/, '')}`, () => {
       this.stage.setAttr(section, name, value);
-      const live = this.stage.liveSection(ref);
-      try { this.stage.reveal.syncSlide(live); } catch { /* ignore */ }
+      this.stage.syncSlide(ref);
     }, { top: ref.top, coalesce: `slideattr:${name}:${ref.top}:${ref.sub}` });
   }
 
@@ -427,15 +423,20 @@ export class Editor implements InteractionHost {
 
   // ---------------------------------------------------------------- InteractionHost
 
-  /** Offset between page (overlay) client coordinates and iframe client coordinates. */
-  private frameOffset(): { x: number; y: number } {
+  /** Page (overlay) client coordinates → iframe client coordinates (the iframe may be CSS-scaled). */
+  private frameOffset(): { x: number; y: number; k: number } {
     const r = this.stage.iframe.getBoundingClientRect();
-    return { x: r.left, y: r.top };
+    return { x: r.left, y: r.top, k: this.stage.frameTransform().k || 1 };
+  }
+
+  private pageToFrame(clientX: number, clientY: number): { x: number; y: number } {
+    const o = this.frameOffset();
+    return { x: (clientX - o.x) / o.k, y: (clientY - o.y) / o.k };
   }
 
   hitTest(clientX: number, clientY: number): Element | null {
-    const o = this.frameOffset();
-    return this.hitTestFrame(clientX - o.x, clientY - o.y);
+    const p = this.pageToFrame(clientX, clientY);
+    return this.hitTestFrame(p.x, p.y);
   }
 
   /** Hit test with iframe client coordinates. */
@@ -469,10 +470,11 @@ export class Editor implements InteractionHost {
   }
 
   toSlide(clientX: number, clientY: number): { x: number; y: number } {
-    const o = this.frameOffset();
-    return this.stage.toSlide(clientX - o.x, clientY - o.y);
+    const p = this.pageToFrame(clientX, clientY);
+    return this.stage.toSlide(p.x, p.y);
   }
-  scale(): number { return this.stage.scale; }
+  /** Page pixels per slide unit. */
+  scale(): number { return this.stage.scale * (this.stage.frameTransform().k || 1); }
   setHover(el: Element | null): void { if (el !== this.hover) { this.hover = el; this.refreshOverlay(); } }
   setMarquee(rect: Rect | null): void { this.marquee = rect; this.refreshOverlay(); }
   isTextEditable(el: Element): boolean { return isTextEditable(el); }
@@ -645,14 +647,13 @@ export class Editor implements InteractionHost {
     this.begin('Rotate', { top });
     const r = this.rectOfSrc(el);
     const c = this.stage.toClient(r.x + r.w / 2, r.y + r.h / 2);
-    const fo = this.frameOffset();
-    const originClient = { x: originPage.x - fo.x, y: originPage.y - fo.y };
+    const originClient = this.pageToFrame(originPage.x, originPage.y);
     const startAngle = angleDeg(c.x, c.y, originClient.x, originClient.y);
     const startRot = this.rotationOf(el);
     return {
       update: (dx, dy, mods) => {
         const s = this.stage.scale;
-        const px = originClient.x + dx * s, py = originClient.y + dy * s;
+        const px = originClient.x + dx * s, py = originClient.y + dy * s; // iframe client coords
         let rot = startRot + angleDeg(c.x, c.y, px, py) - startAngle;
         if (mods.shift) rot = Math.round(rot / 15) * 15;
         rot = Math.round(rot * 10) / 10;
@@ -913,8 +914,7 @@ export class Editor implements InteractionHost {
   startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }): void {
     if (this.textSession) this.endTextEdit();
     if (!isTextEditable(el) || !this.stage.liveOf(el)) return;
-    const fo = this.frameOffset();
-    const caret = caretPage ? { clientX: caretPage.clientX - fo.x, clientY: caretPage.clientY - fo.y } : undefined;
+    const caret = caretPage ? (() => { const p = this.pageToFrame(caretPage.clientX, caretPage.clientY); return { clientX: p.x, clientY: p.y }; })() : undefined;
     const top = this.topOf(el);
     this.begin('Edit text', { top });
     let session: TextSession;
@@ -991,10 +991,11 @@ export class Editor implements InteractionHost {
       });
     });
     const hover = this.hover && !this.sel.includes(this.hover) && this.hover.isConnected ? this.rectOfSrc(this.hover) : null;
+    const t = this.stage.frameTransform();
     this.overlay.render(
       { boxes, hover, guides: this.guides, marquee: this.marquee, canvas: { x: 0, y: 0, w: size.width, h: size.height }, label: this.label },
-      (x, y) => this.stage.toClient(x, y),
-      this.stage.scale,
+      (x, y) => { const c = this.stage.toClient(x, y); return { x: t.x + c.x * t.k, y: t.y + c.y * t.k }; },
+      this.stage.scale * t.k,
     );
     this.emit('geometry', undefined);
   }

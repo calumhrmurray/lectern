@@ -191,11 +191,25 @@ function hasClassToken(attrs: Map<string, string>, token: string): boolean {
 export function scanDeck(html: string): ScanResult | null {
   const tokens = Array.from(tokenize(html));
 
-  // 1. locate the container: first element with class token "slides"
+  // 1. locate the container: the first element with class token "slides",
+  //    else the parent element of the first <section> (plain HTML decks).
   let containerIdx = -1;
   for (let k = 0; k < tokens.length; k++) {
     const t = tokens[k];
     if (t.kind === 'open' && !t.selfClosing && hasClassToken(t.attrs, 'slides')) { containerIdx = k; break; }
+  }
+  if (containerIdx === -1) {
+    const stack: number[] = [];
+    for (let k = 0; k < tokens.length; k++) {
+      const t = tokens[k];
+      if (t.kind === 'open') {
+        const isVoid = VOID_ELEMENTS.has(t.name) || t.selfClosing;
+        if (t.name === 'section' && !isVoid) { containerIdx = stack[stack.length - 1] ?? -1; break; }
+        if (!isVoid) stack.push(k);
+      } else if (t.kind === 'close') {
+        for (let j = stack.length - 1; j >= 0; j--) if (tokens[stack[j]].name === t.name) { stack.length = j; break; }
+      }
+    }
   }
   if (containerIdx === -1) return null;
   const containerTok = tokens[containerIdx];
@@ -275,6 +289,11 @@ export function detectParts(html: string): string[] {
   let s: RegExpExecArray | null;
   while ((s = re.exec(m[1]))) if (/\.html?$/i.test(s[2])) out.push(s[2]);
   return out;
+}
+
+/** Whether the page runs reveal.js (as opposed to a hand-rolled slide driver). */
+export function isRevealDeck(html: string): boolean {
+  return /\bReveal\.initialize\s*\(|new\s+Reveal\s*\(|class="[^"]*\bslides\b/.test(html);
 }
 
 /**

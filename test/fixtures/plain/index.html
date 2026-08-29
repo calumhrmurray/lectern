@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A plain deck</title>
+<style>
+  :root{ --paper:#e7eef7; --ink:#16202e; --ink-soft:#4a5666; --flow:#bf6326; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--paper);color:var(--ink);font-family:sans-serif;overflow:hidden}
+  #deck{position:fixed;inset:0}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:6.5vh 9vw 8vh;opacity:0;transition:opacity .45s ease}
+  .slide.active{display:flex;opacity:1}
+  h1{font-size:5vw;line-height:1.06}
+  h2{font-size:3.4vw;line-height:1.1;margin-bottom:.25em}
+  .kicker{text-transform:uppercase;letter-spacing:.22em;font-size:1vw;color:var(--flow);margin-bottom:1.1em}
+  ul.clean{list-style:none;margin-top:.4em}
+  ul.clean li{position:relative;padding-left:1.5em;margin:.62em 0;font-size:1.5vw}
+  ul.clean li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;border-radius:50%;background:var(--flow)}
+  .fragment{opacity:0;transition:opacity .4s ease, transform .4s ease;transform:translateY(6px)}
+  .fragment.visible{opacity:1;transform:none}
+  #progress{position:fixed;left:0;bottom:0;height:4px;background:var(--flow);width:0}
+  #pageno{position:fixed;right:2vw;bottom:1.2vh;font-size:.8vw;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<div id="deck">
+
+  <!-- 1. TITLE -->
+  <section class="slide title-slide">
+    <h1>A hand-rolled deck.</h1>
+    <p class="meta">No reveal.js in sight.</p>
+  </section>
+
+  <!-- 2. BULLETS -->
+  <section class="slide" data-section="intro">
+    <div class="kicker">Introduction</div>
+    <h2>The driver is twenty lines of script.</h2>
+    <ul class="clean">
+      <li>Slides are sections with class <b>slide</b></li>
+      <li class="fragment">The current one gets <b>active</b></li>
+    </ul>
+  </section>
+
+  <!-- 3. LAST -->
+  <section class="slide" data-section="end">
+    <h2>Thanks.</h2>
+    <p>Questions?</p>
+  </section>
+
+</div>
+<div id="progress"></div>
+<div id="pageno"></div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let si = 0;
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===si));
+    try{ history.replaceState(null,'','#'+(si+1)); }catch(e){}
+    document.getElementById('progress').style.width = (si/(slides.length-1)*100)+'%';
+    document.getElementById('pageno').textContent = (si+1)+' / '+slides.length;
+  }
+  function next(){ if(si < slides.length-1){ si++; render(); } }
+  function prev(){ if(si > 0){ si--; render(); } }
+  document.addEventListener('keydown', e=>{
+    switch(e.key){
+      case 'ArrowRight': case ' ': case 'PageDown': e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'PageUp': e.preventDefault(); prev(); break;
+    }
+  });
+  document.addEventListener('click', e=>{ if(e.clientX > window.innerWidth*0.5) next(); else prev(); });
+  function applyHash(){ const m = /^#(\d+)$/.exec(location.hash); if(m){ si = Math.max(0, Math.min(slides.length-1, (+m[1])-1)); } }
+  window.addEventListener('hashchange', ()=>{ applyHash(); render(); });
+  applyHash(); render();
+})();
+</script>
+</body>
+</html>

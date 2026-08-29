@@ -17,7 +17,7 @@
  * a save (`rebase`).
  */
 
-import { inferIndent, scanDeck, scanFragment, scanRevealSize, type ScanResult } from './scan';
+import { inferIndent, isRevealDeck, scanDeck, scanFragment, scanRevealSize, type ScanResult } from './scan';
 
 export interface SlideRecord {
   /** The `<section>` element inside `doc`. */
@@ -69,6 +69,8 @@ export interface DeckInfo {
   title: string;
   width: number;
   height: number;
+  /** `reveal` for reveal.js pages; `plain` for any other page of <section> slides. */
+  kind: 'reveal' | 'plain';
 }
 
 export interface PartInput { path: string; text: string }
@@ -86,8 +88,8 @@ export class DeckDocument {
 
   constructor(text: string, opts: { path?: string; parts?: PartInput[] } = {}) {
     this.doc = new DOMParser().parseFromString(text, 'text/html');
-    const root = this.doc.querySelector('.slides');
-    if (!root) throw new Error('No <div class="slides"> container found — is this a reveal.js deck?');
+    const root = this.doc.querySelector('.slides') ?? this.doc.querySelector('section')?.parentElement ?? null;
+    if (!root) throw new Error('No slides found: the page needs <section> elements (reveal.js decks put them in <div class="slides">).');
     this.slidesRoot = root;
 
     // Shell source
@@ -120,11 +122,13 @@ export class DeckDocument {
       });
     }
 
-    const size = scanRevealSize(text);
+    const kind = isRevealDeck(text) ? 'reveal' : 'plain';
+    const size = kind === 'reveal' ? scanRevealSize(text) : {};
     this.info = {
       title: this.doc.title || 'Untitled deck',
-      width: size.width ?? 960,
-      height: size.height ?? 700,
+      width: size.width ?? (kind === 'reveal' ? 960 : 1280),
+      height: size.height ?? (kind === 'reveal' ? 700 : 720),
+      kind,
     };
   }
 

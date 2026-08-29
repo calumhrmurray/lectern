@@ -1,6 +1,6 @@
 # Lectern — notes for coding assistants
 
-Visual editor for reveal.js decks. TypeScript + Vite, no UI framework. Read `README.md` first.
+Visual editor for HTML slide decks (reveal.js, or any page of <section> slides with a custom driver — `Stage.kind` is 'reveal' | 'plain'). TypeScript + Vite, no UI framework. Read `README.md` first.
 
 ## Commands
 

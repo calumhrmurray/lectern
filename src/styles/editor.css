@@ -79,7 +79,7 @@ a { color: var(--accent); }
 .lec-stage-wrap { flex: 1; position: relative; overflow: auto; background: var(--bg);
   background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px); background-size: 18px 18px; }
 .lec-stage { position: relative; width: 100%; height: 100%; }
-.lec-stage-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; display: block; }
+.lec-stage-frame { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 0; background: transparent; display: block; }
 .lec-stage.lec-empty .lec-stage-frame { visibility: hidden; }
 .lec-inspector {
   flex: 0 0 var(--insp-w); background: var(--panel); border-left: 1px solid var(--line);

@@ -14,6 +14,8 @@ if (!existsSync(reveal)) throw new Error('public/reveal missing — run `node sc
 cpSync(reveal, join(dest, 'reveal'), { recursive: true });
 const katex = join(root, 'node_modules', 'katex', 'dist');
 if (existsSync(katex)) cpSync(katex, join(dest, 'katex', 'dist'), { recursive: true });
+// A plain (non-reveal) deck with its own slide driver.
+cpSync(join(root, 'test', 'fixtures', 'plain'), join(dest, 'plain'), { recursive: true });
 // A multi-file deck lives in a sub-folder of the same workspace.
 const partsSrc = join(root, 'test', 'fixtures', 'parts');
 const partsDest = join(dest, 'parts');

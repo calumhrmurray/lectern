@@ -203,18 +203,19 @@ export class Inspector {
     }
 
     // Fragment
+    const isReveal = ed.stage.kind === 'reveal';
     const isFragment = el.classList.contains('fragment');
     const effect = Array.from(el.classList).find((c) => FRAGMENT_EFFECTS.includes(c)) ?? '';
     this.section('Build', null,
       h('div', { class: 'lec-row' }, h('label', {}, 'Appear'), checkbox(isFragment, (on) => ed.toggleClass('fragment', on), 'on click (fragment)')),
-      isFragment ? h('div', { class: 'lec-row' }, h('label', {}, 'Effect'),
+      isFragment && isReveal ? h('div', { class: 'lec-row' }, h('label', {}, 'Effect'),
         selectField(['', ...FRAGMENT_EFFECTS], effect, (v) => ed.edit('Fragment effect', () => {
           for (const s of ed.selection()) {
             for (const c of FRAGMENT_EFFECTS) if (s.classList.contains(c)) ed.stage.toggleClass(s, c, false);
             if (v) ed.stage.toggleClass(s, v, true);
           }
         }, { top: ed.current.top }), (v) => v || 'default (fade-in)')) : null,
-      isFragment ? h('div', { class: 'lec-row' }, h('label', {}, 'Order'),
+      isFragment && isReveal ? h('div', { class: 'lec-row' }, h('label', {}, 'Order'),
         numberField(parseInt(el.getAttribute('data-fragment-index') ?? '', 10), (n) => ed.setAttr('data-fragment-index', isFinite(n) ? String(n) : null, 'Fragment order'), 1, 0),
         h('span', { class: 'lec-help' }, 'blank = document order')) : null,
     );
@@ -274,9 +275,10 @@ export class Inspector {
     const attr = (n: string) => section.getAttribute(n) ?? '';
     const set = (n: string) => (v: string | null) => ed.setSlideAttr(ref, n, v || null);
     const stack = isStack(ed.doc.slides[ref.top].el);
+    const isReveal = ed.stage.kind === 'reveal';
 
     const imgInput = textField(attr('data-background-image'), (v) => set('data-background-image')(v));
-    this.section('Background', null,
+    if (isReveal) this.section('Background', null,
       h('div', { class: 'lec-row' }, h('label', {}, 'Colour'), colorField(attr('data-background-color') || null, (v) => set('data-background-color')(v), true)),
       h('div', { class: 'lec-row' }, h('label', {}, 'Image'), imgInput,
         h('button', { class: 'lec-btn', type: 'button', title: 'Choose an image', onclick: async () => { const pick = await this.app.chooseImage(); if (pick) set('data-background-image')(pick.src); } }, svgIcon(icons.folder))),
@@ -286,14 +288,14 @@ export class Inspector {
       h('div', { class: 'lec-row' }, h('label', {}, 'Gradient'), textField(attr('data-background-gradient'), (v) => set('data-background-gradient')(v))),
     );
 
-    this.section('Transition', null,
+    if (isReveal) this.section('Transition', null,
       h('div', { class: 'lec-row' }, h('label', {}, 'Slide'), selectField(TRANSITIONS, attr('data-transition'), (v) => set('data-transition')(v), (v) => v || 'deck default')),
       h('div', { class: 'lec-row' }, h('label', {}, 'Background'), selectField(TRANSITIONS, attr('data-background-transition'), (v) => set('data-background-transition')(v), (v) => v || 'deck default')),
       h('div', { class: 'lec-row' }, h('label', {}, 'Auto-animate'), checkbox(section.hasAttribute('data-auto-animate'), (on) => set('data-auto-animate')(on ? '' : null), 'animate matching elements from the previous slide')),
       h('div', { class: 'lec-row' }, h('label', {}, 'Auto-slide'), numberField(parseInt(attr('data-autoslide'), 10), (n) => set('data-autoslide')(isFinite(n) && n > 0 ? String(n) : null), 500, 0), h('span', { class: 'lec-unit' }, 'ms'), h('span', { class: 'lec-fill' })),
     );
 
-    this.section('Visibility', null,
+    if (isReveal) this.section('Visibility', null,
       h('div', { class: 'lec-row' }, h('label', {}, 'Show'),
         selectField(['', 'uncounted', 'hidden'], attr('data-visibility'), (v) => set('data-visibility')(v), (v) => v === '' ? 'normal' : v === 'uncounted' ? 'skip numbering (backup slide)' : 'hidden')),
       stack ? h('div', { class: 'lec-help' }, 'This slide is part of a vertical stack.') : null,
@@ -332,20 +334,28 @@ export class Inspector {
     const ed = this.app.editor;
     const info = ed.doc.info;
     const size = ed.stage.slideSize;
-    const cfg = ed.stage.reveal.getConfig();
+    const cfg = ed.stage.reveal?.getConfig() ?? {};
     const refs = ed.slideRefs();
+    const plain = ed.stage.kind === 'plain';
+    const sizeKey = `lectern:size:${this.app.workspace?.name ?? ''}/${this.app.deckPath}`;
+    const logical = ed.stage.logicalSize;
     this.section('Deck', null,
       h('dl', { class: 'lec-kv' },
+        h('dt', {}, 'Engine'), h('dd', {}, plain ? 'plain HTML (custom slide driver)' : 'reveal.js'),
         h('dt', {}, 'Title'), h('dd', {}, info.title),
         h('dt', {}, ed.doc.isMultiFile ? 'Files' : 'File'), h('dd', {}, ed.doc.isMultiFile ? ed.doc.sources.map((s) => s.path).join(', ') : this.app.deckPath),
         h('dt', {}, 'Folder'), h('dd', {}, this.app.workspace?.name ?? '—'),
-        h('dt', {}, 'Slide size'), h('dd', {}, `${size.width} × ${size.height}`),
+        h('dt', {}, 'Slide size'), h('dd', {}, plain
+          ? selectField(['1280x720', '1920x1080', '1600x900', '1024x768', '1440x900'], `${logical.width}x${logical.height}`, (v) => { const [w, hh] = v.split('x').map(Number); ed.stage.setLogicalSize(w, hh); localStorage.setItem(sizeKey, v); this.app.navigator.render(); this.app.navigator.invalidate(null); }, (v) => v.replace('x', ' × '))
+          : `${size.width} × ${size.height}`),
         h('dt', {}, 'Slides'), h('dd', {}, `${refs.length}${refs.length !== ed.doc.length ? ` (${ed.doc.length} top-level)` : ''}`),
-        h('dt', {}, 'Centred'), h('dd', {}, cfg.center ? 'yes' : 'no'),
+        plain ? null : h('dt', {}, 'Centred'), plain ? null : h('dd', {}, cfg.center ? 'yes' : 'no'),
         h('dt', {}, 'Math'), h('dd', {}, ed.stage.hasMath ? 'KaTeX / MathJax loaded' : 'no typesetter'),
         h('dt', {}, 'Theme classes'), h('dd', {}, String(this.app.themeClasses.length)),
       ),
-      h('div', { class: 'lec-help', style: 'margin-top:8px' }, 'Slide size, plugins and other reveal.js options live in the Reveal.initialize({…}) call of the HTML file.'),
+      h('div', { class: 'lec-help', style: 'margin-top:8px' }, plain
+        ? 'This deck uses its own slide script. The size above is the viewport the editor renders it in (vw/vh units resolve against it); it is remembered per deck.'
+        : 'Slide size, plugins and other reveal.js options live in the Reveal.initialize({…}) call of the HTML file.'),
     );
     this.section('Actions', null,
       h('div', { class: 'lec-btn-row' },
