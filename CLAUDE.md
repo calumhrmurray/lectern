@@ -32,8 +32,10 @@ Visual editor for HTML slide decks (reveal.js, or any page of <section> slides w
 
 `src/deck/sections.ts` derives the deck's sections (runs of top-level slides) from `data-section`, falling back to a
 `break` slide or a repeated `.kicker`. `Compass` (always on screen) and `MapView` (the `M` overlay) both read it, and
-the map is the only place that edits deck *structure*: reorder, name a section, `Editor.nestSlide` / `unnestSlide` for
-reveal's vertical axis. Quiet mode is `.lec-quiet` on the app root plus `.lec-peek` while space is held.
+the map is the only place that edits deck *structure*: add and title slides, reorder, name a section,
+`Editor.nestSlide` / `unnestSlide` for reveal's vertical axis. Quiet mode is `.lec-quiet` on the app root (plus
+`.lec-peek` while space is held); it insets `.lec-stage-wrap` so `Neighbours` can put the previous and next slides in
+the gutters, measured off `Stage.canvasClientRect()` so they line up with the rendered slide.
 
 ## Notes for AI inside decks
 

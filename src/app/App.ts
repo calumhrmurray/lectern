@@ -19,12 +19,14 @@ import { detectParts } from '../deck/scan';
 import { SLIDE_LAYOUTS, starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
 import type { SlideRef } from '../stage/Stage';
-import { h, isMac } from '../ui/dom';
+import { h, isMac, svgIcon } from '../ui/dom';
+import { icons } from '../ui/icons';
 import { TUTORIAL_URL, aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, promptDialog, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
-import { Cluster } from '../ui/Cluster';
 import { Compass } from '../ui/Compass';
 import { Inspector } from '../ui/Inspector';
 import { MapView } from '../ui/MapView';
+import { Neighbours } from '../ui/Neighbours';
+import { Tools } from '../ui/Tools';
 import { closeMenus } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
 import { Panels } from '../ui/Panels';
@@ -52,7 +54,8 @@ export class App {
   readonly thumbs: ThumbnailRenderer;
   readonly compass: Compass;
   readonly map: MapView;
-  readonly cluster: Cluster;
+  readonly tools: Tools;
+  readonly neighbours: Neighbours;
   workspace: Workspace | null = null;
   deckPath = '';
   themeClasses: ThemeClass[] = [];
@@ -61,7 +64,7 @@ export class App {
   visible = { navigator: true, inspector: true };
   /** Quiet mode: the slide keeps the screen, the panels step out of the way (remembered). */
   quiet = localStorage.getItem('lectern:quiet') === 'on';
-  private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement; compass: HTMLElement; cluster: HTMLElement; map: HTMLElement };
+  private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement; compass: HTMLElement; bar: HTMLElement; tools: HTMLElement; center: HTMLElement; map: HTMLElement };
   private toastEl: HTMLElement | null = null;
   /** Last-modified times of the deck's files as we last read or wrote them. */
   private baseline = new Map<string, number | null>();
@@ -87,8 +90,15 @@ export class App {
     const stageWrap = h('div', { class: 'lec-stage-wrap' }, stage, loading, dropzone);
     const panelsEl = h('div', {});
     const compassEl = h('div', { class: 'lec-compass', 'aria-label': 'Deck position' });
-    const clusterEl = h('div', { class: 'lec-cluster' });
-    const center = h('div', { class: 'lec-center' }, stageWrap, panelsEl, compassEl, clusterEl);
+    const glyph = (action: string, icon: 'map' | 'play', title: string, onclick: () => void) =>
+      h('button', { class: 'lec-glyph', type: 'button', dataset: { action }, title, onclick }, svgIcon(icons[icon]));
+    const barEl = h('div', { class: 'lec-quietbar' },
+      compassEl,
+      glyph('glyph-map', 'map', 'Map of the deck (M)', () => this.map.toggle()),
+      glyph('glyph-present', 'play', 'Present', () => void this.present()),
+    );
+    const toolsEl = h('div', { class: 'lec-tools' });
+    const center = h('div', { class: 'lec-center' }, stageWrap, panelsEl, barEl, toolsEl);
     const inspectorEl = h('div', { class: 'lec-inspector', 'aria-label': 'Inspector' });
     const msg = h('span', { class: 'lec-msg' });
     const pos = h('span', {});
@@ -97,7 +107,7 @@ export class App {
     const welcome = h('div', { class: 'lec-welcome' });
     const mapEl = h('div', { class: 'lec-map lec-hidden', 'aria-label': 'Map of the deck' });
     root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, mapEl, welcome);
-    this.els = { navigator: navigatorEl, stageWrap, stage, inspector: inspectorEl, status, msg, pos, path, welcome, loading, dropzone, compass: compassEl, cluster: clusterEl, map: mapEl };
+    this.els = { navigator: navigatorEl, stageWrap, stage, inspector: inspectorEl, status, msg, pos, path, welcome, loading, dropzone, compass: compassEl, bar: barEl, tools: toolsEl, center, map: mapEl };
 
     this.editor = new Editor(stage);
     this.thumbs = new ThumbnailRenderer(this.editor);
@@ -105,7 +115,8 @@ export class App {
     // The compass, map and cluster exist before the toolbar: its first update() reads their state.
     this.compass = new Compass(this, compassEl);
     this.map = new MapView(this, mapEl);
-    this.cluster = new Cluster(this, clusterEl);
+    this.tools = new Tools(this, toolsEl);
+    this.neighbours = new Neighbours(this, center);
     this.toolbar = new Toolbar(this, toolbarEl);
     this.navigator = new Navigator(this, navigatorEl);
     this.inspector = new Inspector(this, inspectorEl);
@@ -346,7 +357,8 @@ export class App {
       this.navigator.render();
       this.compass.render();
       this.map.render();
-      this.cluster.update();
+      this.neighbours.invalidate();
+      this.tools.update();
       this.inspector.render();
       this.panels.update();
       this.toolbar.update();
@@ -627,7 +639,10 @@ export class App {
     localStorage.setItem('lectern:quiet', on ? 'on' : 'off');
     this.toolbar.update();
     this.compass.render();
+    this.tools.setOpen(false);
     if (this.visible.navigator) this.navigator.fitThumbs();
+    // The stage is inset in quiet mode: measure the neighbours after it re-fits.
+    requestAnimationFrame(() => requestAnimationFrame(() => this.neighbours.update()));
   }
 
   toggleQuiet(): void { this.setQuiet(!this.quiet); }
@@ -687,7 +702,7 @@ export class App {
     const c = ed.current;
     const label = c.sub === null ? `${c.top + 1}` : `${c.top + 1}.${c.sub + 1}`;
     this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
-    this.cluster.update();
+    this.tools.update();
     this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern build ${__LECTERN_BUILD__}`;
   }
 
@@ -696,7 +711,7 @@ export class App {
   private wireEditorEvents(): void {
     const ed = this.editor;
     ed.on('selection', () => { this.inspector.render(); this.toolbar.update(); });
-    ed.on('slide', () => { this.navigator.updateCurrent(); this.compass.update(); this.map.updateCurrent(); this.inspector.render(); this.panels.update(); this.updateStatus(); });
+    ed.on('slide', () => { this.navigator.updateCurrent(); this.compass.update(); this.neighbours.update(); this.map.updateCurrent(); this.inspector.render(); this.panels.update(); this.updateStatus(); });
     ed.on('change', ({ tops, label }) => {
       if (tops === null || label === 'Add slide' || label === 'Delete slide' || label === 'Move slide' || label === 'restore' || label === 'Duplicate slide') {
         this.navigator.render();
@@ -707,19 +722,21 @@ export class App {
         this.map.invalidate(tops);
       }
       this.compass.render();
+      this.neighbours.invalidate();
       this.inspector.render();
       this.panels.update();
       this.toolbar.update();
-      this.cluster.update();
+      this.tools.update();
       this.updateStatus();
     });
-    ed.on('history', () => { this.toolbar.update(); this.cluster.update(); this.updateStatus(); this.scheduleAutosave(); });
+    ed.on('history', () => { this.toolbar.update(); this.tools.update(); this.updateStatus(); this.scheduleAutosave(); });
     ed.on('textmode', (on) => { this.toolbar.update(); if (!on) this.scheduleAutosave(); });
     ed.on('geometry', () => this.inspector.updateGeometry());
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
     ed.onTextKey = (ev) => this.handleTextKey(ev);
     // Keyboard shortcuts also arrive from inside the iframe (when it has focus).
     ed.stage.keyHandler = (ev) => { if (!ed.textSession) this.handleKey(ev); };
+    ed.stage.on('resize', () => this.neighbours.update());
     ed.stage.on('ready', () => {
       ed.stage.doc.addEventListener('paste', (ev) => { if (!ed.textSession) this.handlePaste(ev); });
       ed.stage.doc.addEventListener('keyup', (ev) => { if ((ev as KeyboardEvent).key === ' ') this.root.classList.remove('lec-peek'); });
@@ -733,7 +750,7 @@ export class App {
     window.addEventListener('keyup', (ev) => { if (ev.key === ' ') unpeek(); });
     window.addEventListener('blur', unpeek);
     window.addEventListener('paste', (ev) => this.handlePaste(ev));
-    window.addEventListener('resize', () => { this.setZoom(this.zoom); this.navigator.fitThumbs(); this.compass.render(); this.map.fit(); });
+    window.addEventListener('resize', () => { this.setZoom(this.zoom); this.navigator.fitThumbs(); this.compass.render(); this.map.fit(); this.neighbours.update(); });
     window.addEventListener('beforeunload', (ev) => {
       if (this.editor.ready && this.editor.doc.dirty && this.workspace?.kind !== 'memory') { ev.preventDefault(); ev.returnValue = ''; }
     });

@@ -12,7 +12,7 @@
  */
 
 import type { App } from '../app/App';
-import { isStack, slideLabel } from '../deck/html';
+import { escapeHtml, isStack, slideLabel } from '../deck/html';
 import { SECTION_ATTR, sectionsOf, type DeckSection } from '../deck/sections';
 import type { SlideRef } from '../stage/Stage';
 import { promptDialog } from './Dialogs';
@@ -45,7 +45,7 @@ export class MapView {
         h('span', { class: 'lec-map-title' }, 'Map'),
         this.countEl,
         h('span', { class: 'lec-spacer', style: 'flex:1' }),
-        h('span', { class: 'lec-map-hint' }, 'Drag to reorder · drop under a slide to make it a sub-slide · click a section to name it'),
+        h('span', { class: 'lec-map-hint' }, 'Drag to reorder · drop under a slide to nest it · click a title or a section to rename'),
         h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'map-close' }, onclick: () => this.hide() }, 'Done'),
       ),
       this.grid,
@@ -109,6 +109,12 @@ export class MapView {
     this.countEl.textContent = `${ed.slideRefs().length} slides · ${named || 'no'} named section${named === 1 ? '' : 's'}${hidden ? ` · ${hidden} hidden` : ''}`;
 
     tops.forEach((el, top) => this.grid.appendChild(this.column(el, top, sections)));
+    this.grid.appendChild(h('div', { class: 'lec-map-col lec-map-end' },
+      h('button', {
+        class: 'lec-map-add lec-map-add-end', type: 'button', dataset: { action: 'map-add-end' },
+        title: 'New slide at the end of the deck', onclick: () => void this.newSlide(tops.length - 1),
+      }, '+ slide'),
+    ));
     this.renderDirty();
     this.updateCurrent();
   }
@@ -148,6 +154,16 @@ export class MapView {
       ed.nestSlide(from.top, top);
     });
     col.appendChild(nest);
+    col.appendChild(h('div', { class: 'lec-map-adds' },
+      h('button', {
+        class: 'lec-map-add', type: 'button', dataset: { action: 'map-add-after' },
+        title: 'New slide after this one', onclick: () => void this.newSlide(top),
+      }, '+ slide'),
+      h('button', {
+        class: 'lec-map-add', type: 'button', dataset: { action: 'map-add-sub' },
+        title: 'New slide below this one — reveal’s ↓', onclick: () => void this.newSlide(top, { below: true }),
+      }, '+ below'),
+    ));
     col.appendChild(h('div', { class: 'lec-map-num' }, subs.length ? `${top + 1}.1 – ${top + 1}.${subs.length}` : String(top + 1)));
     return col;
   }
@@ -182,7 +198,10 @@ export class MapView {
       dataset: { top: String(ref.top), sub: ref.sub === null ? '' : String(ref.sub) },
     },
       h('div', { class: 'lec-thumb' }, wrap),
-      h('div', { class: 'lec-map-cardlabel' }, label || ' '),
+      h('button', {
+        class: 'lec-map-cardlabel', type: 'button', title: 'Rename this slide',
+        onclick: (ev: MouseEvent) => { ev.stopPropagation(); void this.renameSlide(ref); },
+      }, label || 'Untitled'),
       vis ? h('span', { class: 'lec-map-badge' }, vis) : null,
       notes ? h('span', { class: 'lec-map-note', title: `${notes} note${notes === 1 ? '' : 's'} waiting` }) : null,
     );
@@ -270,6 +289,9 @@ export class MapView {
     const declared = top.getAttribute(SECTION_ATTR);
     await showMenu([
       { label: 'Go to this slide', onSelect: () => { ed.goTo(ref); this.hide(); } },
+      { label: 'Rename this slide…', onSelect: () => void this.renameSlide(ref) },
+      { label: 'New slide after this one', onSelect: () => void this.newSlide(ref.top) },
+      { label: 'New slide below this one', hint: 'reveal’s ↓', onSelect: () => void this.newSlide(ref.top, { below: true }) },
       { separator: true },
       { label: declared === null ? 'Start a section here…' : 'Rename this section…', onSelect: () => void this.nameSection(ref.top, declared) },
       { label: 'Remove the section break', disabled: declared === null, onSelect: () => ed.setSlideAttr({ top: ref.top, sub: null }, SECTION_ATTR, null) },
@@ -287,6 +309,36 @@ export class MapView {
       { label: 'Duplicate', onSelect: () => ed.duplicateSlide(ref) },
       { label: 'Delete slide', onSelect: () => ed.deleteSlide(ref) },
     ], at);
+  }
+
+  /**
+   * A new slide, titled before it exists — a slide called "Heading" is a slide
+   * you have to come back to. `below` nests it into the column, making a stack.
+   */
+  private async newSlide(after: number, opts: { below?: boolean } = {}): Promise<void> {
+    const ed = this.app.editor;
+    const title = await promptDialog(opts.below ? 'New slide below this one' : 'New slide', 'Title', '', 'What this slide says');
+    if (title === null) return;
+    const heading = escapeHtml(title.trim() || 'Untitled');
+    const at = ed.addSlide(`<section>\n  <h2>${heading}</h2>\n</section>`, after);
+    if (opts.below) ed.nestSlide(at, after);
+    this.render();
+  }
+
+  /** Retitles a slide by its heading — the thing the map, compass and navigator all show. */
+  private async renameSlide(ref: SlideRef): Promise<void> {
+    const ed = this.app.editor;
+    const src = ed.stage.srcSection(ref);
+    const head = src.querySelector('h1, h2, h3, .big');
+    const current = (head?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    const title = await promptDialog('Slide title', 'Title', current, 'What this slide says');
+    if (title === null) return;
+    const html = escapeHtml(title.trim());
+    ed.edit('Rename slide', () => {
+      if (head) ed.stage.setInnerHTML(head, html);
+      else ed.stage.insertHtml(src, src.firstElementChild, `<h2>${html}</h2>`);
+    }, { top: ref.top });
+    this.render();
   }
 
   private async nameSection(top: number, current: string | null): Promise<void> {

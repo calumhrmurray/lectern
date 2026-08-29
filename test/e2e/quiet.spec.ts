@@ -33,7 +33,8 @@ test.describe('quiet mode', () => {
     await expect(page.locator('.lec-navigator')).toBeHidden();
     await expect(page.locator('.lec-inspector')).toBeHidden();
     await expect(page.locator('.lec-compass')).toBeVisible();
-    await expect(page.locator('.lec-cluster')).toBeVisible();
+    await expect(page.locator('.lec-quietbar')).toBeVisible();
+    await expect(page.locator('.lec-tools')).toBeVisible();
 
     await page.keyboard.down(' ');
     await expect(page.locator('.lec-toolbar')).toBeVisible();
@@ -49,9 +50,54 @@ test.describe('quiet mode', () => {
     await page.locator('.lec-btn[data-action="quiet"]').click();
     await expect(page.locator('.lec-navigator')).toBeHidden();
     expect(await page.evaluate(() => localStorage.getItem('lectern:quiet'))).toBe('on');
-    await page.locator('.lec-cluster-btn[data-action="quiet-more"]').click();
+    await page.locator('.lec-tools-btn').click();
+    await page.locator('.lec-tools-item[data-action="tool-more"]').click();
     await page.getByText('Show the panels').click();
     await expect(page.locator('.lec-navigator')).toBeVisible();
+  });
+});
+
+test.describe('the slides either side', () => {
+  test('appear in the gutters in quiet mode, and navigate', async ({ page }) => {
+    await openDeck(page);
+    await expect(page.locator('.lec-neighbour:not([hidden])')).toHaveCount(0);
+    await page.evaluate(() => window.lectern.setQuiet(true));
+    await goToSlide(page, 2);
+    await expect(page.locator('.lec-neighbour:not([hidden])')).toHaveCount(2);
+    await page.locator('.lec-neighbour.lec-next').click();
+    expect(await currentSlide(page)).toEqual({ top: 3, sub: null });
+  });
+
+  test('only one of them at the ends of the deck, and none of them overlaps the slide', async ({ page }) => {
+    await openDeck(page);
+    await page.evaluate(() => window.lectern.setQuiet(true));
+    await goToSlide(page, 0);
+    await expect(page.locator('.lec-neighbour:not([hidden])')).toHaveCount(1);
+    await goToSlide(page, 2);
+    const boxes = await page.evaluate(() => {
+      const slide = window.lectern.editor.stage.canvasClientRect();
+      const fr = window.lectern.editor.stage.iframe.getBoundingClientRect();
+      const left = fr.left + slide.left;
+      const right = left + slide.width;
+      const sides = [...document.querySelectorAll('.lec-neighbour:not([hidden])')].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, right: r.right, top: Math.round(r.top), height: Math.round(r.height) };
+      });
+      return { left, right, slideTop: Math.round(fr.top + slide.top), slideHeight: Math.round(slide.height), sides };
+    });
+    for (const s of boxes.sides) {
+      expect(s.right <= boxes.left || s.left >= boxes.right).toBe(true); // never over the slide
+      expect(s.top).toBe(boxes.slideTop); // and lined up with it
+      expect(s.height).toBe(boxes.slideHeight);
+    }
+  });
+
+  test('the glyphs open the map and start the presentation', async ({ page }) => {
+    await openDeck(page);
+    await page.locator('.lec-glyph[data-action="glyph-map"]').click();
+    await expect(page.locator('.lec-map')).toBeVisible();
+    await page.locator('.lec-btn[data-action="map-close"]').click();
+    await expect(page.locator('.lec-glyph[data-action="glyph-present"]')).toBeVisible();
   });
 });
 
@@ -61,7 +107,7 @@ test.describe('map', () => {
     await page.locator('.lec-overlay').focus();
     await page.keyboard.press('m');
     await expect(page.locator('.lec-map')).toBeVisible();
-    await expect(page.locator('.lec-map-col')).toHaveCount(6);
+    await expect(page.locator('.lec-map-col')).toHaveCount(7); // 6 slides + the trailing add column
     await expect(page.locator('.lec-map-card')).toHaveCount(7);
     await expect(page.locator('.lec-map-down')).toHaveCount(1); // one arrow inside the stack of 2
     await expect(page.locator('.lec-map-count')).toContainText('7 slides');
@@ -95,6 +141,41 @@ test.describe('map', () => {
     // The compass shows the name of the section you are standing in.
     await page.locator('.lec-map-card').nth(2).click();
     await expect(page.locator('.lec-compass-section')).toHaveText('Anatomy');
+  });
+});
+
+test.describe('adding slides from the map', () => {
+  test('a new slide is titled before it exists', async ({ page }) => {
+    await openDeck(page);
+    await page.locator('.lec-btn[data-action="map"]').click();
+    await page.locator('.lec-map-col').first().locator('[data-action="map-add-after"]').click();
+    await page.locator('.lec-modal-backdrop input.lec-field').fill('Second thoughts');
+    await page.locator('.lec-modal-foot .lec-primary').click();
+    await expect(page.locator('.lec-map-col')).toHaveCount(8); // 7 slides + the trailing add column
+    expect(await serialized(page)).toContain('<h2>Second thoughts</h2>');
+    await expect(page.locator('.lec-map-card').nth(1).locator('.lec-map-cardlabel')).toHaveText('Second thoughts');
+    expect(await currentSlide(page)).toEqual({ top: 1, sub: null });
+  });
+
+  test('a new slide below makes a stack', async ({ page }) => {
+    await openDeck(page);
+    await page.locator('.lec-btn[data-action="map"]').click();
+    await page.locator('.lec-map-col').first().locator('[data-action="map-add-sub"]').click();
+    await page.locator('.lec-modal-backdrop input.lec-field').fill('The detail');
+    await page.locator('.lec-modal-foot .lec-primary').click();
+    expect(await page.evaluate(() => window.lectern.editor.doc.length)).toBe(6);
+    expect(await page.evaluate(() => window.lectern.editor.slideRefs().filter((r) => r.top === 0).length)).toBe(2);
+    await expect(page.locator('.lec-map-down')).toHaveCount(2); // the fixture's stack, and this one
+  });
+
+  test('a title can be changed from the card label', async ({ page }) => {
+    await openDeck(page);
+    await page.locator('.lec-btn[data-action="map"]').click();
+    await page.locator('.lec-map-card').nth(1).locator('.lec-map-cardlabel').click();
+    await page.locator('.lec-modal-backdrop input.lec-field').fill('A better heading');
+    await page.locator('.lec-modal-foot .lec-primary').click();
+    expect(await serialized(page)).toContain('A better heading');
+    await expect(page.locator('.lec-map-card').nth(1).locator('.lec-map-cardlabel')).toHaveText('A better heading');
   });
 });
 
