@@ -754,6 +754,7 @@ export class App {
     if (key === 'End' && !mod) { stop(); const r = ed.slideRefs().at(-1); if (r) ed.goTo(r); return; }
     if (!mod && !ev.altKey) {
       if (lower === 't') { stop(); ed.insertElement('text', { edit: true }); return; }
+      if (lower === 'n') { stop(); ed.insertElement('ainote', { edit: true }); return; }
       if (lower === 'i') { stop(); void this.insertImageViaDialog(); return; }
       if (lower === 's') { stop(); ed.insertElement('rect'); return; }
       if (key === '+' || key === '=') { stop(); this.zoomBy(1); return; }

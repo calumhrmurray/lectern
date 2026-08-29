@@ -1020,6 +1020,7 @@ function defaultBox(templateId: string, size: { width: number; height: number })
     case 'code': return { x: Math.round(W * 0.15), y: Math.round(H * 0.3), w: Math.round(W * 0.7), h: 150 };
     case 'iframe': return { x: Math.round(W * 0.15), y: Math.round(H * 0.15), w: Math.round(W * 0.7), h: Math.round(H * 0.7) };
     case 'equation': return { x: Math.round(W * 0.25), y: Math.round(H * 0.42), w: Math.round(W * 0.5), h: 60 };
+    case 'ainote': return { x: Math.round(W * 0.55), y: Math.round(H * 0.15), w: 300, h: 80 };
     default: return { x: Math.round(W * 0.35), y: Math.round(H * 0.35), w: Math.round(W * 0.3), h: Math.round(H * 0.3) };
   }
 }

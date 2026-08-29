@@ -3,8 +3,9 @@
 import type { App } from '../app/App';
 import { h, debounce, modKey } from './dom';
 import type { SlideRef } from '../stage/Stage';
+import { aiNotesPrompt, collectAiNotes } from '../deck/aiNotes';
 
-export type PanelTab = 'notes' | 'html';
+export type PanelTab = 'notes' | 'html' | 'ai';
 
 export class Panels {
   tab: PanelTab = 'notes';
@@ -14,6 +15,7 @@ export class Panels {
   private notesArea: HTMLTextAreaElement;
   private htmlArea: HTMLTextAreaElement;
   private errorEl: HTMLElement;
+  private aiList: HTMLElement;
   private htmlRef: SlideRef | null = null;
   private htmlDirty = false;
   private suppress = false;
@@ -24,6 +26,7 @@ export class Panels {
     this.notesArea = h('textarea', { class: 'lec-field lec-notes-text', placeholder: 'Speaker notes for this slide (shown in the reveal.js speaker view, press S while presenting).', spellcheck: true }) as HTMLTextAreaElement;
     this.htmlArea = h('textarea', { class: 'lec-field', spellcheck: false, placeholder: '<section>…</section>' }) as HTMLTextAreaElement;
     this.errorEl = h('div', { class: 'lec-panel-error' });
+    this.aiList = h('div', { class: 'lec-ai-list' });
     this.body = h('div', { class: 'lec-panel-body' });
     container.append(this.tabsEl, this.body);
 
@@ -54,7 +57,7 @@ export class Panels {
     this.container.classList.remove('lec-hidden');
     this.render();
     this.update();
-    (tab === 'notes' ? this.notesArea : this.htmlArea).focus();
+    if (tab !== 'ai') (tab === 'notes' ? this.notesArea : this.htmlArea).focus();
     this.app.toolbar.update();
     this.app.editor.refreshOverlay();
   }
@@ -77,12 +80,19 @@ export class Panels {
     this.tabsEl.replaceChildren(
       h('button', { class: `lec-tab${this.tab === 'notes' ? ' lec-active' : ''}`, type: 'button', onclick: () => this.show('notes') }, 'Notes'),
       h('button', { class: `lec-tab${this.tab === 'html' ? ' lec-active' : ''}`, type: 'button', onclick: () => this.show('html') }, 'Slide HTML'),
+      h('button', { class: `lec-tab${this.tab === 'ai' ? ' lec-active' : ''}`, type: 'button', onclick: () => this.show('ai') }, 'Notes for AI'),
       h('span', { class: 'lec-spacer', style: 'flex:1' }),
       h('button', { class: 'lec-btn', type: 'button', title: 'Close', onclick: () => this.hide() }, '✕'),
     );
     this.body.replaceChildren();
     if (this.tab === 'notes') {
       this.body.appendChild(this.notesArea);
+    } else if (this.tab === 'ai') {
+      this.body.append(this.aiList, h('div', { class: 'lec-panel-side' },
+        h('button', { class: 'lec-btn lec-primary', type: 'button', onclick: () => this.copyPrompt() }, 'Copy as prompt'),
+        h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.editor.insertElement('ainote', { edit: true }) }, '+ Note on this slide'),
+        h('div', { class: 'lec-panel-hint' }, 'Notes are saved in the HTML as <div hidden data-ai-note> and never shown when presenting. Paste the prompt to Claude Code, or just tell it “do the notes in index.html”.'),
+      ));
     } else {
       this.body.append(this.htmlArea, h('div', { class: 'lec-panel-side' },
         h('button', { class: 'lec-btn lec-primary', type: 'button', onclick: () => this.applyHtml() }, `Apply (${modKey()}⏎)`),
@@ -98,6 +108,7 @@ export class Panels {
     const ed = this.app.editor;
     if (!this.visible || !ed.ready || !ed.doc.length) return;
     const ref = ed.current;
+    if (this.tab === 'ai') { this.renderAiList(); return; }
     if (this.tab === 'notes') {
       this.suppress = true;
       const notes = ed.getNotes(ref);
@@ -116,6 +127,29 @@ export class Panels {
       }
       this.htmlRef = { ...ref };
     }
+  }
+
+  private renderAiList(): void {
+    const ed = this.app.editor;
+    const notes = collectAiNotes(ed.doc);
+    this.aiList.replaceChildren();
+    if (!notes.length) {
+      this.aiList.appendChild(h('div', { class: 'lec-panel-hint', style: 'padding:12px' }, 'No notes yet. Press N on a slide (or the “Note for AI” button) and write what you want done there, e.g. “draw a whale here”.'));
+      return;
+    }
+    for (const n of notes) {
+      this.aiList.appendChild(h('button', { class: 'lec-ai-item', type: 'button', onclick: () => { ed.goTo({ top: n.top, sub: null }); ed.select([n.el]); } },
+        h('span', { class: 'lec-ai-slide' }, `Slide ${n.top + 1}`), h('span', { class: 'lec-ai-text' }, n.text || '(empty)'),
+        h('span', { class: 'lec-ai-where' }, n.x !== null && n.y !== null ? `(${Math.round(n.x)}, ${Math.round(n.y)})` : ''),
+        h('span', { class: 'lec-ai-done', title: 'Remove this note', onclick: (e: MouseEvent) => { e.stopPropagation(); ed.edit('Remove note', () => ed.stage.remove(n.el), { top: n.top }); } }, '✕')));
+    }
+  }
+
+  private copyPrompt(): void {
+    const ed = this.app.editor;
+    const text = aiNotesPrompt(ed.doc, this.app.deckPath, ed.stage.slideSize);
+    if (!text) { this.app.toast('No notes to copy.'); return; }
+    navigator.clipboard.writeText(text).then(() => this.app.toast('Prompt copied — paste it to Claude Code.'), () => this.app.toast('Could not access the clipboard.', 'error'));
   }
 
   private applyHtml(ref: SlideRef | null = this.htmlRef): void {

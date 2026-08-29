@@ -25,3 +25,10 @@ Visual editor for HTML slide decks (reveal.js, or any page of <section> slides w
 - Three ways a deck reaches the canvas: service worker (`fs/<id>/…`, hosted or CLI), the CLI's `/fs/local/…`, or **inline mode**
   (`src/workspace/inline.ts`: blob URLs + fetch/setter shims in a `srcdoc` iframe) when there is no worker, i.e. `Lectern.html` on `file://`.
   `Stage.liveUrlResolver` keeps relative `src` attributes loadable in inline mode.
+
+## Notes for AI inside decks
+
+Slides may contain `<div hidden data-ai-note style="position:absolute;left:Xpx;top:Ypx;…">instruction</div>`. Each one is a
+request from the author for that spot on the slide (coordinates in slide units, usually 1280×720). When asked to "do the
+notes" in a deck: act on each one in the file, match the deck's existing style, then delete the note element. Never leave
+`data-ai-note` elements visible (they are `hidden` on purpose). `node scripts/ai-notes.mjs <deck.html>` lists them.

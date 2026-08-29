@@ -61,6 +61,8 @@ export const icons = {
   more: wrap('<circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="13" cy="8" r="1.2" fill="currentColor"/>'),
   upload: wrap('<path d="M8 11V3M4.5 6.5 8 3l3.5 3.5M3 13h10"/>'),
   download: wrap('<path d="M8 3v8M4.5 7.5 8 11l3.5-3.5M3 13h10"/>'),
+  note: wrap('<path d="M3 3h10v7l-3 3H3z"/><path d="M10 13v-3h3M6 6h4M6 9h3"/>'),
+  sparkle: wrap('<path d="M8 2l1.6 3.9L13.5 7.5 9.6 9.1 8 13 6.4 9.1 2.5 7.5l3.9-1.6z"/><path d="M13 12l.6 1.4 1.4.6-1.4.6L13 16l-.6-1.4-1.4-.6 1.4-.6z" fill="currentColor" stroke="none"/>'),
   lectern: wrap('<path d="M3 5h10l-1.5 4h-7z"/><path d="M8 9v5M5 14h6"/>'),
   help: wrap('<circle cx="8" cy="8" r="6"/><path d="M6 6.5a2 2 0 1 1 2.8 1.8c-.5.2-.8.6-.8 1.2M8 11.5h.01"/>'),
   fragment: wrap('<circle cx="5" cy="8" r="2"/><circle cx="11" cy="8" r="2" stroke-dasharray="2 1.5"/>'),

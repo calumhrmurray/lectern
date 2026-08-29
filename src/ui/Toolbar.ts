@@ -45,6 +45,7 @@ export class Toolbar {
         this.btn('text', 'text', 'Text', 'Insert a text box (T)', () => ed().insertElement('text', { edit: true })),
         this.btn('title', 'title', null, 'Insert a heading', () => ed().insertElement('title', { edit: true })),
         this.btn('bullets', 'bullets', null, 'Insert a bullet list', () => ed().insertElement('bullets', { edit: true })),
+        this.btn('ainote', 'note', 'Note for AI', 'Leave an instruction on the slide for Claude or a colleague — hidden when presenting (N)', () => ed().insertElement('ainote', { edit: true })),
         this.btn('image', 'image', 'Image', 'Insert an image (I)', () => void app.insertImageViaDialog()),
         this.btn('shape', 'shape', 'Shape', 'Insert a shape (S)', (e) => this.shapeMenu(e.currentTarget as HTMLElement), { caret: true }),
         this.btn('more', 'more', null, 'More objects', (e) => this.insertMoreMenu(e.currentTarget as HTMLElement)),
@@ -77,6 +78,7 @@ export class Toolbar {
         this.btn('navigator', 'navigator', null, 'Show/hide slide navigator', () => app.toggle('navigator')),
         this.btn('notes', 'notes', null, 'Speaker notes', () => app.panels.toggle('notes')),
         this.btn('code', 'code', null, 'Slide HTML', () => app.panels.toggle('html')),
+        this.btn('ainotes', 'sparkle', null, 'All notes for AI in this deck', () => app.panels.toggle('ai')),
         this.btn('inspector', 'inspector', null, 'Show/hide inspector', () => app.toggle('inspector')),
       ),
       sep(),
@@ -105,7 +107,7 @@ export class Toolbar {
     this.buttons.get('undo')!.title = `Undo${ed.history.undoLabel ? ' ' + ed.history.undoLabel : ''} (${modKey()}Z)`;
     this.buttons.get('redo')!.title = `Redo${ed.history.redoLabel ? ' ' + ed.history.redoLabel : ''} (${modKey()}⇧Z)`;
     set('newslide', ed.ready);
-    for (const id of ['text', 'title', 'bullets', 'image', 'shape', 'more']) set(id, has);
+    for (const id of ['text', 'title', 'bullets', 'ainote', 'image', 'shape', 'more']) set(id, has);
     set('arrange', has && sel);
     this.textGroup.style.display = text ? '' : 'none';
     this.insertGroup.style.display = text ? 'none' : '';
@@ -119,6 +121,7 @@ export class Toolbar {
     set('inspector', true, app.visible.inspector);
     set('notes', has, app.panels.visible && app.panels.tab === 'notes');
     set('code', has, app.panels.visible && app.panels.tab === 'html');
+    set('ainotes', has, app.panels.visible && app.panels.tab === 'ai');
     set('zoomin', has); set('zoomout', has);
     this.zoomVal.textContent = app.zoom === 1 ? 'fit' : `${Math.round(app.zoom * 100)}%`;
   }

@@ -217,6 +217,9 @@ export class Stage {
       .lec-editing .lec-slides section img { -webkit-user-drag: none; user-select: none; }
       .lec-editing .reveal .controls, .lec-editing .reveal .progress, .lec-editing .reveal .slide-number, .lec-editing .reveal .speaker-notes { display: none !important; }
       .lec-editing .lec-slides:not(.lec-textmode) { user-select: none; }
+      /* notes for an AI: visible only while editing */
+      .lec-editing [data-ai-note] { display: block !important; box-sizing: border-box; background: #fff3a8; color: #4a3a00; border: 1px solid #e2c34e; border-radius: 6px; padding: 26px 12px 10px; font: 600 0.58em/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: left; box-shadow: 0 6px 18px rgba(80,60,0,.18); z-index: 50; transform: rotate(-1deg); }
+      .lec-editing [data-ai-note]::before { content: "✎ note for AI · hidden when presenting"; position: absolute; left: 12px; top: 8px; font-size: 0.62em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9a7a00; }
     `;
     this.doc.head.appendChild(style);
   }

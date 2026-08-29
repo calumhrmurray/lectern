@@ -112,3 +112,24 @@ test.describe('inspector and arrange', () => {
     expect(out).toMatch(/<section data-background-color="#0e0c1a">\s*<\/section>/);
   });
 });
+
+test('notes for AI: placed on the slide, saved hidden, listed with a prompt', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 1);
+  await page.locator('.lec-overlay').focus();
+  await page.keyboard.press('n');
+  await expect(frame.locator('section.present [data-ai-note][contenteditable="true"]')).toBeVisible();
+  await page.keyboard.type('draw a whale here');
+  await page.keyboard.press('Escape');
+  const out = await serialized(page);
+  expect(out).toMatch(/<div hidden data-ai-note style="position:absolute;left:\d+px;top:\d+px;width:300px;">draw a whale here<\/div>/);
+  // hidden in the file, visible while editing
+  const shown = await frame.locator('section.present [data-ai-note]').evaluate((el) => getComputedStyle(el).display);
+  expect(shown).toBe('block');
+  await page.locator('.lec-btn[data-action="ainotes"]').click();
+  await expect(page.locator('.lec-ai-item')).toHaveCount(1);
+  await expect(page.locator('.lec-ai-item .lec-ai-text')).toHaveText('draw a whale here');
+  await page.locator('.lec-ai-done').click();
+  await expect(page.locator('.lec-ai-item')).toHaveCount(0);
+  expect(await serialized(page)).not.toContain('data-ai-note');
+});

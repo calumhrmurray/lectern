@@ -308,3 +308,13 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 /* ---------------------------------------------------------------- disk-change banner */
 .lec-banner { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 8; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #3a2f12; border: 1px solid #a67c1c; color: #ffe6a8; border-radius: 8px; font-size: 12.5px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
 .lec-banner .lec-btn { height: 26px; border: 1px solid #a67c1c; color: #ffe6a8; }
+
+/* ---------------------------------------------------------------- notes for AI */
+.lec-ai-list { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 4px; background: var(--bg); }
+.lec-ai-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); text-align: left; }
+.lec-ai-item:hover { border-color: var(--accent); }
+.lec-ai-slide { flex: 0 0 60px; font-size: 11px; color: var(--text-soft); }
+.lec-ai-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lec-ai-where { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.lec-ai-done { flex: 0 0 auto; color: var(--text-dim); padding: 0 4px; }
+.lec-ai-done:hover { color: var(--danger); }

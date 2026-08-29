@@ -34,7 +34,7 @@ const RUNTIME_ATTRS = ['data-lid', 'contenteditable', 'spellcheck', 'aria-hidden
 export function cleanRuntimeArtifacts(root: Element, opts: { keepFragmentIndex?: boolean } = {}): void {
   const all = [root, ...Array.from(root.querySelectorAll('*'))];
   for (const el of all) {
-    for (const a of RUNTIME_ATTRS) el.removeAttribute(a);
+    for (const a of RUNTIME_ATTRS) { if (a === 'hidden' && el.hasAttribute('data-ai-note')) continue; el.removeAttribute(a); }
     if (el.classList.length) {
       for (const c of Array.from(el.classList)) if (RUNTIME_CLASSES.has(c)) el.classList.remove(c);
       if (!el.classList.length) el.removeAttribute('class');

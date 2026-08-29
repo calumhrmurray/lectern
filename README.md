@@ -24,6 +24,12 @@ identical, so `git diff` stays readable and a coding assistant can keep editing 
 - **Inspector** — position/size, typography, fill/border/shadow, the deck's own CSS classes
   as one-click toggles (`.kicker`, `.tide`, `.fig` …), reveal fragments (effect + order),
   slide backgrounds and transitions, speaker notes, raw HTML of a slide.
+- **Notes for an AI** — press `N` (or *Note for AI*) and write on the slide what you want done there:
+  "draw a whale here", "explain the 1905 law here". Notes are saved in the HTML as
+  `<div hidden data-ai-note style="position:absolute;left:…;top:…">…</div>` — invisible when presenting,
+  visible as sticky notes while editing, positioned in slide coordinates. The *Notes for AI* panel lists
+  them all and copies a ready-made prompt; `node scripts/ai-notes.mjs deck.html` prints the same from a
+  terminal. Tell Claude Code "do the notes in index.html" and it can find, act on and remove them.
 - **Undo/redo everything**, including across saves.
 - **Multi-file decks** — a shell whose `<div class="slides">` is filled from part files
   (`const parts = ['slides/p0.html', …]` or `<div class="slides" data-parts="a.html b.html">`)

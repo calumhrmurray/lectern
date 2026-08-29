@@ -116,6 +116,10 @@ export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
     id: 'equation', name: 'Equation',
     html: (b) => `<p class="eq" style="${boxStyle({ ...b, h: undefined }, 'margin:0;text-align:center;')}">\\[ E = mc^2 \\]</p>`,
   },
+  ainote: {
+    id: 'ainote', name: 'Note for AI',
+    html: (b) => `<div hidden data-ai-note style="${boxStyle({ ...b, h: undefined })}">Describe what you want here</div>`,
+  },
   iframe: {
     id: 'iframe', name: 'Web embed',
     html: (b) => `<iframe src="https://example.com" style="${boxStyle(b, 'border:0;')}"></iframe>`,
