@@ -66,6 +66,14 @@ export class HttpWorkspace implements Workspace {
     if (!res.ok) throw new Error(`Cannot write ${path}: ${res.status} ${await res.text()}`);
   }
 
+  async mtime(path: string): Promise<number | null> {
+    try {
+      const res = await fetch(this.urlFor(path), { method: 'HEAD', cache: 'no-store' });
+      const lm = res.headers.get('Last-Modified');
+      return lm ? Date.parse(lm) : null;
+    } catch { return null; }
+  }
+
   async mkdir(path: string): Promise<void> {
     const res = await fetch(new URL('api/mkdir', editorBaseUrl()).href, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: normalizePath(path) }),

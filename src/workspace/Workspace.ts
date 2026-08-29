@@ -34,6 +34,8 @@ export interface Workspace {
   mkdir(path: string): Promise<void>;
   /** Absolute URL that serves `path`. */
   urlFor(path: string): string;
+  /** Last-modified time of a file in ms, or null when unknown. Used to notice edits made by other tools. */
+  mtime(path: string): Promise<number | null>;
 }
 
 /** Absolute URL of the editor's base (where index.html and sw.js live). */

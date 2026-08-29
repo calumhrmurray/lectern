@@ -32,11 +32,21 @@ identical, so `git diff` stays readable and a coding assistant can keep editing 
 
 ## Use it
 
-### In the browser (Chrome / Edge, no install)
+### In the browser — nothing to install
 
-Open the hosted editor, click **Open a folder…**, pick the folder containing your deck, choose
-the HTML file. A service worker serves the folder into the editing canvas, so reveal.js, the
-theme, images and plugins load exactly as on a web server. `⌘S` writes back to disk.
+**https://calumhrmurray.github.io/lectern/** (Chrome, Edge or another Chromium browser)
+
+1. Click **Open a folder…** and pick the folder that contains your deck.
+2. Choose the HTML file (asked only if the folder has several).
+3. Edit. `⌘S` writes straight back to the file on your disk.
+
+A service worker serves the folder into the editing canvas, so reveal.js, the theme, images and
+plugins load exactly as on a web server. Nothing is uploaded anywhere.
+
+**Working alongside an assistant.** The editor watches the deck's files. If Claude Code (or you, in
+a text editor) changes the file while the editor has no unsaved edits, the canvas reloads on its own
+and stays on the same slide. If you *do* have unsaved edits, a banner offers to reload or keep yours,
+and saving never overwrites a newer file without asking.
 
 ### From a terminal (any browser; good next to Claude Code)
 

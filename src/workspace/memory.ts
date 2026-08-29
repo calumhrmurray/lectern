@@ -80,6 +80,8 @@ export class MemoryWorkspace implements Workspace {
 
   async mkdir(): Promise<void> { /* directories are implicit */ }
 
+  async mtime(): Promise<number | null> { return null; }
+
   urlFor(path: string): string {
     return fsUrl(this.id, normalizePath(path));
   }

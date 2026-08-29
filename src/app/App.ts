@@ -44,6 +44,10 @@ export class App {
   visible = { navigator: true, inspector: true };
   private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement };
   private toastEl: HTMLElement | null = null;
+  /** Last-modified times of the deck's files as we last read or wrote them. */
+  private baseline = new Map<string, number | null>();
+  private watchTimer = 0;
+  private conflictBanner: HTMLElement | null = null;
   private toastTimer = 0;
   private saving = false;
 
@@ -261,6 +265,8 @@ export class App {
       this.toolbar.update();
       this.updateStatus();
       this.editor.overlay.el.focus({ preventScroll: true });
+      await this.recordBaseline();
+      this.startWatching();
       this.toast(`Opened ${basename(deckPath)} · ${this.editor.slideRefs().length} slides`);
     } catch (err) {
       console.error(err);
@@ -275,7 +281,75 @@ export class App {
   async reload(): Promise<void> {
     if (!this.workspace || !this.deckPath) return;
     if (!(await this.confirmDiscard())) return;
+    await this.reloadInPlace();
+  }
+
+  /** Re-reads the deck from disk, keeping the current slide. */
+  private async reloadInPlace(): Promise<void> {
+    if (!this.workspace || !this.deckPath) return;
+    const ref = this.editor.ready ? { ...this.editor.current } : null;
+    this.hideConflict();
     await this.openDeck(this.workspace, this.deckPath);
+    if (ref && this.editor.ready && ref.top < this.editor.doc.length) this.editor.goTo(ref);
+  }
+
+  // ---------------------------------------------------------------- watching the files (another editor, an assistant…)
+
+  private async recordBaseline(): Promise<void> {
+    this.baseline.clear();
+    if (!this.workspace || !this.editor.ready) return;
+    for (const src of this.editor.doc.sources) this.baseline.set(src.path, await this.workspace.mtime(src.path));
+  }
+
+  private startWatching(): void {
+    clearInterval(this.watchTimer);
+    if (!this.workspace || this.workspace.kind === 'memory') return;
+    this.watchTimer = window.setInterval(() => void this.checkDisk(), 2000);
+  }
+
+  /** Paths whose file on disk is newer than what we loaded/saved. */
+  private async changedOnDisk(): Promise<string[]> {
+    if (!this.workspace || !this.editor.ready) return [];
+    const out: string[] = [];
+    for (const [path, known] of this.baseline) {
+      const now = await this.workspace.mtime(path);
+      if (now !== null && known !== null && now > known) out.push(path);
+    }
+    return out;
+  }
+
+  private checking = false;
+  private async checkDisk(): Promise<void> {
+    if (this.checking || this.saving || !this.editor.ready || document.hidden) return;
+    this.checking = true;
+    try {
+      const changed = await this.changedOnDisk();
+      if (!changed.length) return;
+      if (!this.editor.doc.dirty && !this.editor.textSession && !this.editor.interactions.busy) {
+        await this.reloadInPlace();
+        this.setMessage(`Reloaded — ${basename(changed[0])} changed on disk`, 'info');
+      } else {
+        this.showConflict(changed);
+      }
+    } finally {
+      this.checking = false;
+    }
+  }
+
+  private showConflict(changed: string[]): void {
+    if (this.conflictBanner) return;
+    const banner = h('div', { class: 'lec-banner', role: 'alert' },
+      h('span', {}, `${basename(changed[0])} was changed on disk while you have unsaved edits.`),
+      h('button', { class: 'lec-btn', type: 'button', onclick: () => void this.reloadInPlace() }, 'Reload from disk (discard mine)'),
+      h('button', { class: 'lec-btn', type: 'button', onclick: async () => { await this.recordBaseline(); this.hideConflict(); } }, 'Keep mine (overwrite on save)'),
+    );
+    this.conflictBanner = banner;
+    this.els.stageWrap.appendChild(banner);
+  }
+
+  private hideConflict(): void {
+    this.conflictBanner?.remove();
+    this.conflictBanner = null;
   }
 
   private async confirmDiscard(): Promise<boolean> {
@@ -288,6 +362,12 @@ export class App {
   async save(): Promise<boolean> {
     if (!this.workspace || !this.editor.ready || this.saving) return false;
     this.editor.endTextEdit();
+    // Never silently overwrite someone else's edit.
+    const changed = await this.changedOnDisk();
+    if (changed.length && !(await confirmDialog('Changed on disk', `${basename(changed[0])} was modified by another program since you opened it. Overwrite it with your version?`, 'Overwrite'))) {
+      this.showConflict(changed);
+      return false;
+    }
     this.saving = true;
     try {
       const doc = this.editor.doc;
@@ -299,6 +379,8 @@ export class App {
         saved.set(i, text);
       }
       doc.rebase(saved);
+      await this.recordBaseline();
+      this.hideConflict();
       this.toolbar.update();
       this.updateStatus();
       this.setMessage(dirty.length > 1 ? `Saved ${dirty.length} files` : 'Saved', 'ok');

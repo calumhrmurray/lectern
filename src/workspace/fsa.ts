@@ -100,6 +100,10 @@ export class FsaWorkspace implements Workspace {
     await this.dirHandle(path, true);
   }
 
+  async mtime(path: string): Promise<number | null> {
+    try { return (await (await this.fileHandle(path)).getFile()).lastModified; } catch { return null; }
+  }
+
   urlFor(path: string): string {
     return fsUrl(this.id, normalizePath(path));
   }

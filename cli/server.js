@@ -38,7 +38,7 @@ export async function serveFile(res, filePath, head = false) {
   let st;
   try { st = await fs.stat(filePath); } catch { return send(res, 404, 'Not found'); }
   if (st.isDirectory()) return send(res, 403, 'Directory');
-  res.writeHead(200, { 'Content-Type': mime(filePath), 'Content-Length': st.size, 'Cache-Control': 'no-store' });
+  res.writeHead(200, { 'Content-Type': mime(filePath), 'Content-Length': st.size, 'Cache-Control': 'no-store', 'Last-Modified': st.mtime.toUTCString() });
   if (head) return res.end();
   res.end(await fs.readFile(filePath));
 }
