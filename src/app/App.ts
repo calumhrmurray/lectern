@@ -12,6 +12,7 @@ import whaleCss from '../../public/examples/whale-evolution/theme.css?raw';
 import natHtml from '../../public/examples/naturalisation-fr/index.html?raw';
 import natCss from '../../public/examples/naturalisation-fr/theme.css?raw';
 import { BlobUrlCache, inlineDeck, installFetchBridge } from '../workspace/inline';
+import { REVEAL_EMBEDDED } from '../deck/revealAssets';
 import { discoverFontFamilies, discoverThemeClasses, type ThemeClass } from '../deck/cssClasses';
 import { DeckDocument } from '../deck/DeckDocument';
 import { detectParts } from '../deck/scan';
@@ -31,7 +32,6 @@ import { HttpWorkspace } from '../workspace/http';
 import { MemoryWorkspace } from '../workspace/memory';
 import { basename, dirname, editorBaseUrl, joinPath, relativeTo, resolveRelative, type Workspace } from '../workspace/Workspace';
 
-const REVEAL_CDN = 'https://cdn.jsdelivr.net/npm/reveal.js@5.2.0/';
 const EMBEDDED_EXAMPLES: Record<string, Record<string, string>> = {
   'whale-evolution': { 'index.html': whaleHtml, 'theme.css': whaleCss },
   'naturalisation-fr': { 'index.html': natHtml, 'theme.css': natCss },
@@ -126,15 +126,26 @@ export class App {
     return (examplesIndex as { examples: ExampleInfo[] }).examples;
   }
 
-  /** Where a deck can load reveal.js from: the editor's own copy when served, else the CDN. */
-  private async revealBase(): Promise<string> {
+  /**
+   * Puts a reveal.js distribution at `<base>/reveal` in the workspace: the full
+   * copy when the editor is served from a folder that has one, otherwise the
+   * embedded essentials (works offline and from Lectern.html on file://).
+   */
+  private async installReveal(ws: Workspace, base: string): Promise<void> {
     if (location.protocol !== 'file:') {
       try {
         const res = await fetch(new URL('reveal/manifest.json', editorBaseUrl()).href, { cache: 'no-store' });
-        if (res.ok) return new URL('reveal/', editorBaseUrl()).href;
-      } catch { /* fall through */ }
+        if (res.ok) {
+          const manifest = (await res.json()) as { files: string[] };
+          for (const f of manifest.files) {
+            const data = new Uint8Array(await (await fetch(new URL(`reveal/${f}`, editorBaseUrl()).href)).arrayBuffer());
+            await ws.writeBytes(joinPath(base, 'reveal', f), data);
+          }
+          return;
+        }
+      } catch { /* fall back to the embedded copy */ }
     }
-    return REVEAL_CDN;
+    for (const [f, text] of Object.entries(REVEAL_EMBEDDED)) await ws.writeText(joinPath(base, 'reveal', f), text);
   }
 
   /** Opens a bundled example deck in an in-memory workspace. */
@@ -142,9 +153,9 @@ export class App {
     const files = EMBEDDED_EXAMPLES[id];
     if (!files) { this.toast(`Unknown example ${id}`, 'error'); return; }
     const ws = new MemoryWorkspace(id);
-    const revealUrl = await this.revealBase();
+    for (const [f, text] of Object.entries(REVEAL_EMBEDDED)) ws.addText(`reveal/${f}`, text);
     for (const [f, text] of Object.entries(files)) {
-      ws.addText(f, /\.html?$/i.test(f) ? text.replace(/(href|src)="\.\.\/\.\.\/reveal\//g, `$1="${revealUrl}`) : text);
+      ws.addText(f, /\.html?$/i.test(f) ? text.replace(/(href|src)="\.\.\/\.\.\/reveal\//g, '$1="reveal/') : text);
     }
     await ws.serve();
     await this.openDeck(ws, 'index.html');
@@ -190,8 +201,8 @@ export class App {
 
   async openDemo(): Promise<void> {
     const ws = new MemoryWorkspace('demo');
-    const revealUrl = await this.revealBase();
-    ws.addText('index.html', demoDeckHtml.replace(/(href|src)="reveal\//g, `$1="${revealUrl}`).replace("katex: { local: 'katex' },", ''));
+    for (const [f, text] of Object.entries(REVEAL_EMBEDDED)) ws.addText(`reveal/${f}`, text);
+    ws.addText('index.html', demoDeckHtml.replace("katex: { local: 'katex' },", ''));
     ws.addText('theme.css', demoThemeCss);
     ws.addText('figures/plot.svg', demoPlotSvg);
     await ws.serve();
@@ -226,20 +237,10 @@ export class App {
     }
     this.setLoading(true, 'Creating deck…');
     try {
-      // Copy reveal.js into the folder when the editor is served (offline decks); otherwise reference the CDN.
-      const revealBase = await this.revealBase();
-      let revealPath = REVEAL_CDN.replace(/\/$/, '');
-      if (revealBase !== REVEAL_CDN) {
-        const manifest = (await (await fetch(new URL('reveal/manifest.json', editorBaseUrl()).href)).json()) as { files: string[] };
-        for (const f of manifest.files) {
-          const data = new Uint8Array(await (await fetch(new URL(`reveal/${f}`, editorBaseUrl()).href)).arrayBuffer());
-          await ws.writeBytes(joinPath(base, 'reveal', f), data);
-        }
-        revealPath = 'reveal';
-      }
+      await this.installReveal(ws, base);
       const theme = themeById(opts.theme);
       await ws.writeText(joinPath(base, 'theme.css'), theme.css);
-      await ws.writeText(joinPath(base, 'index.html'), starterDeckHtml({ title: opts.title, author: opts.author, width: opts.width, height: opts.height, revealPath, theme }));
+      await ws.writeText(joinPath(base, 'index.html'), starterDeckHtml({ title: opts.title, author: opts.author, width: opts.width, height: opts.height, revealPath: 'reveal', theme }));
       await this.openDeck(ws, joinPath(base, 'index.html'));
     } catch (err) {
       this.toast(`Could not create the deck: ${(err as Error).message}`, 'error');
@@ -302,8 +303,11 @@ export class App {
     } catch (err) {
       console.error(err);
       this.els.stage.classList.add('lec-empty');
-      await modal({ title: 'Could not open the deck', body: h('p', {}, (err as Error).message) });
-      if (!this.editor.ready) void this.showWelcome();
+      this.workspace = null; this.deckPath = '';
+      this.hideConflict(); clearInterval(this.watchTimer);
+      this.navigator.render(); this.inspector.render(); this.toolbar.update(); this.updateStatus();
+      await modal({ title: 'Could not open the deck', body: [h('p', {}, (err as Error).message), h('p', { class: 'lec-help' }, 'The deck must be a reveal.js page (a global Reveal) or a page of <section> slides. If it loads reveal.js from the internet, check your connection.')] });
+      void this.showWelcome();
     } finally {
       this.setLoading(false);
     }

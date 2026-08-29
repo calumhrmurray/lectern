@@ -206,13 +206,12 @@ export function starterDeckHtml(opts: { title: string; author?: string; width: n
   <script src="${r}/dist/reveal.js"></script>
   <script src="${r}/plugin/math/math.js"></script>
   <script src="${r}/plugin/notes/notes.js"></script>
-  <script src="${r}/plugin/highlight/highlight.js"></script>
   <script>
     Reveal.initialize({
       width: ${opts.width}, height: ${opts.height}, margin: 0.04,
       center: false, hash: true, transition: 'none',
       controls: false, progress: true, slideNumber: 'c/t',
-      plugins: [ RevealMath.KaTeX, RevealNotes, RevealHighlight ],
+      plugins: [ RevealMath.KaTeX, RevealNotes ],
     });
   </script>
 </body>
