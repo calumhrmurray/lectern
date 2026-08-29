@@ -36,6 +36,8 @@ export interface Workspace {
   urlFor(path: string): string;
   /** Last-modified time of a file in ms, or null when unknown. Used to notice edits made by other tools. */
   mtime(path: string): Promise<number | null>;
+  /** URL usable for <img>/loading right now (may be a blob: URL created on demand). Defaults to urlFor. */
+  assetUrl?(path: string): Promise<string>;
 }
 
 /** Absolute URL of the editor's base (where index.html and sw.js live). */

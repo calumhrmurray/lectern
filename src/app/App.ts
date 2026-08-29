@@ -6,6 +6,12 @@
 import demoDeckHtml from '../../test/fixtures/demo/index.html?raw';
 import demoThemeCss from '../../test/fixtures/demo/theme.css?raw';
 import demoPlotSvg from '../../test/fixtures/demo/figures/plot.svg?raw';
+import examplesIndex from '../../public/examples/index.json';
+import whaleHtml from '../../public/examples/whale-evolution/index.html?raw';
+import whaleCss from '../../public/examples/whale-evolution/theme.css?raw';
+import natHtml from '../../public/examples/naturalisation-fr/index.html?raw';
+import natCss from '../../public/examples/naturalisation-fr/theme.css?raw';
+import { BlobUrlCache, inlineDeck, installFetchBridge } from '../workspace/inline';
 import { discoverFontFamilies, discoverThemeClasses, type ThemeClass } from '../deck/cssClasses';
 import { DeckDocument } from '../deck/DeckDocument';
 import { detectParts } from '../deck/scan';
@@ -23,8 +29,13 @@ import { Toolbar } from '../ui/Toolbar';
 import { FsaWorkspace, fsaSupported, forgetRecent, listRecents, rememberRecent, type RecentEntry } from '../workspace/fsa';
 import { HttpWorkspace } from '../workspace/http';
 import { MemoryWorkspace } from '../workspace/memory';
-import { serviceWorkerSupported } from '../workspace/serviceWorker';
 import { basename, dirname, editorBaseUrl, joinPath, relativeTo, resolveRelative, type Workspace } from '../workspace/Workspace';
+
+const REVEAL_CDN = 'https://cdn.jsdelivr.net/npm/reveal.js@5.2.0/';
+const EMBEDDED_EXAMPLES: Record<string, Record<string, string>> = {
+  'whale-evolution': { 'index.html': whaleHtml, 'theme.css': whaleCss },
+  'naturalisation-fr': { 'index.html': natHtml, 'theme.css': natCss },
+};
 import { Editor } from './Editor';
 
 const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
@@ -48,6 +59,11 @@ export class App {
   private baseline = new Map<string, number | null>();
   private watchTimer = 0;
   private conflictBanner: HTMLElement | null = null;
+  /** Inline mode: the deck is loaded as srcdoc with blob URLs (no service worker, e.g. file://). */
+  private inline = false;
+  private blobCache: BlobUrlCache | null = null;
+  private removeBridge: (() => void) | null = null;
+  private inlinedHtml = '';
   private toastTimer = 0;
   private saving = false;
 
@@ -102,39 +118,35 @@ export class App {
 
   async showWelcome(): Promise<void> {
     const recents = fsaSupported() ? await listRecents() : [];
-    renderWelcome(this, this.els.welcome, recents, fsaSupported() && serviceWorkerSupported(), await this.listExamples());
+    renderWelcome(this, this.els.welcome, recents, fsaSupported(), await this.listExamples());
     this.els.welcome.classList.remove('lec-hidden');
   }
 
-  private examplesCache: ExampleInfo[] | null = null;
   async listExamples(): Promise<ExampleInfo[]> {
-    if (this.examplesCache) return this.examplesCache;
-    try {
-      const res = await fetch(new URL('examples/index.json', editorBaseUrl()).href, { cache: 'no-store' });
-      this.examplesCache = res.ok ? ((await res.json()) as { examples: ExampleInfo[] }).examples : [];
-    } catch { this.examplesCache = []; }
-    return this.examplesCache;
+    return (examplesIndex as { examples: ExampleInfo[] }).examples;
+  }
+
+  /** Where a deck can load reveal.js from: the editor's own copy when served, else the CDN. */
+  private async revealBase(): Promise<string> {
+    if (location.protocol !== 'file:') {
+      try {
+        const res = await fetch(new URL('reveal/manifest.json', editorBaseUrl()).href, { cache: 'no-store' });
+        if (res.ok) return new URL('reveal/', editorBaseUrl()).href;
+      } catch { /* fall through */ }
+    }
+    return REVEAL_CDN;
   }
 
   /** Opens a bundled example deck in an in-memory workspace. */
   async openExample(id: string): Promise<void> {
-    if (!serviceWorkerSupported()) { this.toast('Examples need a browser with service workers (https or localhost).', 'error'); return; }
-    const ex = (await this.listExamples()).find((e) => e.id === id);
-    if (!ex) { this.toast(`Unknown example ${id}`, 'error'); return; }
-    const ws = new MemoryWorkspace(ex.id);
-    const revealUrl = new URL('reveal/', editorBaseUrl()).href;
-    for (const f of ex.files) {
-      const res = await fetch(new URL(`examples/${ex.id}/${f}`, editorBaseUrl()).href, { cache: 'no-store' });
-      if (!res.ok) { this.toast(`Could not load ${f}`, 'error'); return; }
-      if (/\.(html?|css|svg|js|json|txt|md)$/i.test(f)) {
-        let text = await res.text();
-        if (/\.html?$/i.test(f)) text = text.replace(/(href|src)="\.\.\/\.\.\/reveal\//g, `$1="${revealUrl}`);
-        ws.addText(f, text);
-      } else {
-        ws.addBytes(f, new Uint8Array(await res.arrayBuffer()));
-      }
+    const files = EMBEDDED_EXAMPLES[id];
+    if (!files) { this.toast(`Unknown example ${id}`, 'error'); return; }
+    const ws = new MemoryWorkspace(id);
+    const revealUrl = await this.revealBase();
+    for (const [f, text] of Object.entries(files)) {
+      ws.addText(f, /\.html?$/i.test(f) ? text.replace(/(href|src)="\.\.\/\.\.\/reveal\//g, `$1="${revealUrl}`) : text);
     }
-    if (!(await ws.serve())) { this.toast('Could not start the service worker.', 'error'); return; }
+    await ws.serve();
     await this.openDeck(ws, 'index.html');
     this.toast('Example decks live in memory — use “Download a copy” (menu) to keep your edits.', 'info');
   }
@@ -150,7 +162,7 @@ export class App {
     catch { return; }
     const ws = new FsaWorkspace(handle);
     if (!(await ws.ensurePermission('readwrite'))) { this.toast('Write permission was not granted.', 'error'); return; }
-    if (!(await ws.serve())) { this.toast('Could not start the file service worker (needs https or localhost).', 'error'); return; }
+    await ws.serve();
     const deck = await pickDeckFile(ws);
     if (!deck) return;
     await this.openDeck(ws, deck);
@@ -159,7 +171,7 @@ export class App {
   async openRecent(r: RecentEntry): Promise<void> {
     const ws = new FsaWorkspace(r.handle, r.id);
     if (!(await ws.ensurePermission('readwrite'))) { this.toast('Permission to the folder was not granted.', 'error'); return; }
-    if (!(await ws.serve())) { this.toast('Could not start the file service worker.', 'error'); return; }
+    await ws.serve();
     if (!(await ws.exists(r.deckPath))) {
       await forgetRecent(r.id);
       this.toast(`${r.deckPath} no longer exists in ${r.name}.`, 'error');
@@ -177,18 +189,17 @@ export class App {
   }
 
   async openDemo(): Promise<void> {
-    if (!serviceWorkerSupported()) { this.toast('The demo needs a browser with service workers (https or localhost).', 'error'); return; }
     const ws = new MemoryWorkspace('demo');
-    const revealUrl = new URL('reveal/', editorBaseUrl()).href;
+    const revealUrl = await this.revealBase();
     ws.addText('index.html', demoDeckHtml.replace(/(href|src)="reveal\//g, `$1="${revealUrl}`).replace("katex: { local: 'katex' },", ''));
     ws.addText('theme.css', demoThemeCss);
     ws.addText('figures/plot.svg', demoPlotSvg);
-    if (!(await ws.serve())) { this.toast('Could not start the service worker.', 'error'); return; }
+    await ws.serve();
     await this.openDeck(ws, 'index.html');
   }
 
   async newDeck(): Promise<void> {
-    const fsa = fsaSupported() && serviceWorkerSupported();
+    const fsa = fsaSupported();
     const http = this.workspace?.kind === 'http' ? (this.workspace as HttpWorkspace) : await HttpWorkspace.detect();
     const opts = await newDeckDialog(!fsa);
     if (!opts) return;
@@ -202,7 +213,7 @@ export class App {
       try { handle = await window.showDirectoryPicker!({ mode: 'readwrite', id: 'lectern-new' }); } catch { return; }
       const w = new FsaWorkspace(handle);
       if (!(await w.ensurePermission('readwrite'))) return;
-      if (!(await w.serve())) { this.toast('Could not start the service worker.', 'error'); return; }
+      await w.serve();
       const existing = await w.list('');
       if (existing.some((e) => e.name === 'index.html')) {
         if (!(await confirmDialog('Folder not empty', 'This folder already has an index.html. Overwrite it?', 'Overwrite'))) return;
@@ -215,16 +226,20 @@ export class App {
     }
     this.setLoading(true, 'Creating deck…');
     try {
-      // Copy reveal.js
-      const manifestUrl = new URL('reveal/manifest.json', editorBaseUrl()).href;
-      const manifest = (await (await fetch(manifestUrl)).json()) as { files: string[] };
-      for (const f of manifest.files) {
-        const data = new Uint8Array(await (await fetch(new URL(`reveal/${f}`, editorBaseUrl()).href)).arrayBuffer());
-        await ws.writeBytes(joinPath(base, 'reveal', f), data);
+      // Copy reveal.js into the folder when the editor is served (offline decks); otherwise reference the CDN.
+      const revealBase = await this.revealBase();
+      let revealPath = REVEAL_CDN.replace(/\/$/, '');
+      if (revealBase !== REVEAL_CDN) {
+        const manifest = (await (await fetch(new URL('reveal/manifest.json', editorBaseUrl()).href)).json()) as { files: string[] };
+        for (const f of manifest.files) {
+          const data = new Uint8Array(await (await fetch(new URL(`reveal/${f}`, editorBaseUrl()).href)).arrayBuffer());
+          await ws.writeBytes(joinPath(base, 'reveal', f), data);
+        }
+        revealPath = 'reveal';
       }
       const theme = themeById(opts.theme);
       await ws.writeText(joinPath(base, 'theme.css'), theme.css);
-      await ws.writeText(joinPath(base, 'index.html'), starterDeckHtml({ title: opts.title, author: opts.author, width: opts.width, height: opts.height, revealPath: 'reveal', theme }));
+      await ws.writeText(joinPath(base, 'index.html'), starterDeckHtml({ title: opts.title, author: opts.author, width: opts.width, height: opts.height, revealPath, theme }));
       await this.openDeck(ws, joinPath(base, 'index.html'));
     } catch (err) {
       this.toast(`Could not create the deck: ${(err as Error).message}`, 'error');
@@ -250,7 +265,23 @@ export class App {
       this.deckPath = deckPath;
       this.hideWelcome();
       this.els.stage.classList.remove('lec-empty');
-      await this.editor.open(ws.urlFor(deckPath) + '?lectern=1', doc);
+      this.inline = (ws as { mode?: string }).mode === 'blob';
+      this.removeBridge?.(); this.removeBridge = null;
+      this.blobCache = null;
+      this.editor.stage.liveUrlResolver = null;
+      if (this.inline) {
+        this.blobCache = (ws as unknown as { blobs: BlobUrlCache }).blobs;
+        this.removeBridge = installFetchBridge(ws, this.blobCache);
+        this.setLoading(true, 'Reading the folder…');
+        await this.blobCache.preload();
+        this.inlinedHtml = await inlineDeck(ws, deckPath, text, this.blobCache);
+        const cache = this.blobCache;
+        const deckDir = dirname(deckPath);
+        this.editor.stage.liveUrlResolver = (rel) => cache.peek(joinPath(deckDir, rel.split(/[?#]/)[0]));
+        await this.editor.open({ srcdoc: this.inlinedHtml }, doc);
+      } else {
+        await this.editor.open(ws.urlFor(deckPath) + '?lectern=1', doc);
+      }
       this.themeClasses = discoverThemeClasses(this.editor.stage.doc);
       this.fonts = discoverFontFamilies(this.editor.stage.doc);
       this.thumbs.invalidate();
@@ -407,6 +438,17 @@ export class App {
     const open = () => {
       const c = this.editor.current;
       const hash = this.editor.stage.kind === 'reveal' ? `#/${c.top}${c.sub !== null ? '/' + c.sub : ''}` : `#${c.top + 1}`;
+      if (this.inline) {
+        // No URL to open: write the inlined deck into a new window.
+        void (async () => {
+          const html = await inlineDeck(this.workspace!, this.deckPath, this.editor.doc.serialize(), this.blobCache!);
+          const w = window.open('', '_blank');
+          if (!w) { this.toast('The browser blocked the presentation window.', 'error'); return; }
+          w.document.open(); w.document.write(html); w.document.close();
+          w.location.hash = hash;
+        })();
+        return;
+      }
       window.open(this.workspace!.urlFor(this.deckPath) + hash, '_blank');
     };
     if (this.editor.doc.dirty) void this.save().then((ok) => { if (ok) open(); });
@@ -448,7 +490,12 @@ export class App {
     if (!this.workspace) return null;
     const path = await pickImage(this.workspace, { onUpload: (f) => this.storeImage(f) });
     if (!path) return null;
-    return { src: relativeTo(this.deckPath, path), url: this.workspace.urlFor(path) };
+    return { src: relativeTo(this.deckPath, path), url: await this.assetUrl(path) };
+  }
+
+  private async assetUrl(path: string): Promise<string> {
+    const ws = this.workspace!;
+    return ws.assetUrl ? ws.assetUrl(path) : ws.urlFor(path);
   }
 
   async insertImageViaDialog(): Promise<void> {
@@ -462,7 +509,7 @@ export class App {
       if (!f.type.startsWith('image/')) continue;
       try {
         const path = await this.storeImage(f);
-        await this.editor.insertImage(relativeTo(this.deckPath, path), this.workspace.urlFor(path));
+        await this.editor.insertImage(relativeTo(this.deckPath, path), await this.assetUrl(path));
       } catch (err) {
         this.toast(`Could not add ${f.name}: ${(err as Error).message}`, 'error');
       }

@@ -5,7 +5,7 @@ Visual editor for HTML slide decks (reveal.js, or any page of <section> slides w
 ## Commands
 
 - `npm test` — unit tests (vitest, jsdom). Fast; run after any change in `src/deck` or `src/stage/geometry.ts`.
-- `npm run build` — typecheck + Vite build into `dist/` (also refreshes `public/reveal`).
+- `npm run build` — typecheck + Vite build into `dist/` (also refreshes `public/reveal`) and bundles **`Lectern.html`**, the single double-clickable file users open. Commit it after UI changes.
 - `npx playwright test` — end-to-end tests. Needs `dist/` (run the build first) and a free local port; the
   CLI server is started automatically on `test/.tmp/demo` (created by `test/e2e/prepare.js`).
 - `node scripts/shot.mjs <folder> <deck.html> out.png [slide] [selector]` — headless screenshot of the
@@ -22,3 +22,6 @@ Visual editor for HTML slide decks (reveal.js, or any page of <section> slides w
 - Pointer events arrive in page coordinates; the iframe has its own client coordinates. Convert with
   `Editor.frameOffset()` (see `hitTest`, `toSlide`, `beginRotate`, `startTextEdit`).
 - Stylesheet rules from the iframe are a different JS realm: use duck typing, not `instanceof`.
+- Three ways a deck reaches the canvas: service worker (`fs/<id>/…`, hosted or CLI), the CLI's `/fs/local/…`, or **inline mode**
+  (`src/workspace/inline.ts`: blob URLs + fetch/setter shims in a `srcdoc` iframe) when there is no worker, i.e. `Lectern.html` on `file://`.
+  `Stage.liveUrlResolver` keeps relative `src` attributes loadable in inline mode.

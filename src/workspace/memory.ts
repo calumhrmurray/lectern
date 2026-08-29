@@ -4,7 +4,8 @@
  * file (and the served copy), and the user can download the result.
  */
 
-import { fsUrl, serveMemory, updateMemoryFile, type MemoryFile } from './serviceWorker';
+import { BlobUrlCache } from './inline';
+import { fsUrl, serveMemory, serviceWorkerSupported, updateMemoryFile, type MemoryFile } from './serviceWorker';
 import { mimeFor, normalizePath, type DirEntry, type Workspace } from './Workspace';
 
 let counter = 0;
@@ -15,6 +16,8 @@ export class MemoryWorkspace implements Workspace {
   readonly id: string;
   readonly name: string;
   readonly files = new Map<string, MemoryFile>();
+  readonly blobs = new BlobUrlCache(this);
+  mode: 'sw' | 'blob' = 'sw';
 
   constructor(name = 'demo', id?: string) {
     this.name = name;
@@ -30,7 +33,14 @@ export class MemoryWorkspace implements Workspace {
   }
 
   async serve(): Promise<boolean> {
-    return serveMemory(this.id, this.files);
+    if (serviceWorkerSupported() && (await serveMemory(this.id, this.files))) { this.mode = 'sw'; return true; }
+    this.mode = 'blob';
+    return true;
+  }
+
+  async assetUrl(path: string): Promise<string> {
+    if (this.mode === 'sw') return this.urlFor(path);
+    return (await this.blobs.urlFor(path)) ?? '';
   }
 
   async list(dir: string): Promise<DirEntry[]> {
@@ -75,7 +85,8 @@ export class MemoryWorkspace implements Workspace {
     const p = normalizePath(path);
     const file = { type: data instanceof Blob && data.type ? data.type : mimeFor(p), data: bytes };
     this.files.set(p, file);
-    await updateMemoryFile(this.id, p, file);
+    this.blobs.invalidate(p);
+    if (this.mode === 'sw') await updateMemoryFile(this.id, p, file);
   }
 
   async mkdir(): Promise<void> { /* directories are implicit */ }

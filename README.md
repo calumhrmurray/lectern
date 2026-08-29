@@ -32,30 +32,27 @@ identical, so `git diff` stays readable and a coding assistant can keep editing 
 
 ## Use it
 
-### In the browser — nothing to install
+### Double-click `Lectern.html` — nothing to install, no server
 
-**https://calumhrmurray.github.io/lectern/** (Chrome, Edge or another Chromium browser)
+1. Open **`Lectern.html`** (from this folder) in Chrome, Edge or another Chromium browser.
+2. Click **Open a folder…** and pick the folder that contains your deck; choose the HTML file
+   if the folder has several.
+3. Edit. **`⌘S`** writes straight back to the file on disk.
 
-1. Click **Open a folder…** and pick the folder that contains your deck.
-2. Choose the HTML file (asked only if the folder has several).
-3. Edit. `⌘S` writes straight back to the file on your disk.
-
-A service worker serves the folder into the editing canvas, so reveal.js, the theme, images and
-plugins load exactly as on a web server. Nothing is uploaded anywhere.
+Nothing leaves your machine. The deck's stylesheets, scripts and images are read from the
+folder you picked. Keep `Lectern.html` anywhere you like — it is a single file.
 
 **Working alongside an assistant.** The editor watches the deck's files. If Claude Code (or you, in
-a text editor) changes the file while the editor has no unsaved edits, the canvas reloads on its own
-and stays on the same slide. If you *do* have unsaved edits, a banner offers to reload or keep yours,
-and saving never overwrites a newer file without asking.
+a text editor) changes a file while the editor has no unsaved edits, the canvas reloads by itself and
+stays on the same slide. With unsaved edits, a banner offers to reload or keep yours, and saving never
+overwrites a newer file without asking. So: keep Lectern open, ask the assistant for changes, watch
+them appear; drag things around, `⌘S`, and the assistant reads your version.
 
-### From a terminal (any browser; good next to Claude Code)
+### Other ways to run it
 
-```bash
-npx lectern-editor path/to/deck.html     # or a folder
-```
-
-This starts a small local server on `127.0.0.1:8765` and opens the editor. Saves go straight
-to the files, so an assistant editing the same HTML sees your changes and vice versa.
+- `npx lectern-editor path/to/deck.html` — a tiny local server, for Firefox/Safari (which lack the
+  folder picker) or when you prefer a URL.
+- Any static host can serve `dist/` (it needs HTTPS for the folder-serving worker).
 
 ### New deck and templates
 

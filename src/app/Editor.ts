@@ -80,11 +80,11 @@ export class Editor implements InteractionHost {
 
   // ---------------------------------------------------------------- lifecycle
 
-  async open(url: string, doc: DeckDocument): Promise<void> {
+  async open(source: string | { srcdoc: string }, doc: DeckDocument): Promise<void> {
     this.doc = doc;
     this.sel = [];
     this.history.clear();
-    await this.stage.load(url, doc);
+    await this.stage.load(source, doc);
     this.stage.on('slidechanged', (ref) => { this.emit('slide', ref); this.refreshOverlay(); });
     this.stage.on('resize', () => this.refreshOverlay());
     this.refreshOverlay();

@@ -117,7 +117,9 @@ export async function pickDeckFile(ws: Workspace): Promise<string | null> {
   for (const p of candidates.slice(0, 60)) {
     try {
       const text = await ws.readText(p);
-      if (!/<section\b/i.test(text)) continue;
+      // A deck is a full document (part files are fragments of sections) with slides, a slides container, or a parts list.
+      if (!/<html\b|<!doctype/i.test(text)) continue;
+      if (!/<section\b/i.test(text) && !/class="[^"]*\bslides\b/.test(text) && !/\bdata-parts=|\bparts\s*=\s*\[/.test(text)) continue;
       const title = /<title>([^<]*)<\/title>/i.exec(text)?.[1]?.trim() ?? '';
       const slides = (text.match(/<section\b/g) ?? []).length;
       decks.push({ path: p, title, slides });
@@ -161,7 +163,9 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
   let uploaded: string | null = null;
   const grid = h('div', { class: 'lec-img-grid' });
   const cells = images.map((p) => {
-    const cell = h('div', { class: 'lec-img-cell', tabindex: 0, title: p }, h('img', { src: ws.urlFor(p), alt: '', loading: 'lazy' }), h('div', { class: 'lec-name' }, p));
+    const img = h('img', { alt: '', loading: 'lazy' }) as HTMLImageElement;
+    void (ws.assetUrl ? ws.assetUrl(p) : Promise.resolve(ws.urlFor(p))).then((u) => { img.src = u; });
+    const cell = h('div', { class: 'lec-img-cell', tabindex: 0, title: p }, img, h('div', { class: 'lec-name' }, p));
     cell.addEventListener('click', () => { chosen = p; for (const c of cells) c.classList.toggle('lec-active', c === cell); });
     cell.addEventListener('dblclick', () => { chosen = p; (document.querySelector('.lec-modal .lec-primary') as HTMLButtonElement | null)?.click(); });
     return cell;

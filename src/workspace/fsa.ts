@@ -3,7 +3,8 @@
  * into the editing iframe by the service worker.
  */
 
-import { fsUrl, serveHandle } from './serviceWorker';
+import { BlobUrlCache } from './inline';
+import { fsUrl, serveHandle, serviceWorkerSupported } from './serviceWorker';
 import { normalizePath, type DirEntry, type Workspace } from './Workspace';
 
 declare global {
@@ -30,14 +31,26 @@ export class FsaWorkspace implements Workspace {
   readonly id: string;
   readonly name: string;
 
+  /** 'sw': files are served by the service worker at fs/<id>/…; 'blob': no worker (file://), blob URLs on demand. */
+  mode: 'sw' | 'blob' = 'sw';
+  readonly blobs: BlobUrlCache;
+
   constructor(readonly handle: FileSystemDirectoryHandle, id?: string) {
     this.id = id ?? `d${Date.now().toString(36)}${(counter++).toString(36)}`;
     this.name = handle.name;
+    this.blobs = new BlobUrlCache(this);
   }
 
-  /** Registers the handle with the service worker so URLs resolve. */
+  /** Registers the handle with the service worker so URLs resolve; falls back to blob mode without one. */
   async serve(): Promise<boolean> {
-    return serveHandle(this.id, this.handle);
+    if (serviceWorkerSupported() && (await serveHandle(this.id, this.handle))) { this.mode = 'sw'; return true; }
+    this.mode = 'blob';
+    return true;
+  }
+
+  async assetUrl(path: string): Promise<string> {
+    if (this.mode === 'sw') return this.urlFor(path);
+    return (await this.blobs.urlFor(path)) ?? '';
   }
 
   async ensurePermission(mode: 'read' | 'readwrite' = 'readwrite'): Promise<boolean> {
@@ -94,6 +107,7 @@ export class FsaWorkspace implements Workspace {
     const w = await fh.createWritable();
     await w.write(data instanceof Blob ? data : new Blob([data as BlobPart]));
     await w.close();
+    this.blobs.invalidate(path);
   }
 
   async mkdir(path: string): Promise<void> {

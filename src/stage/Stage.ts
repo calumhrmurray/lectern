@@ -69,6 +69,8 @@ export class Stage {
   document!: DeckDocument;
   /** Handler for keyboard events arriving inside the iframe (set by the app). */
   keyHandler: ((ev: KeyboardEvent) => void) | null = null;
+  /** Inline mode: maps a deck-relative URL to something the iframe can load (a blob URL); null = leave as is. */
+  liveUrlResolver: ((rel: string) => string | null) | null = null;
   private listeners = new Map<keyof StageEvents, Set<Listener<never>>>();
   private _current: SlideRef = { top: 0, sub: null };
   private resizeObserver?: ResizeObserver;
@@ -103,8 +105,8 @@ export class Stage {
 
   // ---------------------------------------------------------------- loading
 
-  /** Loads the deck URL into the iframe and waits for it to be ready. */
-  async load(url: string, document: DeckDocument, timeoutMs = 20000): Promise<void> {
+  /** Loads the deck (by URL, or as inline HTML) into the iframe and waits for it to be ready. */
+  async load(source: string | { srcdoc: string }, document: DeckDocument, timeoutMs = 20000): Promise<void> {
     this.ready = false;
     this.document = document;
     this.reveal = undefined;
@@ -114,7 +116,8 @@ export class Stage {
     await new Promise<void>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error('The deck did not finish loading.')), timeoutMs);
       this.iframe.addEventListener('load', () => { clearTimeout(t); resolve(); }, { once: true });
-      this.iframe.src = url;
+      if (typeof source === 'string') { this.iframe.removeAttribute('srcdoc'); this.iframe.src = source; }
+      else { this.iframe.removeAttribute('src'); this.iframe.srcdoc = source.srcdoc; }
     });
     const win = this.iframe.contentWindow;
     if (!win) throw new Error('No iframe window');
@@ -436,10 +439,26 @@ export class Stage {
 
   // ---------------------------------------------------------------- rendering
 
+  /** Rewrites deck-relative URLs on a live clone when the iframe cannot resolve them itself (inline mode). */
+  private resolveLiveUrls(el: Element): void {
+    const r = this.liveUrlResolver;
+    if (!r) return;
+    const els = [el, ...Array.from(el.querySelectorAll('[src], [data-background-image], [poster]'))];
+    for (const e of els) {
+      for (const attr of ['src', 'poster', 'data-background-image']) {
+        const v = e.getAttribute(attr);
+        if (!v || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(v)) continue;
+        const url = r(v);
+        if (url) e.setAttribute(attr, url);
+      }
+    }
+  }
+
   /** Re-creates the live top-level section `top` from its source. */
   renderSection(top: number): Element {
     const src = this.document.slides[top].el;
     const fresh = this.doc.importNode(src, true) as Element;
+    this.resolveLiveUrls(fresh);
     const old = this.liveTopSections()[top];
     if (old) old.replaceWith(fresh);
     else this.liveRoot.appendChild(fresh);
@@ -452,7 +471,9 @@ export class Stage {
   renderAll(): void {
     for (const s of this.liveTopSections()) s.remove();
     for (const rec of this.document.slides) {
-      this.liveRoot.appendChild(this.doc.importNode(rec.el, true));
+      const fresh = this.doc.importNode(rec.el, true) as Element;
+      this.resolveLiveUrls(fresh);
+      this.liveRoot.appendChild(fresh);
     }
     this.afterStructureChange();
     this.typeset(this.liveRoot);
@@ -462,6 +483,7 @@ export class Stage {
   insertLiveSection(top: number): void {
     const src = this.document.slides[top].el;
     const fresh = this.doc.importNode(src, true) as Element;
+    this.resolveLiveUrls(fresh);
     const ref = this.liveTopSections()[top] ?? null;
     this.liveRoot.insertBefore(fresh, ref);
     this.afterStructureChange();
@@ -561,10 +583,13 @@ export class Stage {
 
   setAttr(src: Element, name: string, value: string | null): void {
     const live = this.liveOf(src);
-    for (const el of [src, live]) {
-      if (!el) continue;
-      if (value === null) el.removeAttribute(name);
-      else el.setAttribute(name, value);
+    if (value === null) src.removeAttribute(name); else src.setAttribute(name, value);
+    if (live) {
+      if (value === null) live.removeAttribute(name);
+      else {
+        const resolved = this.liveUrlResolver && ['src', 'poster', 'data-background-image'].includes(name) && !/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(value) ? this.liveUrlResolver(value) : null;
+        live.setAttribute(name, resolved ?? value);
+      }
     }
   }
 
@@ -582,6 +607,7 @@ export class Stage {
     src.innerHTML = html;
     if (live) {
       live.innerHTML = html;
+      this.resolveLiveUrls(live);
       this.typeset(live);
     } else {
       this.renderSection(this.topIndexOf(src));
@@ -620,7 +646,8 @@ export class Stage {
     }
     if (liveParent) {
       for (const el of els) {
-        const liveEl = this.doc.importNode(el, true);
+        const liveEl = this.doc.importNode(el, true) as Element;
+        this.resolveLiveUrls(liveEl);
         liveParent.insertBefore(liveEl, liveBefore);
         this.typeset(liveEl);
       }

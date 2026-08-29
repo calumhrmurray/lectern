@@ -20,7 +20,7 @@ export class ThumbnailRenderer {
     if (this.headCache) return this.headCache;
     const stage = this.editor.stage;
     const doc = stage.doc;
-    const parts: string[] = [`<base href="${escapeAttr(stage.iframe.src)}">`];
+    const parts: string[] = stage.iframe.src ? [`<base href="${escapeAttr(stage.iframe.src)}">`] : [];
     for (const node of Array.from(doc.querySelectorAll('link[rel~="stylesheet"], style'))) {
       if (node.id === 'lec-editing-styles') continue;
       if (node instanceof HTMLLinkElement) {

@@ -14,7 +14,7 @@ const registrations = new Map<string, Registration>();
 let ready: Promise<ServiceWorker | null> | null = null;
 
 export function serviceWorkerSupported(): boolean {
-  return 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  return 'serviceWorker' in navigator && location.protocol !== 'file:' && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
 }
 
 async function activeWorker(): Promise<ServiceWorker | null> {
