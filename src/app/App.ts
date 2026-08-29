@@ -148,7 +148,40 @@ export class App {
     for (const [f, text] of Object.entries(REVEAL_EMBEDDED)) await ws.writeText(joinPath(base, 'reveal', f), text);
   }
 
-  /** Opens a bundled example deck in an in-memory workspace. */
+  /**
+   * Saves a bundled example into a folder of the user's choice (as ordinary
+   * HTML slides with their own reveal.js) and opens it from there.
+   */
+  async saveExampleToFolder(id: string): Promise<void> {
+    const files = EMBEDDED_EXAMPLES[id];
+    if (!files) { this.toast(`Unknown example ${id}`, 'error'); return; }
+    let ws: Workspace; let base = '';
+    if (fsaSupported() && window.showDirectoryPicker) {
+      let handle: FileSystemDirectoryHandle;
+      try { handle = await window.showDirectoryPicker({ mode: 'readwrite', id: 'lectern-example' }); } catch { return; }
+      const w = new FsaWorkspace(handle);
+      if (!(await w.ensurePermission('readwrite'))) return;
+      await w.serve();
+      if ((await w.list('')).some((e) => e.name === 'index.html')) {
+        if (!(await confirmDialog('Folder not empty', 'This folder already has an index.html. Overwrite it?', 'Overwrite'))) return;
+      }
+      ws = w;
+    } else {
+      const http = this.workspace?.kind === 'http' ? (this.workspace as HttpWorkspace) : await HttpWorkspace.detect();
+      if (!http) { this.toast('Saving needs the folder picker (Chrome/Edge) or the CLI.', 'error'); return; }
+      ws = http; base = id;
+    }
+    this.setLoading(true, 'Saving the example…');
+    try {
+      await this.installReveal(ws, base);
+      for (const [f, text] of Object.entries(files)) {
+        await ws.writeText(joinPath(base, f), /\.html?$/i.test(f) ? text.replace(/(href|src)="\.\.\/\.\.\/reveal\//g, '$1="reveal/') : text);
+      }
+    } finally { this.setLoading(false); }
+    await this.openDeck(ws, joinPath(base, 'index.html'));
+  }
+
+  /** Opens a bundled example deck in an in-memory workspace (preview only). */
   async openExample(id: string): Promise<void> {
     const files = EMBEDDED_EXAMPLES[id];
     if (!files) { this.toast(`Unknown example ${id}`, 'error'); return; }
@@ -159,7 +192,7 @@ export class App {
     }
     await ws.serve();
     await this.openDeck(ws, 'index.html');
-    this.toast('Example decks live in memory — use “Download a copy” (menu) to keep your edits.', 'info');
+    this.toast('Preview only: this copy lives in memory. Use “Save to a folder” on the welcome screen to keep and edit it.', 'info');
   }
 
   private hideWelcome(): void { this.els.welcome.classList.add('lec-hidden'); }

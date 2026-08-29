@@ -80,15 +80,17 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
         h('button', { class: 'lec-btn', type: 'button', onclick: () => void app.openDemo() },
           svgIcon(icons.play), h('b', {}, 'Try the demo'), h('span', {}, 'A sample deck kept in memory. Play with it; download the result if you like.')),
       ),
-      examples.length ? h('h3', {}, 'Example decks') : null,
-      examples.length ? h('div', { class: 'lec-list' }, ...examples.map((e) =>
-        h('button', { class: 'lec-list-item', type: 'button', onclick: () => void app.openExample(e.id) },
-          svgIcon(icons.play), h('span', {}, e.title, h('div', { class: 'lec-sub' }, e.description)), h('span', { class: 'lec-spacer' }), h('span', { class: 'lec-sub' }, e.lang)))) : null,
-      recents.length ? h('h3', {}, 'Recent') : null,
+      recents.length ? h('h3', {}, 'Your decks') : null,
       recents.length ? h('div', { class: 'lec-list' }, ...recents.map((r) =>
         h('button', { class: 'lec-list-item', type: 'button', onclick: () => void app.openRecent(r) },
-          svgIcon(icons.folder), h('span', {}, r.name, ' ', h('span', { class: 'lec-sub' }, `/ ${r.deckPath}`)), h('span', { class: 'lec-spacer' }),
+          svgIcon(icons.folder), h('span', {}, h('b', {}, r.name), ' ', h('span', { class: 'lec-sub' }, `/ ${r.deckPath}`)), h('span', { class: 'lec-spacer' }),
           h('span', { class: 'lec-sub' }, new Date(r.openedAt).toLocaleDateString())))) : null,
+      examples.length ? h('h3', {}, 'Example decks') : null,
+      examples.length ? h('div', { class: 'lec-list' }, ...examples.map((e) =>
+        h('div', { class: 'lec-list-item lec-static' },
+          svgIcon(icons.file), h('span', {}, e.title, h('div', { class: 'lec-sub' }, e.description)), h('span', { class: 'lec-spacer' }),
+          h('button', { class: 'lec-btn lec-primary', type: 'button', title: 'Copy the deck (with reveal.js) into a folder you choose and open it from there', onclick: () => void app.saveExampleToFolder(e.id) }, 'Save to a folder…'),
+          h('button', { class: 'lec-btn', type: 'button', title: 'Open a temporary copy in memory', onclick: () => void app.openExample(e.id) }, 'Preview')))) : null,
       h('p', { class: 'lec-note' },
         'From a terminal: ', h('code', {}, 'npx lectern-editor path/to/deck.html'), ' serves the editor locally for any browser — handy when a coding assistant is editing the same file. ',
         'Works with reveal.js decks (a global ', h('code', {}, 'Reveal'), ') and with any page whose slides are ', h('code', {}, '<section>'), ' elements.'),
