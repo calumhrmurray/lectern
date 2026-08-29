@@ -106,8 +106,8 @@ your own.
 `⌘S` save · `⌘Z / ⌘⇧Z` undo/redo · double-click edit text · `Esc` stop editing / deselect ·
 `⌘C/X/V/D` copy/cut/paste/duplicate · `⌫` delete · arrows nudge (`⇧` 10 px) ·
 `⇧`-drag constrain / keep aspect · `⌥`-drag ignore snapping · `PgUp/PgDn` slides ·
-`⌘⇧N` new slide · `⌘]`/`⌘[` forward/backward · `T` `I` `S` insert text/image/shape ·
-`+ − 0` zoom · `?` full list.
+`⌘⇧N` new slide · `⌘]`/`⌘[` forward/backward · typing with a text object selected edits it ·
+`N` new note for AI · `+ − 0` zoom · `?` full list.
 
 ## Development
 

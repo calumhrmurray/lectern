@@ -753,13 +753,14 @@ export class App {
     if (key === 'Home' && !mod) { stop(); const r = ed.slideRefs()[0]; if (r) ed.goTo(r); return; }
     if (key === 'End' && !mod) { stop(); const r = ed.slideRefs().at(-1); if (r) ed.goTo(r); return; }
     if (!mod && !ev.altKey) {
-      if (lower === 't') { stop(); ed.insertElement('text', { edit: true }); return; }
-      if (lower === 'n') { stop(); ed.insertElement('ainote', { edit: true }); return; }
-      if (lower === 'i') { stop(); void this.insertImageViaDialog(); return; }
-      if (lower === 's') { stop(); ed.insertElement('rect'); return; }
-      if (key === '+' || key === '=') { stop(); this.zoomBy(1); return; }
-      if (key === '-') { stop(); this.zoomBy(-1); return; }
-      if (key === '0') { stop(); this.setZoom(1); return; }
+      // Type-to-edit: a printable key with one text object selected starts editing and replaces its text.
+      if (hasSel && key.length === 1 && ed.typeIntoSelection(key)) { stop(); return; }
+      if (!hasSel) {
+        if (lower === 'n') { stop(); ed.insertElement('ainote', { edit: true }); return; }
+        if (key === '+' || key === '=') { stop(); this.zoomBy(1); return; }
+        if (key === '-') { stop(); this.zoomBy(-1); return; }
+        if (key === '0') { stop(); this.setZoom(1); return; }
+      }
     }
     void isMac;
     void promptDialog;

@@ -145,6 +145,15 @@ export class TextSession {
     this.opts.onChange?.();
   }
 
+  /** Selects the whole content (typing then replaces it). */
+  selectAll(): void {
+    const sel = this.stage.win.getSelection();
+    const r = this.stage.doc.createRange();
+    r.selectNodeContents(this.live);
+    sel?.removeAllRanges();
+    sel?.addRange(r);
+  }
+
   /** Inserts text at the caret. */
   insertText(text: string): void {
     this.live.focus({ preventScroll: true });

@@ -911,10 +911,14 @@ export class Editor implements InteractionHost {
 
   // ---------------------------------------------------------------- text editing
 
-  startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }): void {
+  /** Placeholder texts of freshly inserted objects: typing replaces them wholesale. */
+  private static PLACEHOLDERS = new Set(['Describe what you want here', 'Text', 'Title', 'Note', '// code', 'First point Second point']);
+
+  startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }, opts: { replaceAll?: boolean } = {}): void {
     if (this.textSession) this.endTextEdit();
     if (!isTextEditable(el) || !this.stage.liveOf(el)) return;
-    const caret = caretPage ? (() => { const p = this.pageToFrame(caretPage.clientX, caretPage.clientY); return { clientX: p.x, clientY: p.y }; })() : undefined;
+    const isPlaceholder = Editor.PLACEHOLDERS.has((el.textContent ?? '').replace(/\s+/g, ' ').trim());
+    const caret = caretPage && !isPlaceholder && !opts.replaceAll ? (() => { const p = this.pageToFrame(caretPage.clientX, caretPage.clientY); return { clientX: p.x, clientY: p.y }; })() : undefined;
     const top = this.topOf(el);
     this.begin('Edit text', { top });
     let session: TextSession;
@@ -948,8 +952,20 @@ export class Editor implements InteractionHost {
     this.textSession = session;
     this.overlay.setTextMode(true);
     session.start(caret);
+    if (!caret) session.selectAll();
     this.emit('textmode', true);
     this.refreshOverlay();
+  }
+
+  /** Starts editing the selected text object and types `text` in place of its content (type-to-edit). */
+  typeIntoSelection(text: string): boolean {
+    const el = this.primary;
+    if (!el || this.sel.length !== 1 || !isTextEditable(el) || this.textSession) return false;
+    this.startTextEdit(el, undefined, { replaceAll: true });
+    const session = this.textSession as TextSession | null;
+    if (!session) return false;
+    session.insertText(text);
+    return true;
   }
 
   /** Hook for the app: handle shortcuts during text editing (return true if consumed). */

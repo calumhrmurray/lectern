@@ -133,3 +133,18 @@ test('notes for AI: placed on the slide, saved hidden, listed with a prompt', as
   await expect(page.locator('.lec-ai-item')).toHaveCount(0);
   expect(await serialized(page)).not.toContain('data-ai-note');
 });
+
+test('type-to-edit: typing on a selected note replaces its placeholder', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 1);
+  await page.locator('.lec-btn[data-action="ainote"]').click();
+  await page.keyboard.press('Escape'); // stop the initial edit, keeping the placeholder
+  const note = await centerOf(page, 'section.present [data-ai-note]');
+  await page.mouse.click(note.x, note.y); // single click: selected, not editing
+  await page.keyboard.type('explain gigantism here');
+  await page.keyboard.press('Escape');
+  await expect(frame.locator('section.present [data-ai-note]')).toHaveText('explain gigantism here');
+  const out = await serialized(page);
+  expect(out).toContain('>explain gigantism here</div>');
+  expect(out).not.toContain('Describe what you want here');
+});
