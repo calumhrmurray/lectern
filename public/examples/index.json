@@ -1,0 +1,6 @@
+{
+  "examples": [
+    { "id": "whale-evolution", "title": "From land to sea — the evolutionary pathways of whales", "description": "15 referenced slides in the Aquarelle theme: raoellids, Pakicetus, Ambulocetus, protocetids, basilosaurids, the Neoceti split, echolocation, gigantism, genomics.", "lang": "en", "files": ["index.html", "theme.css"] },
+    { "id": "naturalisation-fr", "title": "Préparer l'entretien de naturalisation", "description": "17 diapositives en français : cadre juridique, déroulement, symboles, valeurs, institutions, histoire, droits et devoirs — sources sur chaque diapositive.", "lang": "fr", "files": ["index.html", "theme.css"] }
+  ]
+}

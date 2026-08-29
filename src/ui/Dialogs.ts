@@ -2,6 +2,7 @@
 
 import type { App } from '../app/App';
 import { SLIDE_LAYOUTS } from '../deck/templates';
+import { DECK_THEMES } from '../deck/themes';
 import type { RecentEntry } from '../workspace/fsa';
 import type { DirEntry, Workspace } from '../workspace/Workspace';
 import { h, svgIcon, modKey, isMac } from './dom';
@@ -64,11 +65,13 @@ export async function promptDialog(title: string, label: string, value = '', pla
 
 // ---------------------------------------------------------------- welcome
 
-export function renderWelcome(app: App, container: HTMLElement, recents: RecentEntry[], fsaOk: boolean): void {
+export interface ExampleInfo { id: string; title: string; description: string; lang: string; files: string[] }
+
+export function renderWelcome(app: App, container: HTMLElement, recents: RecentEntry[], fsaOk: boolean, examples: ExampleInfo[] = []): void {
   container.replaceChildren(
     h('div', { class: 'lec-welcome-card' },
       h('h1', {}, svgIcon(icons.lectern), 'Lectern'),
-      h('p', { class: 'lec-tagline' }, 'A visual editor for reveal.js presentations. The HTML file is the document.'),
+      h('p', { class: 'lec-tagline' }, 'A visual editor for HTML presentations. The HTML file is the document.'),
       h('div', { class: 'lec-welcome-actions' },
         h('button', { class: 'lec-btn', type: 'button', disabled: !fsaOk, onclick: () => void app.openFolder() },
           svgIcon(icons.folder), h('b', {}, 'Open a folder…'), h('span', {}, fsaOk ? 'Pick the folder that contains your deck. Saves go straight back to the file.' : 'Needs Chrome or Edge. In other browsers, run the CLI (see below).')),
@@ -77,6 +80,10 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
         h('button', { class: 'lec-btn', type: 'button', onclick: () => void app.openDemo() },
           svgIcon(icons.play), h('b', {}, 'Try the demo'), h('span', {}, 'A sample deck kept in memory. Play with it; download the result if you like.')),
       ),
+      examples.length ? h('h3', {}, 'Example decks') : null,
+      examples.length ? h('div', { class: 'lec-list' }, ...examples.map((e) =>
+        h('button', { class: 'lec-list-item', type: 'button', onclick: () => void app.openExample(e.id) },
+          svgIcon(icons.play), h('span', {}, e.title, h('div', { class: 'lec-sub' }, e.description)), h('span', { class: 'lec-spacer' }), h('span', { class: 'lec-sub' }, e.lang)))) : null,
       recents.length ? h('h3', {}, 'Recent') : null,
       recents.length ? h('div', { class: 'lec-list' }, ...recents.map((r) =>
         h('button', { class: 'lec-list-item', type: 'button', onclick: () => void app.openRecent(r) },
@@ -84,7 +91,7 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
           h('span', { class: 'lec-sub' }, new Date(r.openedAt).toLocaleDateString())))) : null,
       h('p', { class: 'lec-note' },
         'From a terminal: ', h('code', {}, 'npx lectern-editor path/to/deck.html'), ' serves the editor locally for any browser — handy when a coding assistant is editing the same file. ',
-        'Decks must be single-file reveal.js presentations with ', h('code', {}, '<div class="slides">'), ' and a global ', h('code', {}, 'Reveal'), '.'),
+        'Works with reveal.js decks (a global ', h('code', {}, 'Reveal'), ') and with any page whose slides are ', h('code', {}, '<section>'), ' elements.'),
     ),
   );
 }
@@ -105,19 +112,19 @@ export async function pickDeckFile(ws: Workspace): Promise<string | null> {
     }
   };
   await scanDir('', 0);
-  // Only offer files that look like reveal decks.
+  // Only offer files that look like slide decks (reveal.js or a page of <section>s).
   const decks: { path: string; title: string; slides: number }[] = [];
   for (const p of candidates.slice(0, 60)) {
     try {
       const text = await ws.readText(p);
-      if (!/class="[^"]*\bslides\b/.test(text) && !/class='[^']*\bslides\b/.test(text)) continue;
+      if (!/<section\b/i.test(text)) continue;
       const title = /<title>([^<]*)<\/title>/i.exec(text)?.[1]?.trim() ?? '';
       const slides = (text.match(/<section\b/g) ?? []).length;
       decks.push({ path: p, title, slides });
     } catch { /* skip */ }
   }
   if (!decks.length) {
-    await modal({ title: 'No reveal.js deck found', body: h('p', {}, `No HTML file with a <div class="slides"> container was found in “${ws.name}”.`) });
+    await modal({ title: 'No deck found', body: h('p', {}, `No HTML file with <section> slides was found in “${ws.name}”.`) });
     return null;
   }
   if (decks.length === 1) return decks[0].path;
@@ -182,7 +189,7 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
   return v === 'ok' ? chosen : null;
 }
 
-export interface NewDeckOptions { title: string; author: string; width: number; height: number; folderName: string }
+export interface NewDeckOptions { title: string; author: string; width: number; height: number; folderName: string; theme: string }
 
 export async function newDeckDialog(needsFolderName: boolean): Promise<NewDeckOptions | null> {
   const title = h('input', { class: 'lec-field', type: 'text', value: 'My talk' }) as HTMLInputElement;
@@ -196,19 +203,32 @@ export async function newDeckDialog(needsFolderName: boolean): Promise<NewDeckOp
   ) as HTMLSelectElement;
   title.addEventListener('input', () => { if (!folder.dataset.touched) folder.value = slug(title.value) || 'deck'; });
   folder.addEventListener('input', () => { folder.dataset.touched = '1'; });
+  let themeId = DECK_THEMES[0].id;
+  const themeGrid = h('div', { class: 'lec-theme-grid' });
+  const cards = DECK_THEMES.map((t) => {
+    const card = h('button', { class: `lec-theme-card${t.id === themeId ? ' lec-active' : ''}`, type: 'button', title: t.description },
+      h('div', { class: 'lec-theme-pv', style: `background:${t.swatch[0]};color:${t.swatch[1]}` },
+        h('i', { style: `background:${t.swatch[2]}` }), h('b', {}, 'Aa'), h('span', {}, '— — —')),
+      h('b', {}, t.name), h('span', {}, t.description));
+    card.addEventListener('click', () => { themeId = t.id; for (const c of cards) c.classList.toggle('lec-active', c === card); });
+    return card;
+  });
+  themeGrid.append(...cards);
   const v = await modal({
-    title: 'New deck',
+    title: 'New deck', wide: true,
     body: [
       h('div', { class: 'lec-row' }, h('label', {}, 'Title'), title),
       h('div', { class: 'lec-row' }, h('label', {}, 'Author'), author),
       h('div', { class: 'lec-row' }, h('label', {}, 'Slide size'), size),
+      h('div', { class: 'lec-row lec-row-wide' }, h('label', {}, 'Theme')),
+      themeGrid,
       needsFolderName ? h('div', { class: 'lec-row' }, h('label', {}, 'Folder name'), folder) : h('p', { class: 'lec-help' }, 'You will be asked to choose an empty folder next. reveal.js is copied into it so the deck works offline.'),
     ],
     buttons: [{ label: 'Cancel', value: 'cancel' }, { label: 'Create', value: 'ok', primary: true }],
   });
   if (v !== 'ok') return null;
   const [w, hgt] = size.value.split('x').map(Number);
-  return { title: title.value.trim() || 'Untitled', author: author.value.trim(), width: w, height: hgt, folderName: folder.value.trim() || 'deck' };
+  return { title: title.value.trim() || 'Untitled', author: author.value.trim(), width: w, height: hgt, folderName: folder.value.trim() || 'deck', theme: themeId };
 }
 
 function slug(s: string): string {

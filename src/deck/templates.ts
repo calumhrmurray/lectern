@@ -7,6 +7,7 @@
  */
 
 import { escapeHtml } from './html';
+import { themeById, type DeckTheme } from './themes';
 
 export interface SlideLayout {
   id: string;
@@ -158,52 +159,15 @@ export function updateLineSvg(svg: SVGElement): void {
 
 // ---------------------------------------------------------------- starter deck
 
-export const STARTER_THEME = `/* Deck theme. Edit freely — the editor exposes these classes as toggles. */
-:root {
-  --paper: #f5f2ea;
-  --ink: #1d1f24;
-  --ink-soft: #5a6070;
-  --accent: #b5542a;
-  --accent-2: #2b4a8b;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-.reveal-viewport { background: var(--paper); }
-.reveal { font-family: var(--sans); font-size: 30px; color: var(--ink); }
-.reveal .slides { text-align: left; }
-.reveal .slides section { padding: 24px 40px; }
-
-.reveal h1, .reveal h2, .reveal h3 {
-  font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em; text-transform: none; color: var(--ink);
-}
-.reveal h1 { font-size: 2.4em; line-height: 1.06; }
-.reveal h2 { font-size: 1.4em; line-height: 1.12; margin: 0 0 0.6em; }
-.reveal p, .reveal li { font-size: 0.72em; line-height: 1.5; }
-.reveal ul { margin: 0.2em 0 0.2em 1em; }
-.reveal li { margin: 0.35em 0; }
-.reveal strong { font-weight: 650; }
-.reveal .kicker { font-size: 0.42em; text-transform: uppercase; letter-spacing: 0.22em; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
-.reveal .accent { color: var(--accent); font-weight: 600; }
-.reveal .accent-2 { color: var(--accent-2); font-weight: 600; }
-.reveal .soft { color: var(--ink-soft); }
-.reveal .caption { font-size: 0.46em; color: var(--ink-soft); text-align: center; }
-.reveal img.fig { background: #fff; padding: 8px; border-radius: 6px; box-shadow: 0 6px 26px rgba(0,0,0,.14); }
-
-.reveal section.title-slide { padding-top: 140px; }
-.reveal section.title-slide h1 { max-width: 20ch; }
-.reveal section.title-slide .sub { font-family: var(--serif); font-style: italic; font-size: 0.95em; color: var(--ink-soft); margin-top: 0.5em; }
-.reveal section.title-slide .meta { margin-top: 2em; font-size: 0.58em; color: var(--ink-soft); line-height: 1.7; }
-
-.reveal section.break { padding-top: 180px; }
-.reveal section.break .big { font-family: var(--serif); font-size: 1.9em; line-height: 1.16; max-width: 22ch; }
-.reveal section.break .sub { font-size: 0.72em; color: var(--ink-soft); margin-top: 0.8em; }
-`;
-
-export function starterDeckHtml(opts: { title: string; author?: string; width: number; height: number; revealPath: string }): string {
+export function starterDeckHtml(opts: { title: string; author?: string; width: number; height: number; revealPath: string; theme?: DeckTheme | string }): string {
   const title = escapeHtml(opts.title);
   const author = escapeHtml(opts.author ?? '');
   const r = opts.revealPath.replace(/\/$/, '');
+  const theme = typeof opts.theme === 'string' ? themeById(opts.theme) : opts.theme ?? themeById('paper');
+  const prefix = theme.bodyPrefix ? '\n  ' + theme.bodyPrefix : '';
+  const decoration = theme.id === 'aquarelle'
+    ? '\n        <div class="wash deep" style="left:-120px;top:40px;width:520px;height:400px;"></div>\n        <div class="wash light" style="left:800px;top:-60px;width:560px;height:480px;"></div>'
+    : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -214,12 +178,12 @@ export function starterDeckHtml(opts: { title: string; author?: string; width: n
   <link rel="stylesheet" href="${r}/dist/reveal.css">
   <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body>${prefix}
   <div class="reveal">
     <div class="slides">
 
       <!-- 1 · title -->
-      <section class="title-slide">
+      <section class="title-slide">${decoration}
         <h1>${title}</h1>
         <p class="sub">A subtitle</p>
         <p class="meta"><b>${author || 'Your name'}</b><br>Occasion · Date</p>

@@ -1,0 +1,64 @@
+/* Paper — warm paper, serif headings. Edit freely; the editor exposes these classes as toggles. */
+:root {
+  --paper: #f5f2ea; --paper-2: #ebe6d9; --ink: #1d1f24; --ink-soft: #5a6070; --rule: #d8d2c4;
+  --accent: #b5542a; --accent-2: #2b4a8b;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.reveal-viewport { background: var(--paper); }
+.reveal { font-family: var(--sans); font-size: 30px; color: var(--ink); }
+.reveal h1, .reveal h2, .reveal h3 { font-family: var(--serif); font-weight: 600; color: var(--ink); }
+.reveal .kicker { color: var(--accent); }
+.reveal .accent { color: var(--accent); font-weight: 600; }
+.reveal .accent-2 { color: var(--accent-2); font-weight: 600; }
+.reveal .soft { color: var(--ink-soft); opacity: 1; }
+.reveal .caption, .reveal .cite { color: var(--ink-soft); }
+.reveal .card { background: var(--paper-2); border: 1px solid var(--rule); }
+.reveal img.fig { background: #fff; padding: 8px; box-shadow: 0 6px 26px rgba(0,0,0,.14); }
+.reveal table th { color: var(--ink-soft); border-bottom: 2px solid var(--ink); }
+.reveal table td { border-bottom: 1px solid var(--rule); }
+.reveal section.title-slide .sub { font-family: var(--serif); font-style: italic; color: var(--ink-soft); }
+.reveal section.title-slide .meta { color: var(--ink-soft); }
+.reveal section.break .big { font-family: var(--serif); }
+.reveal section.break .sub { color: var(--ink-soft); }
+
+/* ---- shared vocabulary ---- */
+.reveal .slides { text-align: left; }
+.reveal .slides section { padding: 24px 40px; box-sizing: border-box; }
+.reveal h1, .reveal h2, .reveal h3 { text-transform: none; letter-spacing: -0.01em; }
+.reveal h1 { font-size: 2.4em; line-height: 1.06; margin: 0; }
+.reveal h2 { font-size: 1.4em; line-height: 1.12; margin: 0 0 0.6em; }
+.reveal h3 { font-size: 1.05em; margin: 0 0 0.4em; }
+.reveal p, .reveal li { font-size: 0.72em; line-height: 1.5; }
+.reveal ul, .reveal ol { margin: 0.2em 0 0.2em 1em; }
+.reveal li { margin: 0.35em 0; }
+.reveal strong { font-weight: 650; }
+.reveal em { font-style: italic; }
+.reveal .kicker { font-size: 0.42em; text-transform: uppercase; letter-spacing: 0.22em; font-weight: 600; margin: 0 0 14px; }
+.reveal .soft { opacity: 0.72; }
+.reveal .caption { font-size: 0.46em; text-align: center; margin-top: 8px; }
+.reveal .cite { position: absolute; left: 40px; right: 40px; bottom: 18px; font-size: 0.4em; margin: 0; opacity: 0.7; }
+.reveal .cols { display: flex; gap: 40px; align-items: flex-start; }
+.reveal .col { flex: 1; min-width: 0; }
+.reveal .card { border-radius: 12px; padding: 18px 22px; }
+.reveal .card p, .reveal .card li { font-size: 0.62em; }
+.reveal table { font-size: 0.56em; border-collapse: collapse; width: 100%; margin: 10px 0; }
+.reveal table th { text-align: left; font-weight: 600; padding: 7px 10px; font-size: 0.85em; letter-spacing: 0.06em; text-transform: uppercase; }
+.reveal table td { padding: 7px 10px; vertical-align: top; }
+.reveal img.fig { max-width: 100%; display: block; margin: 6px auto; border-radius: 6px; }
+.reveal section.title-slide { padding-top: 140px; }
+.reveal section.title-slide h1 { max-width: 20ch; }
+.reveal section.title-slide .sub { font-size: 0.95em; margin-top: 0.5em; }
+.reveal section.title-slide .meta { margin-top: 2em; font-size: 0.58em; line-height: 1.7; }
+.reveal section.break { padding-top: 180px; }
+.reveal section.break .big { font-size: 1.9em; line-height: 1.16; max-width: 22ch; }
+.reveal section.break .sub { font-size: 0.72em; margin-top: 0.8em; }
+
+/* deck-specific: tricolore accents */
+:root { --accent: #1f4fa3; --accent-2: #c1272d; }
+.reveal .tricolore { display: inline-block; width: 54px; height: 14px; background: linear-gradient(90deg, #0055a4 0 33.3%, #fff 33.3% 66.6%, #ef4135 66.6%); border: 1px solid var(--rule); vertical-align: middle; margin-right: 10px; }
+.reveal .refs li { font-size: 0.46em; margin: 0.25em 0; }
+.reveal .warn { background: #fff4d6; border: 1px solid #e6c46a; border-radius: 8px; padding: 10px 14px; font-size: 0.56em; }
+.reveal .q { font-style: italic; color: var(--accent); }
+.reveal table td, .reveal table th { font-size: 0.95em; }
+.reveal .card h3 { margin-top: 0; font-size: 0.9em; }

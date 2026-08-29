@@ -9,10 +9,11 @@ import demoPlotSvg from '../../test/fixtures/demo/figures/plot.svg?raw';
 import { discoverFontFamilies, discoverThemeClasses, type ThemeClass } from '../deck/cssClasses';
 import { DeckDocument } from '../deck/DeckDocument';
 import { detectParts } from '../deck/scan';
-import { SLIDE_LAYOUTS, STARTER_THEME, starterDeckHtml } from '../deck/templates';
+import { SLIDE_LAYOUTS, starterDeckHtml } from '../deck/templates';
+import { themeById } from '../deck/themes';
 import type { SlideRef } from '../stage/Stage';
 import { h, isMac } from '../ui/dom';
-import { aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, promptDialog, renderWelcome, shortcutsDialog } from '../ui/Dialogs';
+import { aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, promptDialog, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
 import { Inspector } from '../ui/Inspector';
 import { closeMenus } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
@@ -97,8 +98,41 @@ export class App {
 
   async showWelcome(): Promise<void> {
     const recents = fsaSupported() ? await listRecents() : [];
-    renderWelcome(this, this.els.welcome, recents, fsaSupported() && serviceWorkerSupported());
+    renderWelcome(this, this.els.welcome, recents, fsaSupported() && serviceWorkerSupported(), await this.listExamples());
     this.els.welcome.classList.remove('lec-hidden');
+  }
+
+  private examplesCache: ExampleInfo[] | null = null;
+  async listExamples(): Promise<ExampleInfo[]> {
+    if (this.examplesCache) return this.examplesCache;
+    try {
+      const res = await fetch(new URL('examples/index.json', editorBaseUrl()).href, { cache: 'no-store' });
+      this.examplesCache = res.ok ? ((await res.json()) as { examples: ExampleInfo[] }).examples : [];
+    } catch { this.examplesCache = []; }
+    return this.examplesCache;
+  }
+
+  /** Opens a bundled example deck in an in-memory workspace. */
+  async openExample(id: string): Promise<void> {
+    if (!serviceWorkerSupported()) { this.toast('Examples need a browser with service workers (https or localhost).', 'error'); return; }
+    const ex = (await this.listExamples()).find((e) => e.id === id);
+    if (!ex) { this.toast(`Unknown example ${id}`, 'error'); return; }
+    const ws = new MemoryWorkspace(ex.id);
+    const revealUrl = new URL('reveal/', editorBaseUrl()).href;
+    for (const f of ex.files) {
+      const res = await fetch(new URL(`examples/${ex.id}/${f}`, editorBaseUrl()).href, { cache: 'no-store' });
+      if (!res.ok) { this.toast(`Could not load ${f}`, 'error'); return; }
+      if (/\.(html?|css|svg|js|json|txt|md)$/i.test(f)) {
+        let text = await res.text();
+        if (/\.html?$/i.test(f)) text = text.replace(/(href|src)="\.\.\/\.\.\/reveal\//g, `$1="${revealUrl}`);
+        ws.addText(f, text);
+      } else {
+        ws.addBytes(f, new Uint8Array(await res.arrayBuffer()));
+      }
+    }
+    if (!(await ws.serve())) { this.toast('Could not start the service worker.', 'error'); return; }
+    await this.openDeck(ws, 'index.html');
+    this.toast('Example decks live in memory — use “Download a copy” (menu) to keep your edits.', 'info');
   }
 
   private hideWelcome(): void { this.els.welcome.classList.add('lec-hidden'); }
@@ -184,8 +218,9 @@ export class App {
         const data = new Uint8Array(await (await fetch(new URL(`reveal/${f}`, editorBaseUrl()).href)).arrayBuffer());
         await ws.writeBytes(joinPath(base, 'reveal', f), data);
       }
-      await ws.writeText(joinPath(base, 'theme.css'), STARTER_THEME);
-      await ws.writeText(joinPath(base, 'index.html'), starterDeckHtml({ title: opts.title, author: opts.author, width: opts.width, height: opts.height, revealPath: 'reveal' }));
+      const theme = themeById(opts.theme);
+      await ws.writeText(joinPath(base, 'theme.css'), theme.css);
+      await ws.writeText(joinPath(base, 'index.html'), starterDeckHtml({ title: opts.title, author: opts.author, width: opts.width, height: opts.height, revealPath: 'reveal', theme }));
       await this.openDeck(ws, joinPath(base, 'index.html'));
     } catch (err) {
       this.toast(`Could not create the deck: ${(err as Error).message}`, 'error');

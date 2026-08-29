@@ -47,10 +47,28 @@ npx lectern-editor path/to/deck.html     # or a folder
 This starts a small local server on `127.0.0.1:8765` and opens the editor. Saves go straight
 to the files, so an assistant editing the same HTML sees your changes and vice versa.
 
-### New deck
+### New deck and templates
 
-**New deck…** creates a folder with `index.html`, a clean `theme.css` and a copy of reveal.js
-(so it works offline). Slide size and author are asked up front.
+**New deck…** creates a folder with `index.html`, a `theme.css` and a copy of reveal.js (so it
+works offline). You choose slide size, author and one of four built-in themes — **Paper** (warm,
+serif), **Ink** (dark), **Academic** (white, tight), **Aquarelle** (blue watercolour washes) — all
+sharing one class vocabulary (`.kicker`, `.accent`, `.card`, `.cols/.col`, `.title-slide`, `.break`…)
+so slide layouts and inspector chips behave the same everywhere.
+
+### Example decks
+
+The welcome screen lists two complete, referenced decks you can open, edit and download:
+
+- **From land to sea — the evolutionary pathways of whales** (English, Aquarelle theme): 15 slides
+  from raoellids and *Pakicetus* to baleen-whale gigantism and genome-level gene loss. Every slide has a
+  `data-ref` attribute and full citations in its speaker notes; the last slide lists the sources.
+- **Préparer l'entretien de naturalisation** (French, Paper theme): 17 slides on the assimilation
+  interview — legal framework (Code civil art. 21-24 etc.), procedure and deadlines, symbols, values,
+  institutions, key dates, rights and duties — with the relevant texts cited on each slide. Rules in
+  this area change; the deck states its verification date and says what to check on service-public.fr.
+
+They live in `public/examples/`; add a folder and an entry in `public/examples/index.json` to ship
+your own.
 
 ## What counts as a deck
 

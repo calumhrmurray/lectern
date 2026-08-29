@@ -292,3 +292,15 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-toast.lec-error { background: var(--danger); }
 .lec-dropzone { position: absolute; inset: 0; z-index: 6; background: rgba(59,130,246,.12); border: 3px dashed var(--accent); display: none; align-items: center; justify-content: center; color: #fff; font-size: 18px; pointer-events: none; }
 .lec-dropzone.lec-on { display: flex; }
+
+/* ---------------------------------------------------------------- theme picker */
+.lec-theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 8px; }
+.lec-theme-card { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 8px; text-align: left; color: var(--text); }
+.lec-theme-card:hover { border-color: var(--text-dim); }
+.lec-theme-card.lec-active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.lec-theme-pv { height: 56px; border-radius: 4px; margin-bottom: 6px; padding: 8px 10px; position: relative; font-family: Georgia, serif; }
+.lec-theme-pv i { position: absolute; left: 10px; top: 8px; width: 22px; height: 4px; border-radius: 2px; }
+.lec-theme-pv b { display: block; font-size: 18px; margin-top: 10px; }
+.lec-theme-pv span { font-size: 9px; opacity: .6; }
+.lec-theme-card > b { font-size: 12px; display: block; }
+.lec-theme-card > span { font-size: 10.5px; color: var(--text-dim); display: block; line-height: 1.3; }

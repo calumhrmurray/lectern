@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>From land to sea — the evolutionary pathways of whales</title>
+  <meta name="description" content="A referenced overview of cetacean evolution, from raoellids and Pakicetus to baleen-whale gigantism.">
+  <meta name="references" content="See the final slide and the data-ref attribute on each section; full citations in the speaker notes.">
+  <link rel="stylesheet" href="../../reveal/dist/reset.css">
+  <link rel="stylesheet" href="../../reveal/dist/reveal.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="wc-edge"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="3" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/></filter>
+  </svg>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1 · title -->
+      <section class="title-slide" data-ref="Uhen 2010; Thewissen et al. 2009">
+        <div class="wash deep" style="left:-120px;top:60px;width:560px;height:420px;"></div>
+        <div class="wash light" style="left:760px;top:-80px;width:620px;height:520px;"></div>
+        <div class="wash warm" style="left:980px;top:520px;width:320px;height:220px;"></div>
+        <svg class="whale-art" viewBox="0 0 400 160" width="560" height="224" style="position:absolute;left:700px;top:400px;" aria-label="Stylised baleen whale silhouette">
+          <path d="M14,84 C36,58 110,44 200,52 C260,58 300,66 336,72 C350,74 356,76 360,80 C356,84 350,86 336,88 C300,98 250,110 190,112 C110,114 40,104 14,84 Z" fill="#1d4f74"/>
+          <path d="M356,80 C372,66 396,60 398,66 C388,72 378,78 372,80 C378,82 388,88 398,94 C396,100 372,94 356,80 Z" fill="#1d4f74"/>
+          <path d="M270,66 C284,54 300,52 306,58 C296,62 286,68 278,72 Z" fill="#1d4f74"/>
+          <path d="M150,110 C162,126 186,130 202,120 C186,118 168,114 150,110 Z" fill="#1d4f74"/>
+          <circle cx="48" cy="78" r="3.5" fill="#eef4f8"/>
+        </svg>
+        <h1>From land to sea.</h1>
+        <p class="sub">The evolutionary pathways of whales</p>
+        <p class="meta"><b>Cetacean evolution</b> in nine transitions · ~53 million years<br><span class="soft">Every slide carries its sources in the speaker notes (press S) and in <code>data-ref</code>.</span></p>
+        <aside class="notes">
+          Overview sources: Uhen, M.D. (2010) "The origin(s) of whales", Annual Review of Earth and Planetary Sciences 38:189–219.
+          Thewissen, J.G.M., Cooper, L.N., George, J.C. &amp; Bajpai, S. (2009) "From land to water: the origin of whales, dolphins, and porpoises", Evolution: Education and Outreach 2:272–288.
+          Marx, F.G., Lambert, O. &amp; Uhen, M.D. (2016) Cetacean Paleobiology, Wiley-Blackwell.
+        </aside>
+      </section>
+
+      <!-- 2 · where whales sit -->
+      <section data-ref="Nikaido, Rooney & Okada 1999 PNAS 96:10261; Gatesy 1997 MBE 14:537; Gingerich et al. 2001 Science 293:2239">
+        <div class="wash light" style="left:900px;top:420px;width:420px;height:320px;"></div>
+        <div class="kicker">Where whales sit on the tree of life</div>
+        <h2>Whales are even-toed ungulates. Their closest living relatives are hippos.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li>Cetaceans nest <strong>inside Artiodactyla</strong> (pigs, camels, ruminants, hippos) — hence the name <span class="accent">Cetartiodactyla</span>.</li>
+              <li>Molecular evidence: shared <strong>SINE retroposon insertions</strong> found only in whales and hippos (Nikaido et al. 1999) — near-irreversible markers of common ancestry.</li>
+              <li>Fossil confirmation: early whales <em>Rodhocetus</em> and <em>Artiocetus</em> have the artiodactyl <strong>double-pulley astragalus</strong> (ankle bone) (Gingerich et al. 2001).</li>
+              <li>The whale + hippo clade is called <span class="accent">Whippomorpha</span>.</li>
+            </ul>
+          </div>
+          <div class="col">
+            <svg viewBox="0 0 520 300" width="520" height="300" aria-label="Cladogram: within Artiodactyla, hippos are the sister group of cetaceans" style="font-family:inherit">
+              <g stroke="#1d4f74" stroke-width="3" fill="none" stroke-linecap="round">
+                <path d="M40,150 H120"/>
+                <path d="M120,150 V60 H200"/>
+                <path d="M120,150 V240 H200"/>
+                <path d="M200,60 V30 H300"/>
+                <path d="M200,60 V95 H300"/>
+                <path d="M200,240 V180 H300"/>
+                <path d="M200,240 V270 H300"/>
+                <path d="M300,180 V150 H400"/>
+                <path d="M300,180 V210 H400"/>
+              </g>
+              <g font-size="18" fill="#17303f">
+                <text x="308" y="36">camels</text>
+                <text x="308" y="101">pigs</text>
+                <text x="308" y="276">ruminants</text>
+                <text x="408" y="156">hippos</text>
+                <text x="408" y="216" font-weight="700" fill="#2f6f9f">whales</text>
+              </g>
+              <text x="330" y="245" font-size="14" fill="#4f6b7d" font-style="italic">Whippomorpha</text>
+              <text x="40" y="138" font-size="14" fill="#4f6b7d">Artiodactyla</text>
+            </svg>
+            <p class="caption">Simplified; branch lengths not to scale.</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Nikaido, M., Rooney, A.P. &amp; Okada, N. (1999) "Phylogenetic relationships among cetartiodactyls based on insertions of short and long interspersed elements: hippopotamuses are the closest extant relatives of whales", PNAS 96:10261–10266.
+          Gatesy, J. (1997) "More DNA support for a Cetacea/Hippopotamidae clade", Molecular Biology and Evolution 14:537–543.
+          Gingerich, P.D., ul Haq, M., Zalmout, I.S., Khan, I.H. &amp; Malkani, M.S. (2001) "Origin of whales from early artiodactyls: hands and feet of Eocene Protocetidae from Pakistan", Science 293:2239–2242.
+        </aside>
+      </section>
+
+      <!-- 3 · timeline -->
+      <section data-ref="Uhen 2010; Marx, Lambert & Uhen 2016; Slater, Goldbogen & Pyenson 2017">
+        <div class="kicker">Fifty-three million years in one line</div>
+        <h2>The transition happened fast: from wading to fully marine in about ten million years.</h2>
+        <svg viewBox="0 0 1200 380" width="1200" height="380" aria-label="Timeline of cetacean evolution from 53 million years ago to the present; the Eocene is stretched for legibility" style="font-family:inherit">
+          <defs>
+            <linearGradient id="tl" x1="0" x2="1"><stop offset="0" stop-color="#8ec1e0"/><stop offset="1" stop-color="#1d4f74"/></linearGradient>
+          </defs>
+          <!-- axis: Eocene 60–660 px (stretched), Oligocene 660–800, Miocene 800–1020, Plio–Pleistocene 1020–1140 -->
+          <rect x="60" y="190" width="1080" height="10" rx="5" fill="url(#tl)"/>
+          <g font-size="16" fill="#4f6b7d" text-anchor="middle">
+            <text x="60" y="230">53 Ma</text><text x="345" y="230">44 Ma</text><text x="660" y="230">34 Ma</text>
+            <text x="800" y="230">23 Ma</text><text x="1020" y="230">5 Ma</text><text x="1140" y="230">today</text>
+          </g>
+          <g font-size="13" fill="#4f6b7d" text-anchor="middle">
+            <text x="360" y="256">EOCENE (stretched)</text><text x="730" y="256">OLIGOCENE</text><text x="910" y="256">MIOCENE</text><text x="1080" y="256">PLIO–PLEIST.</text>
+          </g>
+          <g stroke="#1d4f74" stroke-width="2">
+            <line x1="155" y1="290" x2="155" y2="190"/><line x1="218" y1="330" x2="218" y2="190"/><line x1="186" y1="60" x2="186" y2="190"/>
+            <line x1="330" y1="120" x2="330" y2="190"/><line x1="439" y1="290" x2="439" y2="190"/><line x1="597" y1="60" x2="597" y2="190"/>
+            <line x1="730" y1="290" x2="730" y2="190"/><line x1="898" y1="120" x2="898" y2="190"/><line x1="1068" y1="290" x2="1068" y2="190"/>
+          </g>
+          <g font-size="17" fill="#17303f">
+            <text x="148" y="310" text-anchor="end" font-weight="700">Pakicetids</text><text x="148" y="330" text-anchor="end" font-size="14" fill="#4f6b7d">~50 Ma · rivers</text>
+            <text x="226" y="350" font-weight="700">Raoellids</text><text x="226" y="370" font-size="14" fill="#4f6b7d">Indohyus ~48 Ma · wading sister group</text>
+            <text x="186" y="52" text-anchor="middle" font-weight="700">Ambulocetids</text><text x="186" y="32" text-anchor="middle" font-size="14" fill="#4f6b7d">~49 Ma · walking and swimming</text>
+            <text x="330" y="112" text-anchor="middle" font-weight="700">Protocetids</text><text x="330" y="92" text-anchor="middle" font-size="14" fill="#4f6b7d">~47–40 Ma · seagoing, birth on land</text>
+            <text x="439" y="310" text-anchor="middle" font-weight="700">Basilosaurids</text><text x="439" y="330" text-anchor="middle" font-size="14" fill="#4f6b7d">~41–34 Ma · fully aquatic</text>
+            <text x="597" y="52" text-anchor="middle" font-weight="700">Neoceti split</text><text x="597" y="32" text-anchor="middle" font-size="14" fill="#4f6b7d">~36–34 Ma · baleen vs toothed</text>
+            <text x="730" y="310" text-anchor="middle" font-weight="700">Toothed mysticetes, early echolocators</text><text x="730" y="330" text-anchor="middle" font-size="14" fill="#4f6b7d">~30–28 Ma</text>
+            <text x="898" y="112" text-anchor="middle" font-weight="700">Modern families</text><text x="898" y="92" text-anchor="middle" font-size="14" fill="#4f6b7d">Miocene radiation</text>
+            <text x="1068" y="310" text-anchor="middle" font-weight="700">Gigantism</text><text x="1068" y="330" text-anchor="middle" font-size="14" fill="#4f6b7d">last ~4.5 Ma</text>
+          </g>
+          </svg>
+        <p class="caption" style="text-align:left;margin-top:0">First-appearance ages rounded from the cited papers; the Eocene/Oligocene boundary is 33.9 Ma (ICS 2023). The Eocene takes more than half of the line so that its events can be read.</p>
+        <aside class="notes">
+          Ages: Uhen (2010) Table 1 and text; Marx, Lambert &amp; Uhen (2016) Cetacean Paleobiology; International Chronostratigraphic Chart v2023/09 (Eocene–Oligocene boundary 33.9 Ma).
+          Gigantism timing: Slater, G.J., Goldbogen, J.A. &amp; Pyenson, N.D. (2017) "Independent evolution of baleen whale gigantism linked to Plio-Pleistocene ocean dynamics", Proc. R. Soc. B 284:20170546.
+        </aside>
+      </section>
+
+      <!-- 4 · Indohyus -->
+      <section data-ref="Thewissen et al. 2007 Nature 450:1190">
+        <div class="wash" style="left:820px;top:120px;width:460px;height:380px;"></div>
+        <div class="kicker">Transition 1 · a wading relative</div>
+        <h2><em>Indohyus</em>: the raoellids, sister group of whales.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li>Raccoon-sized artiodactyl from the <strong>middle Eocene of Kashmir, India</strong> (~48 Ma), described from a skeleton in 2007.</li>
+              <li>Shares with whales the <strong>involucrum</strong>: a thickened wall of the auditory bulla otherwise found only in cetaceans.</li>
+              <li>Heavy, <strong>osteosclerotic</strong> limb bones (ballast, as in hippos and otters) and oxygen isotopes of teeth indicate time spent in water.</li>
+              <li>Teeth suggest a plant-based or omnivorous diet — the first step into water was <strong>not</strong> about hunting fish.</li>
+            </ul>
+          </div>
+          <div class="col">
+            <div class="card">
+              <p><strong>Why it matters.</strong> <em>Indohyus</em> shows that aquatic habits (wading, hiding in water) preceded the dietary and locomotor changes seen in true whales; the ear came first.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          Thewissen, J.G.M., Cooper, L.N., Clementz, M.T., Bajpai, S. &amp; Tiwari, B.N. (2007) "Whales originated from aquatic artiodactyls in the Eocene epoch of India", Nature 450:1190–1194.
+        </aside>
+      </section>
+
+      <!-- 5 · Pakicetus -->
+      <section data-ref="Gingerich et al. 1983 Science 220:403; Thewissen et al. 2001 Nature 413:277">
+        <div class="kicker">Transition 2 · the earliest whales</div>
+        <h2><em>Pakicetus</em> (~50 Ma): a whale that walked on four legs.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li>Early Eocene of <strong>Pakistan</strong> (Kuldana Formation); first described from a skull in 1983, skeletons in 2001.</li>
+              <li>Wolf-sized, long-snouted, with eyes set high on the skull; limbs built for land and shallow water — <strong>not</strong> a swimmer's body.</li>
+              <li>Recognised as a cetacean by its <strong>ear</strong> (involucrum, pachyosteosclerotic bulla) and teeth, long before its body was known.</li>
+              <li>Ankle bones with the artiodactyl <strong>double-pulley astragalus</strong>: the fossil and molecular stories agree.</li>
+            </ul>
+          </div>
+          <div class="col">
+            <svg viewBox="0 0 420 200" width="440" height="210" aria-label="Stylised silhouette of Pakicetus, a four-legged early whale with a long snout and tail">
+              <g transform="translate(0,-14)">
+                <path d="M150,126 C140,100 150,80 190,74 C230,68 280,70 310,66 C340,62 366,60 392,70 C400,74 396,80 386,82 C370,86 352,88 336,90 C320,92 306,96 298,102 C292,110 286,118 280,126 L288,160 L276,160 L266,128 C246,130 224,130 206,128 L212,160 L200,160 L188,128 C176,128 162,128 150,126 Z" fill="#1d4f74" opacity=".9"/>
+                <path d="M150,122 C120,124 80,130 40,150 C30,156 24,166 26,176" stroke="#1d4f74" stroke-width="9" fill="none" stroke-linecap="round"/>
+                <circle cx="352" cy="72" r="3.5" fill="#eef4f8"/>
+              </g>
+            </svg>
+            <p class="caption">Shape only; proportions are schematic.</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Gingerich, P.D., Wells, N.A., Russell, D.E. &amp; Shah, S.M.I. (1983) "Origin of whales in epicontinental remnant seas: new evidence from the early Eocene of Pakistan", Science 220:403–406.
+          Thewissen, J.G.M., Williams, E.M., Roe, L.J. &amp; Hussain, S.T. (2001) "Skeletons of terrestrial cetaceans and the relationship of whales to artiodactyls", Nature 413:277–281.
+        </aside>
+      </section>
+
+      <!-- 6 · Ambulocetus -->
+      <section data-ref="Thewissen, Hussain & Arif 1994 Science 263:210; Nummela et al. 2004 Nature 430:776">
+        <div class="wash light" style="left:-80px;top:380px;width:520px;height:360px;"></div>
+        <div class="kicker">Transition 3 · the walking, swimming whale</div>
+        <h2><em>Ambulocetus natans</em> (~49 Ma): an ambush predator at the water's edge.</h2>
+        <ul>
+          <li>About <strong>3 m long</strong>, from the early–middle Eocene of Pakistan; large hind feet and a powerful tail suggest swimming by <strong>pelvic paddling and undulation</strong>, like an otter.</li>
+          <li>Could still support itself on land; crocodile-like ecology inferred from skull shape and stable isotopes (fresh to brackish water).</li>
+          <li>Hearing: early whales had a <strong>mandibular fat pad</strong> pathway for underwater sound, while pakicetids still heard mostly in air (Nummela et al. 2004).</li>
+        </ul>
+        <div class="card" style="position:absolute;left:720px;top:470px;width:500px;">
+          <p><strong>Naming.</strong> <em>Ambulocetus natans</em> = "the walking whale that swims" — the name says exactly what the skeleton shows.</p>
+        </div>
+        <aside class="notes">
+          Thewissen, J.G.M., Hussain, S.T. &amp; Arif, M. (1994) "Fossil evidence for the origin of aquatic locomotion in archaeocete whales", Science 263:210–212.
+          Nummela, S., Thewissen, J.G.M., Bajpai, S., Hussain, S.T. &amp; Kumar, K. (2004) "Eocene evolution of whale hearing", Nature 430:776–778.
+        </aside>
+      </section>
+
+      <!-- 7 · Protocetids -->
+      <section data-ref="Gingerich et al. 1994 Nature 368:844; Gingerich et al. 2009 PLoS ONE 4:e4366; Lambert et al. 2019 Curr Biol 29:1352">
+        <div class="kicker">Transition 4 · going to sea</div>
+        <h2>Protocetids: seagoing whales that still gave birth on land.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li><em>Rodhocetus</em> (~47 Ma, Pakistan): shortened neck, robust tail, hind limbs still weight-bearing (Gingerich et al. 1994).</li>
+              <li><em>Maiacetus inuus</em> (~47.5 Ma): a female preserved with a near-term <strong>fetus positioned head-first</strong> — modern whales are born tail-first — implying birth on land (Gingerich et al. 2009).</li>
+              <li><em>Peregocetus pacificus</em> (~42.6 Ma, Peru): a four-legged whale on the Pacific coast of South America, showing protocetids had <strong>crossed the Atlantic</strong> by the middle Eocene (Lambert et al. 2019).</li>
+            </ul>
+          </div>
+          <div class="col">
+            <table>
+              <tr><th>Genus</th><th>Age</th><th>Where</th></tr>
+              <tr><td><em>Rodhocetus</em></td><td>~47 Ma</td><td>Pakistan</td></tr>
+              <tr><td><em>Maiacetus</em></td><td>~47.5 Ma</td><td>Pakistan</td></tr>
+              <tr><td><em>Georgiacetus</em></td><td>~40 Ma</td><td>SE United States</td></tr>
+              <tr><td><em>Peregocetus</em></td><td>~42.6 Ma</td><td>Peru</td></tr>
+            </table>
+            <p class="caption">Ages as reported in the describing papers.</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Gingerich, P.D., Raza, S.M., Arif, M., Anwar, M. &amp; Zhou, X. (1994) "New whale from the Eocene of Pakistan and the origin of cetacean swimming", Nature 368:844–847.
+          Gingerich, P.D., ul-Haq, M., von Koenigswald, W., Sanders, W.J., Smith, B.H. &amp; Zalmout, I.S. (2009) "New protocetid whale from the middle Eocene of Pakistan: birth on land, precocial development, and sexual dimorphism", PLoS ONE 4(2):e4366.
+          Lambert, O., Bianucci, G., Salas-Gismondi, R., Di Celma, C., Steurbaut, E., Urbina, M. &amp; de Muizon, C. (2019) "An amphibious whale from the middle Eocene of Peru reveals early South Pacific dispersal of quadrupedal cetaceans", Current Biology 29:1352–1359.
+          Georgiacetus: Hulbert, R.C. et al. (1998) Journal of Paleontology 72:907–927.
+        </aside>
+      </section>
+
+      <!-- 8 · Basilosaurids -->
+      <section data-ref="Gingerich, Smith & Simons 1990 Science 249:154; Uhen 2004 Univ. Michigan Papers on Paleontology 34">
+        <div class="wash deep" style="left:640px;top:-60px;width:720px;height:420px;"></div>
+        <div class="kicker">Transition 5 · fully aquatic</div>
+        <h2>Basilosaurids (~41–34 Ma): whales that could no longer leave the water.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li><em>Basilosaurus</em> (up to ~17–18 m, eel-like body) and <em>Dorudon</em> (~5 m): fully marine, with tail flukes and flipper-like forelimbs.</li>
+              <li>Tiny but complete <strong>hind limbs</strong> preserved in <em>Basilosaurus isis</em> — with knee, ankle and toes — too small to bear weight (Gingerich et al. 1990).</li>
+              <li>Nostrils have moved back along the snout; the pelvis is no longer attached to the spine.</li>
+              <li>Best known from <strong>Wadi Al-Hitan</strong> ("Valley of Whales"), Egypt — a UNESCO World Heritage site since 2005.</li>
+            </ul>
+          </div>
+          <div class="col">
+            <svg viewBox="0 0 460 160" width="460" height="160" aria-label="Stylised Basilosaurus silhouette: a long, slender body with tiny hind limbs">
+              <path d="M10,84 C24,66 60,58 110,60 C200,62 300,70 380,76 C396,77 404,78 410,80 C404,83 396,84 380,86 C300,96 200,104 110,102 C60,102 24,98 10,84 Z" fill="#1d4f74"/>
+              <path d="M406,80 C420,68 444,62 446,68 C436,74 428,78 422,80 C428,82 436,88 446,94 C444,100 420,92 406,80 Z" fill="#1d4f74"/>
+              <path d="M70,98 C80,112 100,114 112,106 C98,104 84,102 70,98 Z" fill="#1d4f74"/>
+              <path d="M330,92 l4,12 l8,-10 z" fill="#1d4f74"/>
+              <circle cx="40" cy="76" r="3" fill="#eef4f8"/>
+            </svg>
+            <p class="caption">The hind limb (small triangle near the tail) is a few percent of body length.</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Gingerich, P.D., Smith, B.H. &amp; Simons, E.L. (1990) "Hind limbs of Eocene Basilosaurus: evidence of feet in whales", Science 249:154–157.
+          Uhen, M.D. (2004) "Form, function, and anatomy of Dorudon atrox (Mammalia, Cetacea): an archaeocete from the middle to late Eocene of Egypt", University of Michigan Papers on Paleontology 34:1–222.
+          UNESCO World Heritage List: Wadi Al-Hitan (Whale Valley), inscribed 2005.
+        </aside>
+      </section>
+
+      <!-- 9 · body plan -->
+      <section data-ref="Thewissen et al. 2006 PNAS 103:8414; Thewissen et al. 2009">
+        <div class="kicker">What actually changed</div>
+        <h2>The anatomical checklist of becoming a whale.</h2>
+        <table>
+          <tr><th>Trait</th><th>Land ancestor</th><th>Modern whale</th><th>Evidence</th></tr>
+          <tr><td>Nostrils</td><td>tip of snout</td><td>blowhole on top of head</td><td>progressive migration through protocetids and basilosaurids</td></tr>
+          <tr><td>Hearing</td><td>air-borne, via eardrum</td><td>water-borne, via jaw fat pad and isolated bulla</td><td>involucrum already in raoellids; fat pad in ambulocetids</td></tr>
+          <tr><td>Forelimb</td><td>walking leg</td><td>flipper, fingers encased</td><td>protocetids keep flexible elbows; basilosaurids lose them</td></tr>
+          <tr><td>Hind limb</td><td>weight-bearing</td><td>vestigial pelvis, no external limb</td><td><em>Sonic hedgehog</em> signalling shuts down in the dolphin hind-limb bud (Thewissen et al. 2006)</td></tr>
+          <tr><td>Tail</td><td>balance</td><td>horizontal fluke, main propulsor</td><td>flattened tail vertebrae in basilosaurids</td></tr>
+          <tr><td>Pelvis</td><td>fused to sacrum</td><td>free-floating</td><td>sacrum lost by the basilosaurid stage</td></tr>
+        </table>
+        <aside class="notes">
+          Thewissen, J.G.M., Cohn, M.J., Stevens, L.S., Bajpai, S., Heyning, J. &amp; Horton, W.E. Jr (2006) "Developmental basis for hind-limb loss in dolphins and origin of the cetacean bodyplan", PNAS 103:8414–8418.
+          Thewissen et al. (2009) Evolution: Education and Outreach 2:272–288 (review of the anatomical sequence).
+        </aside>
+      </section>
+
+      <!-- 10 · Neoceti / mysticetes -->
+      <section data-ref="Lambert et al. 2017 Curr Biol 27:1535; Geisler et al. 2017 Curr Biol 27:2036; Fordyce & Marx 2018 Curr Biol 28:1670">
+        <div class="wash light" style="left:840px;top:380px;width:480px;height:360px;"></div>
+        <div class="kicker">Transition 6 · the great split</div>
+        <h2>Baleen whales began with teeth.</h2>
+        <ul>
+          <li>Around <strong>36–34 Ma</strong> the crown group <span class="accent">Neoceti</span> splits into Mysticeti (baleen whales) and Odontoceti (toothed whales).</li>
+          <li><em>Mystacodon selenensis</em> (36.4 Ma, Peru) is the oldest known mysticete — and it has <strong>teeth</strong>, with wear suggesting suction feeding (Lambert et al. 2017).</li>
+          <li><em>Coronodon havensteini</em> (Oligocene, South Carolina) apparently <strong>filtered with its teeth</strong>, using slots between them (Geisler et al. 2017).</li>
+          <li>Aetiocetids had teeth plus, in some interpretations, incipient baleen; <em>Llanocetus</em> (~34 Ma, Antarctica) was already toothed and large (Fordyce &amp; Marx 2018).</li>
+          <li>Baleen itself rarely fossilises; its presence is inferred from <strong>nutrient foramina</strong> on the palate.</li>
+        </ul>
+        <aside class="notes">
+          Lambert, O., Martínez-Cáceres, M., Bianucci, G., Di Celma, C., Salas-Gismondi, R., Steurbaut, E., Urbina, M. &amp; de Muizon, C. (2017) "Earliest mysticete from the late Eocene of Peru sheds new light on the origin of baleen whales", Current Biology 27:1535–1541.
+          Geisler, J.H., Boessenecker, R.W., Brown, M. &amp; Beatty, B.L. (2017) "The origin of filter feeding in whales", Current Biology 27:2036–2042.
+          Fordyce, R.E. &amp; Marx, F.G. (2018) "Gigantism precedes filter feeding in baleen whale evolution", Current Biology 28:1670–1676.
+        </aside>
+      </section>
+
+      <!-- 11 · echolocation -->
+      <section data-ref="Geisler et al. 2014 Nature 508:383; Churchill et al. 2016 Curr Biol 26:2144">
+        <div class="kicker">Transition 7 · seeing with sound</div>
+        <h2>Toothed whales evolved echolocation early.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li><em>Cotylocara macei</em> (~28 Ma, South Carolina) shows a skull with <strong>asymmetry and deep air sinuses</strong> — the bony correlates of a sound-producing nasal apparatus (Geisler et al. 2014).</li>
+              <li><em>Echovenator sandersi</em> (Oligocene) had a cochlea adapted to <strong>ultrasonic hearing</strong>, indicating high-frequency hearing arose at or near the base of Odontoceti (Churchill et al. 2016).</li>
+              <li>Modern toothed whales produce clicks with <strong>phonic lips</strong> in the nasal passages, focus them through the melon, and receive echoes through the fat-filled lower jaw.</li>
+            </ul>
+          </div>
+          <div class="col">
+            <div class="card">
+              <p><strong>Two strategies, one ancestor.</strong> Within a few million years of the Neoceti split, one lineage was screening prey out of water, the other was ranging it with sound. Both are solutions to feeding in an ocean where the eyes are of limited use.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          Geisler, J.H., Colbert, M.W. &amp; Carew, J.L. (2014) "A new fossil species supports an early origin for toothed whale echolocation", Nature 508:383–386.
+          Churchill, M., Martínez-Cáceres, M., de Muizon, C., Mnieckowski, J. &amp; Geisler, J.H. (2016) "The origin of high-frequency hearing in whales", Current Biology 26:2144–2149.
+        </aside>
+      </section>
+
+      <!-- 12 · gigantism -->
+      <section data-ref="Slater, Goldbogen & Pyenson 2017 Proc R Soc B 284:20170546; Goldbogen et al. 2019 Science 366:1367">
+        <div class="wash deep" style="left:-160px;top:80px;width:640px;height:520px;"></div>
+        <div class="kicker">Transition 8 · becoming enormous</div>
+        <h2>Whales were not always giants. Gigantism is geologically recent.</h2>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li>Body-size analysis of living and fossil baleen whales shows very large size (&gt; 10 m) evolving <strong>independently in several lineages within the last ~4.5 million years</strong> (Slater et al. 2017).</li>
+              <li>The proposed driver: Plio-Pleistocene cooling and wind-driven <strong>coastal upwelling</strong> concentrated prey into dense seasonal patches, rewarding lunge-feeders that travel far and eat in bulk.</li>
+              <li>The blue whale, up to ~30 m and well over 100 tonnes, is the largest animal known to have lived; energetic measurements suggest filter-feeding sizes are capped by the cost of a lunge (Goldbogen et al. 2019).</li>
+            </ul>
+          </div>
+          <div class="col">
+            <svg viewBox="0 0 440 240" width="440" height="240" aria-label="Relative lengths: Pakicetus about 1.8 metres, Dorudon 5 metres, Basilosaurus 17 metres, blue whale 30 metres" style="font-family:inherit">
+              <g fill="#1d4f74">
+                <rect x="20" y="30" width="24" height="16" rx="8"/><rect x="20" y="70" width="67" height="16" rx="8"/><rect x="20" y="110" width="228" height="16" rx="8"/><rect x="20" y="150" width="402" height="16" rx="8"/>
+              </g>
+              <g font-size="14" fill="#17303f">
+                <text x="20" y="24"><tspan font-style="italic">Pakicetus</tspan> ~1.8 m</text>
+                <text x="20" y="64"><tspan font-style="italic">Dorudon</tspan> ~5 m</text>
+                <text x="20" y="104"><tspan font-style="italic">Basilosaurus</tspan> ~17 m</text>
+                <text x="20" y="144">Blue whale ~30 m</text>
+              </g>
+              <text x="20" y="200" font-size="13" fill="#4f6b7d">Bar length ∝ body length (approximate adult sizes).</text>
+            </svg>
+          </div>
+        </div>
+        <aside class="notes">
+          Slater, G.J., Goldbogen, J.A. &amp; Pyenson, N.D. (2017) "Independent evolution of baleen whale gigantism linked to Plio-Pleistocene ocean dynamics", Proceedings of the Royal Society B 284:20170546.
+          Goldbogen, J.A. et al. (2019) "Why whales are big but not bigger: physiological drivers and ecological limits in the age of ocean giants", Science 366:1367–1372.
+          Body lengths: Uhen (2004) for Dorudon; Gingerich (1990s) for Basilosaurus (~16–18 m); Thewissen et al. (2001) for Pakicetus (wolf-sized).
+        </aside>
+      </section>
+
+      <!-- 13 · genomes -->
+      <section data-ref="Huelsmann et al. 2019 Sci Adv 5:eaaw6671; McGowen et al. 2020 Syst Biol 69:479">
+        <div class="kicker">Transition 9 · written in the genome</div>
+        <h2>The land-to-water transition left a trail of lost genes.</h2>
+        <ul>
+          <li>Comparing 62 mammalian genomes, Huelsmann et al. (2019) identified <strong>85 protein-coding genes lost</strong> in the cetacean stem lineage.</li>
+          <li>Examples with plausible aquatic explanations: <em>AANAT</em> and <em>ASMT</em> (melatonin synthesis — consistent with unihemispheric sleep), <em>F12</em> (a coagulation factor; a possible protection against clotting during dives), <em>KLK8</em> (skin and hair function), <em>SLC4A9</em> (saliva secretion).</li>
+          <li>A genome-scale phylogeny of living cetaceans (McGowen et al. 2020) dates the crown Neoceti divergence and resolves the placement of most families.</li>
+        </ul>
+        <div class="card" style="margin-top:14px;">
+          <p><strong>Caveat.</strong> Gene loss correlates with the transition; the functional stories are hypotheses tested one gene at a time, and not all losses have known consequences.</p>
+        </div>
+        <aside class="notes">
+          Huelsmann, M., Hecker, N., Springer, M.S., Gatesy, J., Sharma, V. &amp; Hiller, M. (2019) "Genes lost during the transition from land to water in cetaceans highlight genomic changes associated with aquatic adaptations", Science Advances 5:eaaw6671.
+          McGowen, M.R. et al. (2020) "Phylogenomic resolution of the cetacean tree of life using target sequence capture", Systematic Biology 69:479–501.
+        </aside>
+      </section>
+
+      <!-- 14 · closing -->
+      <section class="break" data-ref="synthesis">
+        <div class="wash" style="left:700px;top:120px;width:560px;height:460px;"></div>
+        <div class="wash warm" style="left:-100px;top:500px;width:420px;height:240px;"></div>
+        <p class="big">Ear first, then feet, then sound and size.</p>
+        <p class="sub">Whale evolution is one of the best-documented macroevolutionary transitions: molecules, fossils and development all tell the same story, and the fossil record keeps filling the gaps — from Kashmir to Peru.</p>
+        <aside class="notes">
+          Closing synthesis; see the references slide. A good general-audience account: Pyenson, N.D. (2018) Spying on Whales, Viking; and Thewissen, J.G.M. (2014) The Walking Whales, University of California Press.
+        </aside>
+      </section>
+
+      <!-- 15 · references -->
+      <section data-ref="references" data-visibility="uncounted">
+        <div class="kicker">References</div>
+        <h2>Sources.</h2>
+        <div class="cols">
+          <div class="col refs">
+            <ul>
+              <li>Churchill M. et al. (2016) Curr. Biol. 26:2144–2149.</li>
+              <li>Fordyce R.E. &amp; Marx F.G. (2018) Curr. Biol. 28:1670–1676.</li>
+              <li>Gatesy J. (1997) Mol. Biol. Evol. 14:537–543.</li>
+              <li>Geisler J.H., Colbert M.W. &amp; Carew J.L. (2014) Nature 508:383–386.</li>
+              <li>Geisler J.H. et al. (2017) Curr. Biol. 27:2036–2042.</li>
+              <li>Gingerich P.D. et al. (1983) Science 220:403–406.</li>
+              <li>Gingerich P.D., Smith B.H. &amp; Simons E.L. (1990) Science 249:154–157.</li>
+              <li>Gingerich P.D. et al. (1994) Nature 368:844–847.</li>
+              <li>Gingerich P.D. et al. (2001) Science 293:2239–2242.</li>
+              <li>Gingerich P.D. et al. (2009) PLoS ONE 4:e4366.</li>
+              <li>Goldbogen J.A. et al. (2019) Science 366:1367–1372.</li>
+            </ul>
+          </div>
+          <div class="col refs">
+            <ul>
+              <li>Huelsmann M. et al. (2019) Sci. Adv. 5:eaaw6671.</li>
+              <li>Lambert O. et al. (2017) Curr. Biol. 27:1535–1541.</li>
+              <li>Lambert O. et al. (2019) Curr. Biol. 29:1352–1359.</li>
+              <li>Marx F.G., Lambert O. &amp; Uhen M.D. (2016) Cetacean Paleobiology. Wiley-Blackwell.</li>
+              <li>McGowen M.R. et al. (2020) Syst. Biol. 69:479–501.</li>
+              <li>Nikaido M., Rooney A.P. &amp; Okada N. (1999) PNAS 96:10261–10266.</li>
+              <li>Nummela S. et al. (2004) Nature 430:776–778.</li>
+              <li>Slater G.J., Goldbogen J.A. &amp; Pyenson N.D. (2017) Proc. R. Soc. B 284:20170546.</li>
+              <li>Thewissen J.G.M., Hussain S.T. &amp; Arif M. (1994) Science 263:210–212.</li>
+              <li>Thewissen J.G.M. et al. (2001) Nature 413:277–281.</li>
+              <li>Thewissen J.G.M. et al. (2006) PNAS 103:8414–8418.</li>
+              <li>Thewissen J.G.M. et al. (2007) Nature 450:1190–1194.</li>
+              <li>Thewissen J.G.M. et al. (2009) Evo. Edu. Outreach 2:272–288.</li>
+              <li>Uhen M.D. (2004) Univ. Michigan Pap. Paleontol. 34:1–222.</li>
+              <li>Uhen M.D. (2010) Annu. Rev. Earth Planet. Sci. 38:189–219.</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="notes">
+          Silhouettes on these slides are schematic drawings, not reconstructions. Ages are rounded from the cited papers; the timeline uses the ICS 2023 chart for epoch boundaries.
+        </aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../../reveal/dist/reveal.js"></script>
+  <script src="../../reveal/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280, height: 720, margin: 0.04,
+      center: false, hash: true, transition: 'fade',
+      controls: false, progress: true, slideNumber: 'c/t',
+      plugins: [ RevealNotes ],
+    });
+  </script>
+</body>
+</html>
