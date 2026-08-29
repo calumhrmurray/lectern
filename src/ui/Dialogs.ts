@@ -71,7 +71,7 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
   container.replaceChildren(
     h('div', { class: 'lec-welcome-card' },
       h('h1', {}, svgIcon(icons.lectern), 'Lectern'),
-      h('p', { class: 'lec-tagline' }, 'A visual editor for HTML presentations. The HTML file is the document.'),
+      h('p', { class: 'lec-tagline' }, 'A visual editor for HTML presentations. The HTML file is the document. ', h('span', { class: 'lec-sub', title: 'Build time' }, `build ${__LECTERN_BUILD__}`)),
       h('div', { class: 'lec-welcome-actions' },
         h('button', { class: 'lec-btn', type: 'button', disabled: !fsaOk, onclick: () => void app.openFolder() },
           svgIcon(icons.folder), h('b', {}, 'Open a folder…'), h('span', {}, fsaOk ? 'Pick the folder that contains your deck. Saves go straight back to the file.' : 'Needs Chrome or Edge. In other browsers, run the CLI (see below).')),
@@ -302,7 +302,7 @@ export function aboutDialog(): Promise<string> {
     body: [
       h('p', {}, 'Lectern edits reveal.js presentations visually. It loads your HTML file, renders it with the deck’s own reveal.js, and writes only the slides you changed back into the file — comments, indentation and untouched slides stay exactly as they were.'),
       h('p', { class: 'lec-help' }, 'MIT licensed. reveal.js is © Hakim El Hattab and contributors, MIT licensed. Not affiliated with any presentation software vendor.'),
-      h('p', { class: 'lec-help' }, `Mod key: ${modKey()} · Browser support for “Open folder”: Chrome, Edge and other Chromium browsers. Elsewhere, use the CLI.`),
+      h('p', { class: 'lec-help' }, `Build ${__LECTERN_BUILD__} · Mod key: ${modKey()} · Browser support for “Open folder”: Chrome, Edge and other Chromium browsers. Elsewhere, use the CLI.`),
     ],
   });
 }

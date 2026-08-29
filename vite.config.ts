@@ -27,6 +27,7 @@ function lecternDevWorkspace(): Plugin {
 // Relative base so the built site works both at the root (CLI server) and under
 // a sub-path (GitHub Pages: https://user.github.io/lectern/).
 export default defineConfig({
+  define: { __LECTERN_BUILD__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')) },
   base: './',
   plugins: [lecternDevWorkspace()],
   build: { outDir: 'dist', sourcemap: true, target: 'es2022' },
