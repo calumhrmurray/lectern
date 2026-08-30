@@ -646,9 +646,26 @@ export class Editor implements InteractionHost {
     this.startTextEdit(box);
   }
 
-  /** Double-click on empty canvas: a note for the AI, right there. */
+  /** The rendered slide, in page coordinates. */
+  slideBoxOnPage(): { left: number; top: number; width: number; height: number } | null {
+    if (!this.ready) return null;
+    const canvas = this.stage.canvasClientRect();
+    if (!canvas.width || !canvas.height) return null;
+    const fr = this.stage.iframe.getBoundingClientRect();
+    const k = this.stage.frameTransform().k || 1;
+    return { left: fr.left + canvas.left * k, top: fr.top + canvas.top * k, width: canvas.width * k, height: canvas.height * k };
+  }
+
+  /** True when a page point is on the slide itself rather than the surround. */
+  onSlide(clientX: number, clientY: number): boolean {
+    const b = this.slideBoxOnPage();
+    if (!b) return false;
+    return clientX >= b.left && clientX <= b.left + b.width && clientY >= b.top && clientY <= b.top + b.height;
+  }
+
+  /** Double-click on empty canvas: a note for the AI, right there. Only on the slide. */
   dblClickEmpty(clientX: number, clientY: number): void {
-    if (!this.doc.length) return;
+    if (!this.doc.length || !this.onSlide(clientX, clientY)) return;
     const p = this.toSlide(clientX, clientY);
     const size = this.stage.slideSize;
     const w = 300;

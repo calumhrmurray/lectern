@@ -101,12 +101,66 @@ test.describe('the slides either side', () => {
     }
   });
 
+  test('a stack puts its slides above and below, never to the side', async ({ page }) => {
+    await openDeck(page);
+    await page.evaluate(() => window.lectern.setQuiet(true));
+    // The fixture's stack is slide 6 (index 5) with two sub-slides.
+    await goToSlide(page, 5, 0);
+    await expect(page.locator('.lec-neighbour.lec-down:not([hidden])')).toHaveCount(1);
+    await expect(page.locator('.lec-neighbour.lec-up:not([hidden])')).toHaveCount(0); // nothing above the first
+    await goToSlide(page, 5, 1);
+    await expect(page.locator('.lec-neighbour.lec-up:not([hidden])')).toHaveCount(1);
+    await expect(page.locator('.lec-neighbour.lec-down:not([hidden])')).toHaveCount(0); // nor below the last
+    const g = await page.evaluate(() => {
+      const b = window.lectern.editor.slideBoxOnPage();
+      const box = (s) => { const el = document.querySelector(`.lec-neighbour.lec-${s}`); if (el.hidden) return null; const r = el.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom }; };
+      return { slide: { l: b.left, r: b.left + b.width, t: b.top, b: b.top + b.height }, up: box('up'), next: box('next'), prev: box('prev') };
+    });
+    expect(g.up.b).toBeLessThanOrEqual(g.slide.t);      // the one you reach with ↑ is above
+    expect(g.prev.r).toBeLessThanOrEqual(g.slide.l);    // the one you reach with ← is beside
+    expect(g.next).toBeNull();                          // the stack is the last slide of the fixture
+  });
+
+  test('the peek below goes down the stack, not along the deck', async ({ page }) => {
+    await openDeck(page);
+    await page.evaluate(() => window.lectern.setQuiet(true));
+    await goToSlide(page, 5, 0);
+    await page.locator('.lec-neighbour.lec-down').click();
+    expect(await currentSlide(page)).toEqual({ top: 5, sub: 1 });
+  });
+
   test('the glyphs open the map and start the presentation', async ({ page }) => {
     await openDeck(page);
     await page.locator('.lec-glyph[data-action="glyph-map"]').click();
     await expect(page.locator('.lec-map')).toBeVisible();
     await page.locator('.lec-btn[data-action="map-close"]').click();
     await expect(page.locator('.lec-glyph[data-action="glyph-present"]')).toBeVisible();
+  });
+});
+
+test.describe('the light and the dark room', () => {
+  test('a click on the background switches, and switches back', async ({ page }) => {
+    await openDeck(page);
+    const isDark = () => page.evaluate(() => document.documentElement.classList.contains('lec-dark'));
+    expect(await isDark()).toBe(false); // off-white by default
+    const above = await page.evaluate(() => {
+      const b = window.lectern.editor.slideBoxOnPage();
+      return { x: Math.round(b.left + b.width / 2), y: Math.round(b.top - 12) };
+    });
+    await page.mouse.click(above.x, above.y);
+    expect(await isDark()).toBe(true);
+    await page.mouse.click(above.x, above.y);
+    expect(await isDark()).toBe(false);
+  });
+
+  test('a click on the slide itself does not switch', async ({ page }) => {
+    await openDeck(page);
+    const on = await page.evaluate(() => {
+      const b = window.lectern.editor.slideBoxOnPage();
+      return { x: Math.round(b.left + b.width / 2), y: Math.round(b.top + b.height / 2) };
+    });
+    await page.mouse.click(on.x, on.y);
+    expect(await page.evaluate(() => document.documentElement.classList.contains('lec-dark'))).toBe(false);
   });
 });
 

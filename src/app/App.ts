@@ -63,6 +63,8 @@ export class App {
   fonts: string[] = [];
   zoom = 1;
   visible = { navigator: true, inspector: true };
+  /** The editor's room: off-white by default, dark when you click the background. Remembered. */
+  dark = localStorage.getItem('lectern:dark') === 'on';
   /** Quiet mode: the slide keeps the screen, the panels step out of the way. On by default; remembered. */
   quiet = localStorage.getItem('lectern:quiet') !== 'off';
   private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement; compass: HTMLElement; bar: HTMLElement; tools: HTMLElement; center: HTMLElement; map: HTMLElement };
@@ -131,6 +133,7 @@ export class App {
     this.navigator = new Navigator(this, navigatorEl);
     this.inspector = new Inspector(this, inspectorEl);
     if (this.quiet) root.classList.add('lec-quiet');
+    document.documentElement.classList.toggle('lec-dark', this.dark);
     this.wireEditorEvents();
     this.wireGlobalEvents();
   }
@@ -658,6 +661,22 @@ export class App {
 
   toggleQuiet(): void { this.setQuiet(!this.quiet); }
 
+  /**
+   * Light and dark. A click on the background — the surround, not the slide —
+   * switches rooms: the deck you are working on is usually light, and the wall
+   * behind it should be whichever one lets you see the deck.
+   */
+  setDark(on: boolean): void {
+    this.dark = on;
+    document.documentElement.classList.toggle('lec-dark', on);
+    localStorage.setItem('lectern:dark', on ? 'on' : 'off');
+    this.navigator.invalidate(null);
+    this.map.invalidate(null);
+    this.neighbours.invalidate();
+  }
+
+  toggleDark(): void { this.setDark(!this.dark); }
+
   /** The pending-notes count on the bottom-left glyph. */
   updateNotesGlyph(): void {
     const ed = this.editor;
@@ -774,6 +793,16 @@ export class App {
   }
 
   private wireGlobalEvents(): void {
+    // A click on the background — anywhere on the canvas that is not the slide,
+    // an object or a piece of furniture — switches between the light and dark room.
+    this.els.center.addEventListener('click', (ev) => {
+      if (ev.detail > 1) return; // the second click of a double-click must not undo the first
+      const t = ev.target as HTMLElement | null;
+      if (t?.closest('.lec-neighbour, .lec-quietbar, .lec-tools, .lec-panels, .lec-map, .lec-banner, .lec-modal-backdrop')) return;
+      if (this.editor.textSession || !this.editor.ready) return;
+      if (this.editor.onSlide(ev.clientX, ev.clientY)) return;
+      this.toggleDark();
+    });
     window.addEventListener('keydown', (ev) => this.handleKey(ev));
     const unpeek = () => this.root.classList.remove('lec-peek');
     window.addEventListener('keyup', (ev) => { if (ev.key === ' ') unpeek(); });

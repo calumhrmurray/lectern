@@ -46,8 +46,10 @@ class vocabulary, the notes protocol and the editing rules:
 - **Layout-aware** — elements laid out by your CSS are *nudged* (`position: relative`) so
   nothing else jumps; new objects are free-floating (`position: absolute`). Switch either way
   from the inspector.
-- **The quiet room (the default view) and the map** — the slide gets the whole window, with the slides either side of it
-  showing at the edges. Along the bottom — in every view, not just this one — a *compass* (one dot per
+- **The quiet room (the default view) and the map** — the slide gets the whole window on an off-white
+  background (click the background for the dark room, click again to come back), with the neighbouring
+  slides showing at the edges: the previous and next along the sides, and a vertical stack's slides above
+  and below, on the axis the arrow keys would actually take. Along the bottom — in every view, not just this one — a *compass* (one dot per
   slide, a descender under any slide with a vertical stack, a seam between sections) and glyphs for the
   map, present and notes for AI; on the right, the page number and one button that summons the tools. `M` opens the map — the deck laid out the way reveal
   walks it, sections left to right and stacks downward — where you add and title slides, reorder them,

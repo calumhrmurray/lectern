@@ -1,6 +1,34 @@
-/* Lectern editor chrome. Original look: warm dark UI, blue selection, magenta guides. */
+/* Lectern editor chrome. Off-white by default; click the background for the dark room.
+   Colours are tokens only — the dark theme below redefines them and nothing else. */
 
 :root {
+  --bg: #f3f1ec;
+  --panel: #fbfaf7;
+  --panel-2: #eae7e0;
+  --line: #d8d4cb;
+  --line-soft: #e7e3db;
+  --text: #22242a;
+  --text-soft: #5a5f6a;
+  --text-dim: #8b909a;
+  --accent: #2f5fd0;
+  --accent-soft: rgba(47, 95, 208, 0.18);
+  --warm: #b4671f;
+  --danger: #c53b33;
+  --ok: #3f8f57;
+  --guide: #e0248c;
+  --dots: rgba(0, 0, 0, 0.055);
+  --shade: rgba(20, 22, 26, 0.10);
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --toolbar-h: 46px;
+  --status-h: 26px;
+  --nav-w: 216px;
+  --insp-w: 292px;
+}
+
+/* The dark room. Click the background to come back. */
+:root.lec-dark {
   --bg: #1b1d22;
   --panel: #22252c;
   --panel-2: #2a2e36;
@@ -15,13 +43,8 @@
   --danger: #e5534b;
   --ok: #5fbf7a;
   --guide: #ff3fa4;
-  --radius: 8px;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --toolbar-h: 46px;
-  --status-h: 26px;
-  --nav-w: 216px;
-  --insp-w: 292px;
+  --dots: rgba(255, 255, 255, 0.045);
+  --shade: rgba(0, 0, 0, 0.45);
 }
 
 * { box-sizing: border-box; }
@@ -77,7 +100,7 @@ a { color: var(--accent); }
 .lec-navigator.lec-hidden, .lec-inspector.lec-hidden { display: none; }
 .lec-center { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
 .lec-stage-wrap { flex: 1; position: relative; overflow: auto; background: var(--bg);
-  background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px); background-size: 18px 18px; }
+  background-image: radial-gradient(var(--dots) 1px, transparent 1px); background-size: 18px 18px; }
 .lec-stage { position: relative; width: 100%; height: 100%; }
 .lec-stage-frame { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 0; background: transparent; display: block; }
 .lec-stage.lec-empty .lec-stage-frame { visibility: hidden; }
@@ -90,7 +113,7 @@ a { color: var(--accent); }
 .lec-overlay { position: absolute; inset: 0; outline: none; touch-action: none; }
 .lec-overlay.lec-textmode { pointer-events: none; }
 .lec-overlay > div { position: absolute; }
-.lec-canvas-outline { position: absolute; pointer-events: none; box-shadow: 0 10px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06); }
+.lec-canvas-outline { position: absolute; pointer-events: none; box-shadow: 0 10px 40px var(--shade), 0 0 0 1px var(--line-soft); }
 .lec-hover { position: absolute; pointer-events: none; outline: 1px solid rgba(59,130,246,.75); outline-offset: 0; }
 .lec-boxes, .lec-guides { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: visible; }
 .lec-box { position: absolute; pointer-events: none; outline: 1.5px solid var(--accent); transform-origin: center; }
@@ -411,19 +434,30 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 
 .lec-neighbour {
   position: absolute; z-index: 2; overflow: hidden; border-radius: 6px; background: #fff;
-  cursor: pointer; opacity: .32; transition: opacity .18s ease;
-  box-shadow: 0 6px 24px rgba(0,0,0,.45);
+  cursor: pointer; opacity: .42; transition: opacity .18s ease;
+  box-shadow: 0 6px 24px var(--shade);
 }
 .lec-neighbour:hover { opacity: .72; }
 .lec-neighbour[hidden] { display: none; }
 .lec-neighbour iframe { position: absolute; left: 0; top: 0; border: 0; pointer-events: none; transform-origin: 0 0; background: #fff; }
 .lec-neighbour-label {
   position: absolute; bottom: 8px; max-width: 84%; font-size: 10.5px; font-family: var(--mono);
-  color: var(--text); background: rgba(20,22,26,.72); padding: 2px 6px; border-radius: 4px;
+  color: var(--text); background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: 1px solid var(--line-soft); padding: 2px 6px; border-radius: 4px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+/* The label goes on the sliver that actually shows. */
 .lec-prev .lec-neighbour-label { right: 8px; }
 .lec-next .lec-neighbour-label { left: 8px; }
+.lec-up .lec-neighbour-label, .lec-down .lec-neighbour-label { left: 50%; transform: translateX(-50%); }
+.lec-down .lec-neighbour-label { top: 8px; bottom: auto; }
+/* Up and down are the stack: mark them, since that axis is the one people miss. */
+.lec-up::after, .lec-down::after {
+  content: "↑"; position: absolute; left: 50%; transform: translateX(-50%);
+  font-size: 15px; color: var(--text-soft); opacity: .9;
+}
+.lec-up::after { bottom: 26px; }
+.lec-down::after { content: "↓"; top: 26px; }
 
 /* -------------------------------------------------------------------- map */
 /* The deck the way reveal walks it: sections left to right, stacks downward. */
