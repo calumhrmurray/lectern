@@ -148,7 +148,7 @@ test.describe('tips', () => {
   test('the first thing it says is how to leave a note', async ({ page }) => {
     await open(page);
     await expect(page.locator('.lec-tip')).toBeVisible();
-    await expect(page.locator('.lec-tip')).toContainText('Double-click an empty part of the slide');
+    await expect(page.locator('.lec-tip')).toContainText('Double-click (or right-click) anywhere on the slide');
     await expect(page.locator('.lec-tip')).toContainText('assistant');
     await page.locator('.lec-tip-x').click();
     // then, and only then, where the panels went

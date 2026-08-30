@@ -97,7 +97,8 @@ test.describe('text editing', () => {
     const frame = await openDeck(page);
     await goToSlide(page, 1);
     const h2 = await centerOf(page, 'section.present h2');
-    await page.mouse.dblclick(h2.x, h2.y);
+    await page.mouse.click(h2.x, h2.y);
+    await page.keyboard.press('Enter');
     await expect(frame.locator('section.present h2[contenteditable="true"]')).toBeVisible();
     await page.keyboard.press(`${mod}+a`);
     await page.keyboard.type('Three things, edited.');
@@ -200,7 +201,8 @@ test.describe('math', () => {
     await goToSlide(page, 4);
     await expect(frame.locator('section.present .katex')).toHaveCount(2);
     const eq = await centerOf(page, 'section.present p.eq');
-    await page.mouse.dblclick(eq.x, eq.y);
+    await page.mouse.click(eq.x, eq.y);
+    await page.keyboard.press('Enter');
     const editing = frame.locator('section.present p.eq[contenteditable="true"]');
     await expect(editing).toBeVisible();
     await expect(editing).toContainText('\\xi_{g+}');

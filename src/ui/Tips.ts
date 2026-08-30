@@ -32,7 +32,7 @@ const OFF = 'lectern:tips';
 
 const TIPS: Record<TipId, Tip> = {
   note: {
-    text: 'Double-click an empty part of the slide to leave a note for your assistant. Where the slide is full, right-click instead — the note lands where you point.',
+    text: 'Double-click (or right-click) anywhere on the slide to leave a note for your assistant — it lands where you point, and it reads them from the file.',
     anchor: (app) => rectOf(app.editor.slideBoxOnPage()),
     place: 'below',
   },
@@ -42,7 +42,7 @@ const TIPS: Record<TipId, Tip> = {
     place: 'above',
   },
   select: {
-    text: 'Drag to move it, the handles resize it, and Esc lets go. Double-click text to edit the words.',
+    text: 'Drag to move it, the handles resize it, Esc lets go. Press Enter — or just start typing — to edit the words.',
     anchor: (app) => rectOf(app.editor.slideBoxOnPage()),
     place: 'below',
   },

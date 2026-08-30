@@ -81,7 +81,8 @@ test.describe('inspector and arrange', () => {
     await page.locator('.lec-btn[data-action="image"]').click();
     const cell = page.locator('.lec-img-cell', { hasText: 'figures/plot.svg' });
     await expect(cell).toBeVisible();
-    await cell.dblclick();
+    await cell.click();
+    await page.keyboard.press('Enter');
     await expect(page.locator('.lec-modal')).toHaveCount(0);
     await page.waitForFunction(() => (window as unknown as { lectern: { editor: { selection: () => Element[] } } }).lectern.editor.selection().length === 1);
     const [sel] = await selectionInfo(page);
@@ -155,35 +156,31 @@ test('double-click on empty canvas creates a note there; an untouched note disap
   expect(out.match(/data-ai-note/g)?.length).toBe(1);
 });
 
-test('a note can be placed on a full slide: right-click, N, or alt-double-click', async ({ page }) => {
+test('a note lands where you point, even on a slide full of text', async ({ page }) => {
   const frame = await openDeck(page);
-  await goToSlide(page, 1); // a slide with a heading and a list on it
+  await goToSlide(page, 1); // a heading and a list: no empty space to aim at
   const onText = await centerOf(page, 'section.present li');
 
-  // Right-click over text offers the note, and puts it where you pointed.
-  await page.mouse.click(onText.x, onText.y, { button: 'right' });
-  await page.getByText('Note for AI here').click();
+  // Double-click over text leaves a note rather than editing the text.
+  await page.mouse.dblclick(onText.x, onText.y);
   await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
   await page.keyboard.type('this line is wrong');
   await page.keyboard.press('Escape');
   expect(await serialized(page)).toContain('this line is wrong');
 
-  // N places one where the pointer is, without clearing what is under it.
-  await page.mouse.move(onText.x + 40, onText.y + 20);
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('n');
+  // So does right-click, somewhere else on the same text.
+  await page.mouse.click(onText.x + 60, onText.y + 24, { button: 'right' });
   await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
+  await page.keyboard.type('and here');
   await page.keyboard.press('Escape');
+  const out = await serialized(page);
+  expect(out).toContain('and here');
+  expect(out.match(/data-ai-note/g)?.length).toBe(2);
 
-  // Alt-double-click does it over text, where a plain double-click would edit.
-  await page.mouse.dblclick(onText.x, onText.y, { modifiers: ['Alt'] });
-  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
-  await page.keyboard.press('Escape');
-  expect((await serialized(page)).match(/data-ai-note/g)?.length).toBe(1); // the two empty ones went
-
-  // and a plain double-click on text still edits the text (somewhere the note is not)
+  // Text is still editable: select it and press Enter.
   const heading = await centerOf(page, 'section.present h2');
-  await page.mouse.dblclick(heading.x, heading.y);
+  await page.mouse.click(heading.x, heading.y);
+  await page.keyboard.press('Enter');
   await expect(frame.locator('section.present h2[contenteditable="true"]')).toBeVisible();
 });
 

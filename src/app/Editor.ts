@@ -688,11 +688,9 @@ export class Editor implements InteractionHost {
     });
   }
 
-  /** Right-click on the canvas; the app puts a menu there. */
-  onContextMenu: ((clientX: number, clientY: number, el: Element | null) => void) | null = null;
-
-  contextMenu(clientX: number, clientY: number, el: Element | null): void {
-    this.onContextMenu?.(clientX, clientY, el);
+  /** Right-click on the canvas: the same as a double-click, a note where you point. */
+  contextMenu(clientX: number, clientY: number): void {
+    this.insertNoteAt(clientX, clientY);
   }
 
   /** Where the pointer last was over the canvas, so N can place a note there. */
@@ -1185,7 +1183,11 @@ export class Editor implements InteractionHost {
     this.textSession = session;
     this.overlay.setTextMode(true);
     session.start(caret);
-    if (opts.append || (!caret && wasDone && !opts.replaceAll)) session.caretToEnd();
+    // Entering without a caret puts it at the end rather than selecting everything:
+    // Enter is now the way into text, and arming a select-all means the next
+    // keystroke silently wipes the paragraph. A fresh placeholder still selects,
+    // so typing over "Text" replaces it.
+    if (opts.append || (!caret && !opts.replaceAll && !isPlaceholder)) session.caretToEnd();
     else if (!caret) session.selectAll();
     this.emit('textmode', true);
     this.refreshOverlay();

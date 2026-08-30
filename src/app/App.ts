@@ -28,7 +28,7 @@ import { MapView } from '../ui/MapView';
 import { Neighbours } from '../ui/Neighbours';
 import { Tips } from '../ui/Tips';
 import { Tools } from '../ui/Tools';
-import { closeMenus, showMenu } from '../ui/Menu';
+import { closeMenus } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
 import { Panels } from '../ui/Panels';
 import { ThumbnailRenderer } from '../ui/Thumbnails';
@@ -620,23 +620,6 @@ export class App {
     }
   }
 
-  /** Right-click on the canvas. Leading with the note, since that is what it is for. */
-  private canvasMenu(x: number, y: number, el: Element | null): void {
-    const ed = this.editor;
-    if (!ed.ready) return;
-    const onSlide = ed.onSlide(x, y);
-    const editable = !!el && ed.isTextEditable(el);
-    void showMenu([
-      { label: 'Note for AI here', icon: 'sparkle', disabled: !onSlide, onSelect: () => ed.insertNoteAt(x, y) },
-      { separator: true },
-      { label: 'Edit text', icon: 'text', disabled: !editable, onSelect: () => { if (el) { ed.select([el]); ed.startTextEdit(el); } } },
-      { label: 'Duplicate', icon: 'duplicate', disabled: !el, onSelect: () => { if (el) { ed.select([el]); ed.duplicateSelection(); } } },
-      { label: 'Delete', icon: 'trash', disabled: !el, onSelect: () => { if (el) { ed.select([el]); ed.deleteSelection(); } } },
-      { separator: true },
-      { label: 'Paste', disabled: ed.clipboard?.kind !== 'elements', onSelect: () => ed.paste() },
-    ], { x, y });
-  }
-
   // ---------------------------------------------------------------- slides UI
 
   showNewSlideMenu(at: HTMLElement | { x: number; y: number }): void {
@@ -795,7 +778,6 @@ export class App {
     ed.on('textmode', (on) => { this.toolbar.update(); if (!on) this.scheduleAutosave(); });
     ed.on('geometry', () => this.inspector.updateGeometry());
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
-    ed.onContextMenu = (x, y, el) => this.canvasMenu(x, y, el);
     ed.onTextKey = (ev) => this.handleTextKey(ev);
     // Keyboard shortcuts also arrive from inside the iframe (when it has focus).
     ed.stage.keyHandler = (ev) => { if (!ed.textSession) this.handleKey(ev); };
