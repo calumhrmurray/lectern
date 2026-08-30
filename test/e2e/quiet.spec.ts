@@ -153,6 +153,28 @@ test.describe('the light and the dark room', () => {
     expect(await isDark()).toBe(false);
   });
 
+  test('the canvas is all one colour, and the deck colour stays on the slide', async ({ page }) => {
+    await openDeck(page);
+    const sample = () => page.evaluate(() => {
+      const d = (document.querySelector('.lec-stage-frame') as HTMLIFrameElement).contentDocument!;
+      const bg = d.querySelector('.reveal .backgrounds')!.getBoundingClientRect();
+      const slides = d.querySelector('.reveal .slides')!.getBoundingClientRect();
+      return {
+        room: getComputedStyle(document.body).backgroundColor,
+        insideTheFrame: getComputedStyle(d.documentElement).backgroundColor,
+        // reveal paints a slide's background across its whole viewport; in the
+        // editor that must be pinned to the slide or it floods the canvas.
+        pinnedToSlide: Math.abs(bg.width - slides.width) < 2 && Math.abs(bg.height - slides.height) < 2,
+      };
+    });
+    let s = await sample();
+    expect(s.insideTheFrame).toBe(s.room);
+    expect(s.pinnedToSlide).toBe(true);
+    await page.evaluate(() => window.lectern.setDark(true));
+    s = await sample();
+    expect(s.insideTheFrame).toBe(s.room); // and it follows the room you switch to
+  });
+
   test('a click on the slide itself does not switch', async ({ page }) => {
     await openDeck(page);
     const on = await page.evaluate(() => {

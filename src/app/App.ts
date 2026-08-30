@@ -371,6 +371,7 @@ export class App {
       this.map.render();
       this.neighbours.invalidate();
       this.tools.update(); this.updateNotesGlyph();
+      this.paintRoom();
       this.hintQuiet();
       this.inspector.render();
       this.panels.update();
@@ -669,12 +670,19 @@ export class App {
     this.dark = on;
     document.documentElement.classList.toggle('lec-dark', on);
     localStorage.setItem('lectern:dark', on ? 'on' : 'off');
+    this.paintRoom();
     this.navigator.invalidate(null);
     this.map.invalidate(null);
     this.neighbours.invalidate();
   }
 
   toggleDark(): void { this.setDark(!this.dark); }
+
+  /** Tells the deck's iframe what colour the room is, so the canvas is all one colour. */
+  private paintRoom(): void {
+    const colour = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    if (colour) this.editor.stage.setRoomColour(colour);
+  }
 
   /** The pending-notes count on the bottom-left glyph. */
   updateNotesGlyph(): void {
