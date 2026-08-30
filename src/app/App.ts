@@ -62,8 +62,8 @@ export class App {
   fonts: string[] = [];
   zoom = 1;
   visible = { navigator: true, inspector: true };
-  /** Quiet mode: the slide keeps the screen, the panels step out of the way (remembered). */
-  quiet = localStorage.getItem('lectern:quiet') === 'on';
+  /** Quiet mode: the slide keeps the screen, the panels step out of the way. On by default; remembered. */
+  quiet = localStorage.getItem('lectern:quiet') !== 'off';
   private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement; compass: HTMLElement; bar: HTMLElement; tools: HTMLElement; center: HTMLElement; map: HTMLElement };
   private toastEl: HTMLElement | null = null;
   /** Last-modified times of the deck's files as we last read or wrote them. */
@@ -359,6 +359,7 @@ export class App {
       this.map.render();
       this.neighbours.invalidate();
       this.tools.update();
+      this.hintQuiet();
       this.inspector.render();
       this.panels.update();
       this.toolbar.update();
@@ -646,6 +647,15 @@ export class App {
   }
 
   toggleQuiet(): void { this.setQuiet(!this.quiet); }
+
+  /** Says once (three openings) where the panels went, since quiet is the default. */
+  private hintQuiet(): void {
+    if (!this.quiet) return;
+    const seen = Number(localStorage.getItem('lectern:quiethint') ?? '0');
+    if (seen >= 3) return;
+    localStorage.setItem('lectern:quiethint', String(seen + 1));
+    this.toast('Quiet room · Q for the panels · M for the map · hold Space to peek');
+  }
 
   setZoom(z: number): void {
     this.zoom = Math.max(0.25, Math.min(4, z));

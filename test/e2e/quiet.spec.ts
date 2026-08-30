@@ -24,6 +24,15 @@ test.describe('compass', () => {
 });
 
 test.describe('quiet mode', () => {
+  test('is where the editor opens, without being asked', async ({ page }) => {
+    // No openDeck() here: that helper turns quiet off so the other specs can see the panels.
+    await page.goto('/?ws=local&deck=index.html');
+    await page.waitForFunction(() => window.lectern?.editor?.ready, null, { timeout: 20000 });
+    await expect(page.locator('.lec-toolbar')).toBeHidden();
+    await expect(page.locator('.lec-quietbar')).toBeVisible();
+    await expect(page.locator('.lec-neighbour:not([hidden])')).toHaveCount(1); // slide 1 has a next only
+  });
+
   test('Q hides the panels and keeps the compass; space brings them back', async ({ page }) => {
     await openDeck(page);
     await expect(page.locator('.lec-toolbar')).toBeVisible();
@@ -45,11 +54,11 @@ test.describe('quiet mode', () => {
     await expect(page.locator('.lec-toolbar')).toBeVisible();
   });
 
-  test('the toolbar button toggles it too, and it is remembered', async ({ page }) => {
+  test('the toolbar button toggles it too', async ({ page }) => {
     await openDeck(page);
     await page.locator('.lec-btn[data-action="quiet"]').click();
     await expect(page.locator('.lec-navigator')).toBeHidden();
-    expect(await page.evaluate(() => localStorage.getItem('lectern:quiet'))).toBe('on');
+    expect(await page.evaluate(() => window.lectern.quiet)).toBe(true);
     await page.locator('.lec-tools-btn').click();
     await page.locator('.lec-tools-item[data-action="tool-more"]').click();
     await page.getByText('Show the panels').click();

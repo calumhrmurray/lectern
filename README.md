@@ -46,13 +46,13 @@ class vocabulary, the notes protocol and the editing rules:
 - **Layout-aware** — elements laid out by your CSS are *nudged* (`position: relative`) so
   nothing else jumps; new objects are free-floating (`position: absolute`). Switch either way
   from the inspector.
-- **Quiet mode and the map** — `Q` gives the slide the whole window, with the slides either side of it
+- **The quiet room (the default view) and the map** — the slide gets the whole window, with the slides either side of it
   showing at the edges and three glyphs in the corner: a *compass* (one dot per slide, a descender under
   any slide with a vertical stack, a seam between sections), the map, and present. On the right, one
   button summons the tools you actually reach for. `M` opens the map — the deck laid out the way reveal
   walks it, sections left to right and stacks downward — where you add and title slides, reorder them,
-  name sections (`data-section`) and drop one slide under another to make it a sub-slide. Hold `Space`
-  to bring the panels back for a look.
+  name sections (`data-section`) and drop one slide under another to make it a sub-slide. `Q` brings the
+  toolbar, navigator and inspector back for good; hold `Space` for a look at them.
 - **Insert** — text, headings, bullet lists, images (copied into the deck folder), shapes
   (rectangle, ellipse, outline, line, arrow, callout), tables, code, equations, web embeds.
 - **Slides** — thumbnails rendered with the deck's own stylesheet, drag to reorder, add from
