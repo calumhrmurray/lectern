@@ -15,7 +15,14 @@ export function writeDeck(text: string): void {
 /** Opens the demo deck through the CLI workspace and waits until the editor is ready. */
 export async function openDeck(page: Page): Promise<FrameLocator> {
   // Tests share one fixture on disk: keep autosave off unless a test turns it on.
-  await page.addInitScript(() => { try { localStorage.setItem('lectern:autosave', 'off'); } catch { /* ignore */ } });
+  // Quiet mode is the editor's default, so specs that want the panels ask for them.
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('lectern:autosave', 'off');
+      localStorage.setItem('lectern:quiet', 'off');
+      localStorage.setItem('lectern:tips', 'off'); // the tips spec opts back in
+    } catch { /* ignore */ }
+  });
   await page.goto('/?ws=local&deck=index.html');
   await expect(page.locator('.lec-welcome')).toBeHidden();
   const frame = page.frameLocator('.lec-stage-frame');

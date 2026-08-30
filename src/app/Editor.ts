@@ -7,7 +7,8 @@
 
 import { DeckDocument, type Snapshot } from '../deck/DeckDocument';
 import { History } from '../deck/history';
-import { escapeHtml, isSelectableDisplay, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
+import { escapeHtml, isSelectableDisplay, isStack, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
+import { SECTION_ATTR } from '../deck/sections';
 import { ELEMENT_TEMPLATES, updateLineSvg } from '../deck/templates';
 import { isAiNote, isDoneNote } from '../deck/aiNotes';
 import { angleDeg, resizeRect, snapEdge, snapLines, snapMove, unionRect, rectsIntersect, type Guide, type HandleName } from '../stage/geometry';
@@ -209,6 +210,97 @@ export class Editor implements InteractionHost {
       this.stage.renderSection(top);
     }, { top });
     this.goTo({ top, sub: to });
+  }
+
+  /**
+   * Makes top-level slide `from` the last sub-slide of top-level slide `into` —
+   * reveal's second axis, the one you reach with ↓ while presenting.
+   *
+   * A plain target is wrapped into a stack first: the wrapper keeps the section
+   * name (a section is a property of the running order, so it belongs to the
+   * top-level slide) and the slide itself becomes the first sub-slide.
+   */
+  nestSlide(from: number, into: number): void {
+    if (from === into || from < 0 || into < 0 || from >= this.doc.length || into >= this.doc.length) return;
+    const moved = this.doc.slides[from].el;
+    if (isStack(moved)) return; // a stack inside a stack is not a thing reveal has
+    this.endTextEdit();
+    this.clearSelection();
+
+    const target = this.doc.slides[into].el;
+    const pad = '\n' + this.doc.indent + '  ';
+    const movedClone = moved.cloneNode(true) as Element;
+    let html: string;
+    if (isStack(target)) {
+      const clone = target.cloneNode(true) as Element;
+      clone.append(this.doc.doc.createTextNode(pad), movedClone, this.doc.doc.createTextNode('\n' + this.doc.indent));
+      html = clone.outerHTML;
+    } else {
+      const wrap = this.doc.doc.createElement('section');
+      const name = target.getAttribute(SECTION_ATTR);
+      if (name !== null) wrap.setAttribute(SECTION_ATTR, name);
+      const first = target.cloneNode(true) as Element;
+      first.removeAttribute(SECTION_ATTR);
+      wrap.append(
+        this.doc.doc.createTextNode(pad), first,
+        this.doc.doc.createTextNode(pad), movedClone,
+        this.doc.doc.createTextNode('\n' + this.doc.indent),
+      );
+      html = wrap.outerHTML;
+    }
+
+    const at = from < into ? into - 1 : into;
+    this.edit('Nest slide', () => {
+      this.doc.removeSlide(from);
+      this.stage.removeLiveSection(from);
+      this.doc.replaceSlide(at, html);
+      this.stage.renderSection(at);
+    }, { deck: true });
+    const subs = this.subSections(this.doc.slides[at]?.el).length;
+    this.goTo({ top: at, sub: subs ? subs - 1 : null });
+  }
+
+  /** Promotes a sub-slide out of its stack, to a top-level slide right after it. */
+  unnestSlide(top: number, sub: number): void {
+    const stack = this.doc.slides[top]?.el;
+    if (!stack || !isStack(stack)) return;
+    const subs = this.subSections(stack);
+    const el = subs[sub];
+    if (!el || subs.length < 2) return; // the last one out would leave an empty stack
+    this.endTextEdit();
+    this.clearSelection();
+    const movedHtml = el.outerHTML;
+
+    const clone = stack.cloneNode(true) as Element;
+    const target = this.subSections(clone)[sub];
+    const prev = target.previousSibling;
+    if (prev && prev.nodeType === 3 && /^\s*$/.test(prev.textContent ?? '')) prev.remove();
+    target.remove();
+    const rest = this.subSections(clone);
+    let stackHtml: string;
+    if (rest.length === 1) {
+      // One sub-slide left is not a stack: unwrap it, and let it keep the name.
+      const only = rest[0];
+      const name = clone.getAttribute(SECTION_ATTR);
+      if (name !== null && !only.hasAttribute(SECTION_ATTR)) only.setAttribute(SECTION_ATTR, name);
+      stackHtml = only.outerHTML;
+    } else {
+      stackHtml = clone.outerHTML;
+    }
+
+    this.edit('Promote slide', () => {
+      this.doc.replaceSlide(top, stackHtml);
+      this.stage.renderSection(top);
+      this.doc.insertSlide(top + 1, movedHtml);
+      this.stage.insertLiveSection(top + 1);
+    }, { deck: true });
+    this.goTo({ top: top + 1, sub: null });
+  }
+
+  /** The `<section>` children of a stack, in order. */
+  private subSections(el: Element | undefined): Element[] {
+    if (!el) return [];
+    return Array.from(el.children).filter((c) => c.tagName.toLowerCase() === 'section');
   }
 
   /** Replaces the current slide's HTML from the code view. */
@@ -480,7 +572,7 @@ export class Editor implements InteractionHost {
   setMarquee(rect: Rect | null): void { this.marquee = rect; this.refreshOverlay(); }
   isTextEditable(el: Element): boolean { return isAiNote(el) || isTextEditable(el); }
 
-  /** Double-click on a done (green) note dismisses it; on a pending note it opens a comment box. */
+  /** Double-click on a done (green) note dismisses it; on a pending one it opens its text. */
   dblClickTarget(el: Element): boolean {
     if (!isAiNote(el)) return false;
     clearTimeout(this.commentTimer);
@@ -489,19 +581,47 @@ export class Editor implements InteractionHost {
       this.edit('Dismiss note', () => this.stage.remove(el), { top: this.topOf(el) });
       this.clearSelection();
     } else {
-      this.startComment(el);
+      this.editNote(el);
     }
     return true;
   }
 
   private commentTimer = 0;
 
-  /** A plain click on a note opens a comment box under its thread (after the double-click window, so a double-click can dismiss instead). */
+  /** A plain click on a note opens it (after the double-click window, so a double-click can dismiss instead). */
   clickTarget(el: Element): void {
     clearTimeout(this.commentTimer);
     if (isAiNote(el) && !this.textSession) {
-      this.commentTimer = window.setTimeout(() => { if (this.sel[0] === el && !this.textSession && el.isConnected) this.startComment(el); }, 260);
+      this.commentTimer = window.setTimeout(() => { if (this.sel[0] === el && !this.textSession && el.isConnected) this.editNote(el); }, 260);
     }
+  }
+
+  /**
+   * Opening a note. One that the assistant has not answered yet is still a
+   * draft: you edit what you wrote, because until it has been acted on the
+   * wording is only a request to yourself. Once there is a reply the thread is
+   * a conversation, so a click adds to it instead — rewriting a request the
+   * assistant has already answered would leave the thread telling a lie.
+   *
+   * Emptying a comment deletes it (see endTextEdit), so a stray line can be
+   * peeled off by clearing it and clicking again.
+   */
+  editNote(note: Element): void {
+    const draft = this.draftComment(note);
+    if (!draft) { this.startComment(note); return; }
+    if (this.textSession) this.endTextEdit();
+    this.select([note]);
+    this.startTextEdit(draft, undefined, { append: true });
+  }
+
+  /** The author comment still open for revision, or null once the assistant has replied. */
+  private draftComment(note: Element): Element | null {
+    if (isDoneNote(note) || note.getAttribute('data-ai-reply')) return null;
+    const ps = Array.from(note.children).filter((c) => c.tagName.toLowerCase() === 'p');
+    if (ps.some((c) => c.getAttribute('data-by') === 'ai')) return null;
+    const last = ps.at(-1);
+    if (!last || last.getAttribute('data-by') !== 'author') return null;
+    return (last.textContent ?? '').trim() ? last : null;
   }
 
   /** Adds an empty author comment to a note thread and starts editing it. */
@@ -526,14 +646,55 @@ export class Editor implements InteractionHost {
     this.startTextEdit(box);
   }
 
-  /** Double-click on empty canvas: a note for the AI, right there. */
+  /** The rendered slide, in page coordinates. */
+  slideBoxOnPage(): { left: number; top: number; width: number; height: number } | null {
+    if (!this.ready) return null;
+    const canvas = this.stage.canvasClientRect();
+    if (!canvas.width || !canvas.height) return null;
+    const fr = this.stage.iframe.getBoundingClientRect();
+    const k = this.stage.frameTransform().k || 1;
+    return { left: fr.left + canvas.left * k, top: fr.top + canvas.top * k, width: canvas.width * k, height: canvas.height * k };
+  }
+
+  /** True when a page point is on the slide itself rather than the surround. */
+  onSlide(clientX: number, clientY: number): boolean {
+    const b = this.slideBoxOnPage();
+    if (!b) return false;
+    return clientX >= b.left && clientX <= b.left + b.width && clientY >= b.top && clientY <= b.top + b.height;
+  }
+
+  /** Double-click on empty canvas: a note for the AI, right there. Only on the slide. */
   dblClickEmpty(clientX: number, clientY: number): void {
-    if (!this.doc.length) return;
+    this.insertNoteAt(clientX, clientY);
+  }
+
+  /**
+   * A note for the assistant at a point on the slide, whatever is under it.
+   * A dense slide has no empty space to double-click, so this is also reached by
+   * right-click and by N — placing a note must not depend on finding a gap.
+   */
+  insertNoteAt(clientX: number, clientY: number): Element | null {
+    if (!this.doc.length || !this.onSlide(clientX, clientY)) return null;
     const p = this.toSlide(clientX, clientY);
     const size = this.stage.slideSize;
     const w = 300;
-    this.insertElement('ainote', { rect: { x: Math.round(Math.max(0, Math.min(p.x - 20, size.width - w))), y: Math.round(Math.max(0, Math.min(p.y - 16, size.height - 80))), w, h: 80 }, edit: true });
+    return this.insertElement('ainote', {
+      rect: {
+        x: Math.round(Math.max(0, Math.min(p.x - 20, size.width - w))),
+        y: Math.round(Math.max(0, Math.min(p.y - 16, size.height - 80))),
+        w, h: 80,
+      },
+      edit: true,
+    });
   }
+
+  /** Right-click on the canvas: the same as a double-click, a note where you point. */
+  contextMenu(clientX: number, clientY: number): void {
+    this.insertNoteAt(clientX, clientY);
+  }
+
+  /** Where the pointer last was over the canvas, so N can place a note there. */
+  pointer: { x: number; y: number } | null = null;
 
   rotationOf(src: Element): number {
     const t = (src as HTMLElement).style?.transform ?? '';
@@ -972,7 +1133,7 @@ export class Editor implements InteractionHost {
 
   startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }, opts: { replaceAll?: boolean; append?: boolean } = {}): void {
     if (this.textSession) this.endTextEdit();
-    if (isAiNote(el)) { this.startComment(el); return; }
+    if (isAiNote(el)) { this.editNote(el); return; }
     if (!isTextEditable(el) || !this.stage.liveOf(el)) return;
     const note = el.closest('[data-ai-note]');
     // Inside a note only the trailing author comment is editable; anything else opens a new comment.
@@ -1022,7 +1183,11 @@ export class Editor implements InteractionHost {
     this.textSession = session;
     this.overlay.setTextMode(true);
     session.start(caret);
-    if (opts.append || (!caret && wasDone && !opts.replaceAll)) session.caretToEnd();
+    // Entering without a caret puts it at the end rather than selecting everything:
+    // Enter is now the way into text, and arming a select-all means the next
+    // keystroke silently wipes the paragraph. A fresh placeholder still selects,
+    // so typing over "Text" replaces it.
+    if (opts.append || (!caret && !opts.replaceAll && !isPlaceholder)) session.caretToEnd();
     else if (!caret) session.selectAll();
     this.emit('textmode', true);
     this.refreshOverlay();
@@ -1032,7 +1197,7 @@ export class Editor implements InteractionHost {
   typeIntoSelection(text: string): boolean {
     const el = this.primary;
     if (!el || this.sel.length !== 1 || !isTextEditable(el) || this.textSession) return false;
-    if (isAiNote(el)) this.startComment(el); else this.startTextEdit(el, undefined, { replaceAll: true });
+    if (isAiNote(el)) this.editNote(el); else this.startTextEdit(el, undefined, { replaceAll: true });
     const session = this.textSession as TextSession | null;
     if (!session) return false;
     session.insertText(text);

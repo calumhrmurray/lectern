@@ -192,13 +192,12 @@ export class Interactions {
     if (this.overlay.isTextMode) return;
     ev.preventDefault();
     const target = this.host.hitTest(ev.clientX, ev.clientY);
+    // A note handles its own double-click (comment, or dismiss when it is done).
     if (target && this.host.dblClickTarget?.(target)) return;
-    if (target && this.host.isTextEditable(target)) {
-      this.host.select([target], 'replace');
-      this.host.startTextEdit(target, { clientX: ev.clientX, clientY: ev.clientY });
-    } else if (!target) {
-      this.host.dblClickEmpty?.(ev.clientX, ev.clientY);
-    }
+    // Everything else: a note here. It used to edit whatever text was under the
+    // pointer, which meant a full slide had nowhere left to put a note. Text is
+    // edited by selecting it and pressing Enter, or by typing over it.
+    this.host.dblClickEmpty?.(ev.clientX, ev.clientY);
   };
 
   private onContextMenu = (ev: MouseEvent): void => {
