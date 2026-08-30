@@ -536,3 +536,20 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font);
 }
 .lec-map-cardlabel:hover { color: var(--text); background: var(--panel-2); }
+
+/* ------------------------------------------------------------------- tips */
+/* Said once, beside the thing they are about. */
+.lec-tip {
+  position: fixed; z-index: 660; max-width: 400px; display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 12px 11px 14px; border-radius: 12px; font-size: 13px; line-height: 1.45;
+  background: var(--panel); color: var(--text); border: 1px solid var(--line);
+  box-shadow: 0 14px 40px -12px var(--shade); opacity: 0; transform: translateY(4px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.lec-tip.lec-in { opacity: 1; transform: none; }
+.lec-tip-x {
+  flex: 0 0 auto; background: transparent; border: 0; color: var(--accent); cursor: pointer;
+  font: inherit; font-weight: 600; padding: 0 2px; border-radius: 6px; white-space: nowrap;
+}
+.lec-tip-x:hover { text-decoration: underline; }
+@media (prefers-reduced-motion: reduce) { .lec-tip { transition: none; } }

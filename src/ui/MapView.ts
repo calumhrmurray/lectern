@@ -69,6 +69,7 @@ export class MapView {
     this.container.classList.remove('lec-hidden');
     this.render();
     this.grid.focus();
+    this.app.tips.show('map');
   }
 
   hide(): void {

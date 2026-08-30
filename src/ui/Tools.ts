@@ -86,6 +86,8 @@ export class Tools {
       { label: 'Slide HTML', icon: 'code', onSelect: () => app.panels.show('html') },
       { separator: true },
       { label: 'Keyboard shortcuts', icon: 'help', shortcut: '?', onSelect: () => app.showShortcuts() },
+      { label: 'Show the tips again', icon: 'sparkle', onSelect: () => app.tips.reset() },
+      { label: 'Stop showing tips', disabled: !app.tips.enabled, onSelect: () => app.tips.setEnabled(false) },
     ], this.button);
   }
 }

@@ -138,6 +138,48 @@ test.describe('the slides either side', () => {
   });
 });
 
+test.describe('tips', () => {
+  // No openDeck(): that helper turns tips off, and these are about a first visit.
+  const open = async (page) => {
+    await page.goto('/?ws=local&deck=index.html');
+    await page.waitForFunction(() => window.lectern?.editor?.ready, null, { timeout: 20000 });
+  };
+
+  test('the first thing it says is how to leave a note', async ({ page }) => {
+    await open(page);
+    await expect(page.locator('.lec-tip')).toBeVisible();
+    await expect(page.locator('.lec-tip')).toContainText('Double-click an empty part of the slide');
+    await expect(page.locator('.lec-tip')).toContainText('assistant');
+    await page.locator('.lec-tip-x').click();
+    // then, and only then, where the panels went
+    await expect(page.locator('.lec-tip')).toContainText('Q brings them back');
+    await page.locator('.lec-tip-x').click();
+    await expect(page.locator('.lec-tip')).toHaveCount(0);
+  });
+
+  test('each one is said once, and remembered next time', async ({ page }) => {
+    await open(page);
+    await expect(page.locator('.lec-tip')).toBeVisible();
+    await page.locator('.lec-tip-x').click();
+    await page.locator('.lec-tip-x').click();
+    expect(await page.evaluate(() => localStorage.getItem('lectern:tips:seen'))).toContain('note');
+    await page.reload();
+    await page.waitForFunction(() => window.lectern?.editor?.ready, null, { timeout: 20000 });
+    await page.waitForTimeout(3200); // past the delay that lets the opening toast clear
+    await expect(page.locator('.lec-tip')).toHaveCount(0);
+  });
+
+  test('the panelled view says nothing: everything there is labelled', async ({ page }) => {
+    await open(page);
+    await page.locator('.lec-tip-x').click();
+    await page.locator('.lec-tip-x').click();
+    await page.evaluate(() => { localStorage.removeItem('lectern:tips:seen'); window.lectern.setQuiet(false); });
+    await page.evaluate(() => window.lectern.editor.selectAll());
+    await page.waitForTimeout(400);
+    await expect(page.locator('.lec-tip')).toHaveCount(0);
+  });
+});
+
 test.describe('the light and the dark room', () => {
   test('a click on the background switches, and switches back', async ({ page }) => {
     await openDeck(page);

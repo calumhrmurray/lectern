@@ -26,6 +26,7 @@ import { Compass } from '../ui/Compass';
 import { Inspector } from '../ui/Inspector';
 import { MapView } from '../ui/MapView';
 import { Neighbours } from '../ui/Neighbours';
+import { Tips } from '../ui/Tips';
 import { Tools } from '../ui/Tools';
 import { closeMenus } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
@@ -55,6 +56,7 @@ export class App {
   readonly compass: Compass;
   readonly map: MapView;
   readonly tools: Tools;
+  readonly tips: Tips;
   readonly neighbours: Neighbours;
   workspace: Workspace | null = null;
   deckPath = '';
@@ -122,6 +124,7 @@ export class App {
     this.compass = new Compass(this, compassEl, counterEl);
     this.map = new MapView(this, mapEl);
     this.tools = new Tools(this, toolsEl);
+    this.tips = new Tips(this);
     this.neighbours = new Neighbours(this, center);
     this.toolbar = new Toolbar(this, toolbarEl);
     this.navigator = new Navigator(this, navigatorEl);
@@ -367,7 +370,8 @@ export class App {
       this.neighbours.invalidate();
       this.tools.update();
       this.paintRoom();
-      this.hintQuiet();
+      // After the "opened" toast has gone: two things on the same spot is noise.
+      window.setTimeout(() => { this.tips.show('note'); this.tips.show('panels'); }, 2500);
       this.inspector.render();
       this.panels.update();
       this.toolbar.update();
@@ -656,6 +660,15 @@ export class App {
 
   toggleQuiet(): void { this.setQuiet(!this.quiet); }
 
+  /** Anchors for the tips. */
+  barRect(): DOMRect { return this.els.bar.getBoundingClientRect(); }
+  compassRect(): DOMRect { return this.els.compass.getBoundingClientRect(); }
+  counterRect(): DOMRect { return this.els.counter.getBoundingClientRect(); }
+  mapHeadRect(): DOMRect | null {
+    const head = this.els.map.querySelector('.lec-map-head');
+    return head ? head.getBoundingClientRect() : null;
+  }
+
   /**
    * Light and dark. A click on the background — the surround, not the slide —
    * switches rooms: the deck you are working on is usually light, and the wall
@@ -677,15 +690,6 @@ export class App {
   private paintRoom(): void {
     const colour = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
     if (colour) this.editor.stage.setRoomColour(colour);
-  }
-
-  /** Says once (three openings) where the panels went, since quiet is the default. */
-  private hintQuiet(): void {
-    if (!this.quiet) return;
-    const seen = Number(localStorage.getItem('lectern:quiethint') ?? '0');
-    if (seen >= 3) return;
-    localStorage.setItem('lectern:quiethint', String(seen + 1));
-    this.toast('Quiet room · Q for the panels · M for the map · hold Space to peek');
   }
 
   setZoom(z: number): void {
@@ -751,8 +755,8 @@ export class App {
 
   private wireEditorEvents(): void {
     const ed = this.editor;
-    ed.on('selection', () => { this.inspector.render(); this.toolbar.update(); });
-    ed.on('slide', () => { this.navigator.updateCurrent(); this.compass.update(); this.neighbours.update(); this.map.updateCurrent(); this.inspector.render(); this.panels.update(); this.updateStatus(); });
+    ed.on('selection', () => { this.inspector.render(); this.toolbar.update(); if (ed.selection().length) this.tips.show('select'); });
+    ed.on('slide', () => { if (ed.current.sub !== null) this.tips.show('stack'); this.navigator.updateCurrent(); this.compass.update(); this.neighbours.update(); this.map.updateCurrent(); this.inspector.render(); this.panels.update(); this.updateStatus(); });
     ed.on('change', ({ tops, label }) => {
       if (tops === null || label === 'Add slide' || label === 'Delete slide' || label === 'Move slide' || label === 'restore' || label === 'Duplicate slide') {
         this.navigator.render();
@@ -770,7 +774,7 @@ export class App {
       this.tools.update();
       this.updateStatus();
     });
-    ed.on('history', () => { this.toolbar.update(); this.tools.update(); this.updateStatus(); this.scheduleAutosave(); });
+    ed.on('history', () => { this.toolbar.update(); this.tools.update(); this.updateStatus(); this.scheduleAutosave(); if (this.autosave && ed.doc.dirty) this.tips.show('autosave'); });
     ed.on('textmode', (on) => { this.toolbar.update(); if (!on) this.scheduleAutosave(); });
     ed.on('geometry', () => this.inspector.updateGeometry());
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
@@ -795,6 +799,7 @@ export class App {
       if (this.editor.textSession || !this.editor.ready) return;
       if (this.editor.onSlide(ev.clientX, ev.clientY)) return;
       this.toggleDark();
+      this.tips.show('room');
     });
     window.addEventListener('keydown', (ev) => this.handleKey(ev));
     const unpeek = () => this.root.classList.remove('lec-peek');
@@ -859,7 +864,7 @@ export class App {
     const navFocused = this.els.navigator.contains(target);
     const stop = () => { ev.preventDefault(); ev.stopPropagation(); };
 
-    if (key === 'Escape') { stop(); closeMenus(); if (this.map.visible) this.map.hide(); else if (this.panels.visible) this.panels.hide(); else if (ed.selection().length) ed.clearSelection(); return; }
+    if (key === 'Escape') { stop(); closeMenus(); this.tips.dismiss(); if (this.map.visible) this.map.hide(); else if (this.panels.visible) this.panels.hide(); else if (ed.selection().length) ed.clearSelection(); return; }
     if (mod && lower === 'z') { stop(); if (ev.shiftKey) ed.redo(); else ed.undo(); return; }
     if (mod && lower === 'y') { stop(); ed.redo(); return; }
     if (mod && ev.shiftKey && lower === 'n') { stop(); this.showNewSlideMenu({ x: window.innerWidth / 2, y: 80 }); return; }
