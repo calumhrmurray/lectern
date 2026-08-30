@@ -231,14 +231,27 @@ test.describe('the bar', () => {
     expect(m.prev).toBeGreaterThan(30);
   });
 
-  test('the notes glyph counts what is waiting for the assistant', async ({ page }) => {
+  test('the tools button says when a note is waiting', async ({ page }) => {
     await openDeck(page);
-    await expect(page.locator('.lec-glyph[data-action="glyph-notes"]')).not.toHaveClass(/lec-has-notes/);
+    await expect(page.locator('.lec-tools-dot')).not.toHaveClass(/lec-on/);
     await page.evaluate(() => window.lectern.editor.insertElement('ainote', { edit: false }));
-    await expect(page.locator('.lec-glyph[data-action="glyph-notes"]')).toHaveClass(/lec-has-notes/);
-    await expect(page.locator('.lec-glyph-count')).toHaveText('1');
-    await page.locator('.lec-glyph[data-action="glyph-notes"]').click();
-    await expect(page.locator('.lec-panels')).toBeVisible();
+    await expect(page.locator('.lec-tools-dot')).toHaveClass(/lec-on/);
+    await expect(page.locator('.lec-tools-btn')).toHaveAttribute('title', /1 note waiting/);
+  });
+
+  test('the glyphs and the tools button sit together, bottom left', async ({ page }) => {
+    await openDeck(page);
+    expect(await page.evaluate(() => {
+      const bar = document.querySelector('.lec-quietbar')!.getBoundingClientRect();
+      const tools = document.querySelector('.lec-tools-btn')!.getBoundingClientRect();
+      const icon = document.querySelector('.lec-glyph .lec-icon')!.getBoundingClientRect();
+      return {
+        toolsInBar: !!document.querySelector('.lec-quietbar .lec-tools-btn'),
+        barLeft: bar.left < window.innerWidth / 2, barLow: bar.top > window.innerHeight / 2,
+        toolsAfterGlyphs: tools.left > document.querySelector('.lec-glyph')!.getBoundingClientRect().left,
+        iconSize: Math.round(icon.width),
+      };
+    })).toEqual({ toolsInBar: true, barLeft: true, barLow: true, toolsAfterGlyphs: true, iconSize: 26 });
   });
 });
 

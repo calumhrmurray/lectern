@@ -14,7 +14,6 @@ import natCss from '../../public/examples/naturalisation-fr/theme.css?raw';
 import { BlobUrlCache, inlineDeck, installFetchBridge } from '../workspace/inline';
 import { REVEAL_EMBEDDED } from '../deck/revealAssets';
 import { discoverFontFamilies, discoverThemeClasses, type ThemeClass } from '../deck/cssClasses';
-import { collectAiNotes } from '../deck/aiNotes';
 import { DeckDocument } from '../deck/DeckDocument';
 import { detectParts } from '../deck/scan';
 import { SLIDE_LAYOUTS, starterDeckHtml } from '../deck/templates';
@@ -67,9 +66,7 @@ export class App {
   dark = localStorage.getItem('lectern:dark') === 'on';
   /** Quiet mode: the slide keeps the screen, the panels step out of the way. On by default; remembered. */
   quiet = localStorage.getItem('lectern:quiet') !== 'off';
-  private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement; compass: HTMLElement; bar: HTMLElement; tools: HTMLElement; center: HTMLElement; map: HTMLElement };
-  private notesGlyph!: HTMLButtonElement;
-  private notesCount!: HTMLElement;
+  private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement; compass: HTMLElement; bar: HTMLElement; counter: HTMLElement; center: HTMLElement; map: HTMLElement };
   private toastEl: HTMLElement | null = null;
   /** Last-modified times of the deck's files as we last read or wrote them. */
   private baseline = new Map<string, number | null>();
@@ -95,18 +92,16 @@ export class App {
     const stageWrap = h('div', { class: 'lec-stage-wrap' }, stage, loading, dropzone);
     const panelsEl = h('div', {});
     const compassEl = h('div', { class: 'lec-compass', 'aria-label': 'Deck position' });
-    const glyph = (action: string, icon: 'map' | 'play' | 'sparkle', title: string, onclick: () => void) =>
+    const glyph = (action: string, icon: 'map' | 'play', title: string, onclick: () => void) =>
       h('button', { class: 'lec-glyph', type: 'button', dataset: { action }, title, onclick }, svgIcon(icons[icon]));
-    this.notesGlyph = glyph('glyph-notes', 'sparkle', 'Notes for AI', () => this.panels.toggle('ai'));
-    this.notesCount = h('span', { class: 'lec-glyph-count' });
-    this.notesGlyph.appendChild(this.notesCount);
+    // Bottom left: where you can go, and everything else. Bottom right: where you are.
+    const toolsEl = h('div', { class: 'lec-tools' });
     const barEl = h('div', { class: 'lec-quietbar' },
       glyph('glyph-map', 'map', 'Map of the deck (M)', () => this.map.toggle()),
       glyph('glyph-present', 'play', 'Present', () => void this.present()),
-      this.notesGlyph,
+      toolsEl,
     );
     const counterEl = h('div', { class: 'lec-counter' });
-    const toolsEl = h('div', { class: 'lec-tools' }, counterEl);
     const center = h('div', { class: 'lec-center' }, stageWrap, panelsEl);
     const inspectorEl = h('div', { class: 'lec-inspector', 'aria-label': 'Inspector' });
     const msg = h('span', { class: 'lec-msg' });
@@ -117,8 +112,8 @@ export class App {
     const mapEl = h('div', { class: 'lec-map lec-hidden', 'aria-label': 'Map of the deck' });
     // The bar and the tools sit above the map overlay: they are the editor's
     // furniture, not the canvas's, and they stay put in every view.
-    root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, mapEl, compassEl, barEl, toolsEl, welcome);
-    this.els = { navigator: navigatorEl, stageWrap, stage, inspector: inspectorEl, status, msg, pos, path, welcome, loading, dropzone, compass: compassEl, bar: barEl, tools: toolsEl, center, map: mapEl };
+    root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, mapEl, compassEl, barEl, counterEl, welcome);
+    this.els = { navigator: navigatorEl, stageWrap, stage, inspector: inspectorEl, status, msg, pos, path, welcome, loading, dropzone, compass: compassEl, bar: barEl, counter: counterEl, center, map: mapEl };
 
     this.editor = new Editor(stage);
     this.thumbs = new ThumbnailRenderer(this.editor);
@@ -370,7 +365,7 @@ export class App {
       this.compass.render();
       this.map.render();
       this.neighbours.invalidate();
-      this.tools.update(); this.updateNotesGlyph();
+      this.tools.update();
       this.paintRoom();
       this.hintQuiet();
       this.inspector.render();
@@ -684,15 +679,6 @@ export class App {
     if (colour) this.editor.stage.setRoomColour(colour);
   }
 
-  /** The pending-notes count on the bottom-left glyph. */
-  updateNotesGlyph(): void {
-    const ed = this.editor;
-    const pending = ed.ready ? collectAiNotes(ed.doc).filter((n) => !n.done).length : 0;
-    this.notesCount.textContent = pending ? String(pending) : '';
-    this.notesGlyph.classList.toggle('lec-has-notes', pending > 0);
-    this.notesGlyph.title = pending ? `${pending} note${pending === 1 ? '' : 's'} waiting for the assistant` : 'Notes for AI';
-  }
-
   /** Says once (three openings) where the panels went, since quiet is the default. */
   private hintQuiet(): void {
     if (!this.quiet) return;
@@ -757,7 +743,7 @@ export class App {
     const c = ed.current;
     const label = c.sub === null ? `${c.top + 1}` : `${c.top + 1}.${c.sub + 1}`;
     this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
-    this.tools.update(); this.updateNotesGlyph();
+    this.tools.update();
     this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern build ${__LECTERN_BUILD__}`;
   }
 
@@ -781,10 +767,10 @@ export class App {
       this.inspector.render();
       this.panels.update();
       this.toolbar.update();
-      this.tools.update(); this.updateNotesGlyph();
+      this.tools.update();
       this.updateStatus();
     });
-    ed.on('history', () => { this.toolbar.update(); this.tools.update(); this.updateNotesGlyph(); this.updateStatus(); this.scheduleAutosave(); });
+    ed.on('history', () => { this.toolbar.update(); this.tools.update(); this.updateStatus(); this.scheduleAutosave(); });
     ed.on('textmode', (on) => { this.toolbar.update(); if (!on) this.scheduleAutosave(); });
     ed.on('geometry', () => this.inspector.updateGeometry());
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
