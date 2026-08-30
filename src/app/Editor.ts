@@ -572,7 +572,7 @@ export class Editor implements InteractionHost {
   setMarquee(rect: Rect | null): void { this.marquee = rect; this.refreshOverlay(); }
   isTextEditable(el: Element): boolean { return isAiNote(el) || isTextEditable(el); }
 
-  /** Double-click on a done (green) note dismisses it; on a pending note it opens a comment box. */
+  /** Double-click on a done (green) note dismisses it; on a pending one it opens its text. */
   dblClickTarget(el: Element): boolean {
     if (!isAiNote(el)) return false;
     clearTimeout(this.commentTimer);
@@ -581,19 +581,47 @@ export class Editor implements InteractionHost {
       this.edit('Dismiss note', () => this.stage.remove(el), { top: this.topOf(el) });
       this.clearSelection();
     } else {
-      this.startComment(el);
+      this.editNote(el);
     }
     return true;
   }
 
   private commentTimer = 0;
 
-  /** A plain click on a note opens a comment box under its thread (after the double-click window, so a double-click can dismiss instead). */
+  /** A plain click on a note opens it (after the double-click window, so a double-click can dismiss instead). */
   clickTarget(el: Element): void {
     clearTimeout(this.commentTimer);
     if (isAiNote(el) && !this.textSession) {
-      this.commentTimer = window.setTimeout(() => { if (this.sel[0] === el && !this.textSession && el.isConnected) this.startComment(el); }, 260);
+      this.commentTimer = window.setTimeout(() => { if (this.sel[0] === el && !this.textSession && el.isConnected) this.editNote(el); }, 260);
     }
+  }
+
+  /**
+   * Opening a note. One that the assistant has not answered yet is still a
+   * draft: you edit what you wrote, because until it has been acted on the
+   * wording is only a request to yourself. Once there is a reply the thread is
+   * a conversation, so a click adds to it instead — rewriting a request the
+   * assistant has already answered would leave the thread telling a lie.
+   *
+   * Emptying a comment deletes it (see endTextEdit), so a stray line can be
+   * peeled off by clearing it and clicking again.
+   */
+  editNote(note: Element): void {
+    const draft = this.draftComment(note);
+    if (!draft) { this.startComment(note); return; }
+    if (this.textSession) this.endTextEdit();
+    this.select([note]);
+    this.startTextEdit(draft, undefined, { append: true });
+  }
+
+  /** The author comment still open for revision, or null once the assistant has replied. */
+  private draftComment(note: Element): Element | null {
+    if (isDoneNote(note) || note.getAttribute('data-ai-reply')) return null;
+    const ps = Array.from(note.children).filter((c) => c.tagName.toLowerCase() === 'p');
+    if (ps.some((c) => c.getAttribute('data-by') === 'ai')) return null;
+    const last = ps.at(-1);
+    if (!last || last.getAttribute('data-by') !== 'author') return null;
+    return (last.textContent ?? '').trim() ? last : null;
   }
 
   /** Adds an empty author comment to a note thread and starts editing it. */
@@ -1064,7 +1092,7 @@ export class Editor implements InteractionHost {
 
   startTextEdit(el: Element, caretPage?: { clientX: number; clientY: number }, opts: { replaceAll?: boolean; append?: boolean } = {}): void {
     if (this.textSession) this.endTextEdit();
-    if (isAiNote(el)) { this.startComment(el); return; }
+    if (isAiNote(el)) { this.editNote(el); return; }
     if (!isTextEditable(el) || !this.stage.liveOf(el)) return;
     const note = el.closest('[data-ai-note]');
     // Inside a note only the trailing author comment is editable; anything else opens a new comment.
@@ -1124,7 +1152,7 @@ export class Editor implements InteractionHost {
   typeIntoSelection(text: string): boolean {
     const el = this.primary;
     if (!el || this.sel.length !== 1 || !isTextEditable(el) || this.textSession) return false;
-    if (isAiNote(el)) this.startComment(el); else this.startTextEdit(el, undefined, { replaceAll: true });
+    if (isAiNote(el)) this.editNote(el); else this.startTextEdit(el, undefined, { replaceAll: true });
     const session = this.textSession as TextSession | null;
     if (!session) return false;
     session.insertText(text);

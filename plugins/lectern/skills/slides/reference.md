@@ -39,6 +39,10 @@ same folder picker). All three edit the file on disk; `⌘S` and autosave write 
    `<p data-by="author">` is the current request, earlier ones are context. They dismiss notes themselves
    (double-click); never remove one yourself, and never remove `hidden` — notes must not show when presenting.
 
+   Until you answer it, a note is a draft the person can still rewrite, so read it when you act on it rather
+   than relying on text you saw earlier. Once you have appended a `<p data-by="ai">`, the thread stops being
+   editable and they can only add to it — so what you replied to stays on the record.
+
 Rules while the editor is open on the file:
 
 - **Edit in place; keep untouched slides byte-identical.** Lectern saves by splicing only the changed `<section>`s back
