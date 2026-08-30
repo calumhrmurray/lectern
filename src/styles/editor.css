@@ -368,7 +368,18 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 #app:has(.lec-panels:not(.lec-hidden)) .lec-quietbar,
 #app:has(.lec-panels:not(.lec-hidden)) .lec-tools { bottom: 236px; }
 
-.lec-compass { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* The compass sits in the top-left corner, where you look first. */
+.lec-compass {
+  position: absolute; top: calc(var(--toolbar-h) + 12px); left: 14px; z-index: 650;
+  display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 52%;
+  opacity: .6; transition: opacity .16s ease;
+  background: color-mix(in srgb, var(--bg) 52%, transparent); backdrop-filter: blur(8px);
+  border-radius: 11px; padding: 3px 8px;
+}
+.lec-compass:hover, .lec-peek .lec-compass { opacity: 1; }
+#app:not(.lec-quiet):has(.lec-navigator:not(.lec-hidden)) .lec-compass { left: calc(var(--nav-w) + 14px); }
+#app.lec-quiet .lec-compass { top: 12px; }
+#app.lec-quiet.lec-peek .lec-compass { top: calc(var(--toolbar-h) + 12px); }
 .lec-compass-svg { overflow: visible; display: block; }
 .lec-compass-dot { fill: var(--text-soft); }
 .lec-compass-dot.lec-hollow { fill: none; stroke: var(--text-dim); stroke-width: 1.2; }
@@ -429,7 +440,7 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-quiet.lec-peek .lec-navigator { display: block; }
 .lec-quiet.lec-peek .lec-inspector { display: flex; }
 .lec-quiet.lec-peek .lec-status { display: flex; }
-.lec-quiet .lec-stage-wrap { background-image: none; padding: 0 13%; }
+.lec-quiet .lec-stage-wrap { background-image: none; padding: 0 7%; }
 .lec-quiet .lec-center { overflow: hidden; }
 
 .lec-neighbour {
@@ -447,6 +458,7 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* The label goes on the sliver that actually shows. */
+.lec-neighbour-label { max-width: calc(100% - 16px); }
 .lec-prev .lec-neighbour-label { right: 8px; }
 .lec-next .lec-neighbour-label { left: 8px; }
 .lec-up .lec-neighbour-label, .lec-down .lec-neighbour-label { left: 50%; transform: translateX(-50%); }

@@ -101,7 +101,6 @@ export class App {
     this.notesCount = h('span', { class: 'lec-glyph-count' });
     this.notesGlyph.appendChild(this.notesCount);
     const barEl = h('div', { class: 'lec-quietbar' },
-      compassEl,
       glyph('glyph-map', 'map', 'Map of the deck (M)', () => this.map.toggle()),
       glyph('glyph-present', 'play', 'Present', () => void this.present()),
       this.notesGlyph,
@@ -118,7 +117,7 @@ export class App {
     const mapEl = h('div', { class: 'lec-map lec-hidden', 'aria-label': 'Map of the deck' });
     // The bar and the tools sit above the map overlay: they are the editor's
     // furniture, not the canvas's, and they stay put in every view.
-    root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, mapEl, barEl, toolsEl, welcome);
+    root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, mapEl, compassEl, barEl, toolsEl, welcome);
     this.els = { navigator: navigatorEl, stageWrap, stage, inspector: inspectorEl, status, msg, pos, path, welcome, loading, dropzone, compass: compassEl, bar: barEl, tools: toolsEl, center, map: mapEl };
 
     this.editor = new Editor(stage);

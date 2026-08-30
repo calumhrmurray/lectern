@@ -93,28 +93,32 @@ export class Neighbours {
     const gap = Math.max(10, Math.round(box.width * 0.03));
 
     const vertical = side === 'up' || side === 'down';
-    // Sideways there is a whole gutter to fall off the edge of. Above and below
-    // there is only the slack around the slide, and the bar lives down there, so
-    // a stack's neighbours are cropped to a strip: the top of the next slide is
-    // its kicker and heading, which is the part worth seeing.
-    const room = side === 'up' ? top : host.height - (top + box.height);
-    // The bar sits along the bottom, so the lower strip stops short of it.
-    const strip = Math.max(56, Math.min(box.height, room - (side === 'down' ? 96 : 48)));
-    const h = vertical ? strip : box.height;
+    // Every neighbour is cropped to a sliver rather than parked half off-screen:
+    // a wide pale slab beside the slide reads as a panel of chrome, not as the
+    // next slide. What shows is the edge nearest you, and only that.
+    const room = side === 'prev' ? left
+      : side === 'next' ? host.width - (left + box.width)
+      : side === 'up' ? top
+      : host.height - (top + box.height);
+    // The bar runs along the bottom, so the lower sliver stops short of it.
+    const full = vertical ? box.height : box.width;
+    const shown = Math.max(48, Math.min(full, room - (side === 'down' ? 96 : 44)));
 
     panel.el.hidden = false;
-    panel.el.style.width = `${Math.round(box.width)}px`;
-    panel.el.style.height = `${Math.round(h)}px`;
+    panel.el.style.width = `${Math.round(vertical ? box.width : shown)}px`;
+    panel.el.style.height = `${Math.round(vertical ? shown : box.height)}px`;
     // Flush outside the slide on its own axis, so a neighbour never creeps over it.
-    panel.el.style.left = `${Math.round(side === 'prev' ? left - gap - box.width : side === 'next' ? left + box.width + gap : left)}px`;
-    panel.el.style.top = `${Math.round(side === 'up' ? top - gap - h : side === 'down' ? top + box.height + gap : top)}px`;
+    panel.el.style.left = `${Math.round(side === 'prev' ? left - gap - shown : side === 'next' ? left + box.width + gap : left)}px`;
+    panel.el.style.top = `${Math.round(side === 'up' ? top - gap - shown : side === 'down' ? top + box.height + gap : top)}px`;
 
     const { width } = this.app.editor.stage.slideSize;
     panel.iframe.width = String(width);
     panel.iframe.height = String(Math.round(width * (box.height / box.width)));
     panel.iframe.style.transform = `scale(${box.width / width})`;
-    // The strip shows the bottom of the slide above and the top of the one below.
-    panel.iframe.style.top = side === 'up' ? `${Math.round(h - box.height)}px` : '0';
+    // Show the edge that faces the slide: the end of the one before, the start
+    // of the one after, the foot of the one above, the head of the one below.
+    panel.iframe.style.left = side === 'prev' ? `${Math.round(shown - box.width)}px` : '0';
+    panel.iframe.style.top = side === 'up' ? `${Math.round(shown - box.height)}px` : '0';
 
     const key = `${ref.top}/${ref.sub}`;
     if (panel.key !== key) {

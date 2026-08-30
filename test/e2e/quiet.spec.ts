@@ -180,15 +180,33 @@ test.describe('the bar', () => {
     })).toBe(true);
   });
 
-  test('the page counter is bottom right, the compass bottom left', async ({ page }) => {
+  test('the compass is top left, the page counter bottom right', async ({ page }) => {
     await openDeck(page);
     await goToSlide(page, 2);
     await expect(page.locator('.lec-compass-num')).toHaveText('3/6');
     expect(await page.evaluate(() => {
       const num = document.querySelector('.lec-compass-num').getBoundingClientRect();
       const dots = document.querySelector('.lec-compass-svg').getBoundingClientRect();
-      return { numRight: num.left > window.innerWidth / 2, dotsLeft: dots.left < window.innerWidth / 2 };
-    })).toEqual({ numRight: true, dotsLeft: true });
+      return {
+        numRight: num.left > window.innerWidth / 2, numLow: num.top > window.innerHeight / 2,
+        dotsLeft: dots.left < window.innerWidth / 2, dotsHigh: dots.top < window.innerHeight / 2,
+      };
+    })).toEqual({ numRight: true, numLow: true, dotsLeft: true, dotsHigh: true });
+  });
+
+  test('a neighbour is a sliver at the edge, not a panel beside the slide', async ({ page }) => {
+    await openDeck(page);
+    await page.evaluate(() => window.lectern.setQuiet(true));
+    await goToSlide(page, 2);
+    const m = await page.evaluate(() => {
+      const b = window.lectern.editor.slideBoxOnPage();
+      const w = (s) => document.querySelector(`.lec-neighbour.lec-${s}`).getBoundingClientRect().width;
+      return { slide: b.width, prev: w('prev'), next: w('next') };
+    });
+    // A peek is a hint: a small fraction of a slide, never a slab of one.
+    expect(m.prev).toBeLessThan(m.slide * 0.2);
+    expect(m.next).toBeLessThan(m.slide * 0.2);
+    expect(m.prev).toBeGreaterThan(30);
   });
 
   test('the notes glyph counts what is waiting for the assistant', async ({ page }) => {
