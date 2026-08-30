@@ -440,7 +440,9 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-quiet.lec-peek .lec-navigator { display: block; }
 .lec-quiet.lec-peek .lec-inspector { display: flex; }
 .lec-quiet.lec-peek .lec-status { display: flex; }
-.lec-quiet .lec-stage-wrap { background-image: none; padding: 0 7%; }
+/* The slide gives up a little room so more of its neighbours shows: the peeks
+   grow with whatever space is left around it. */
+.lec-quiet .lec-stage-wrap { background-image: none; padding: 2% 11%; }
 .lec-quiet .lec-center { overflow: hidden; }
 
 .lec-neighbour {

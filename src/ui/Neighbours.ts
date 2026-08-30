@@ -90,9 +90,9 @@ export class Neighbours {
     const host = this.container.getBoundingClientRect();
     const left = box.left - host.left;
     const top = box.top - host.top;
-    const gap = Math.max(10, Math.round(box.width * 0.03));
-
     const vertical = side === 'up' || side === 'down';
+    // Less of a gap above and below: there is less room there to begin with.
+    const gap = vertical ? Math.max(8, Math.round(box.height * 0.025)) : Math.max(10, Math.round(box.width * 0.03));
     // Every neighbour is cropped to a sliver rather than parked half off-screen:
     // a wide pale slab beside the slide reads as a panel of chrome, not as the
     // next slide. What shows is the edge nearest you, and only that.
@@ -101,8 +101,9 @@ export class Neighbours {
       : side === 'up' ? top
       : host.height - (top + box.height);
     // The bar runs along the bottom, so the lower sliver stops short of it.
+    const reserve = side === 'down' ? 56 : side === 'up' ? 10 : 44;
     const full = vertical ? box.height : box.width;
-    const shown = Math.max(48, Math.min(full, room - (side === 'down' ? 96 : 44)));
+    const shown = Math.max(44, Math.min(full, room - gap - reserve));
 
     panel.el.hidden = false;
     panel.el.style.width = `${Math.round(vertical ? box.width : shown)}px`;
