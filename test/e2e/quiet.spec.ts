@@ -110,6 +110,44 @@ test.describe('the slides either side', () => {
   });
 });
 
+test.describe('the bar', () => {
+  test('stays put in every view, including over the map', async ({ page }) => {
+    await openDeck(page);
+    await expect(page.locator('.lec-quietbar')).toBeVisible(); // panelled view
+    await page.locator('.lec-btn[data-action="map"]').click();
+    await expect(page.locator('.lec-map')).toBeVisible();
+    await expect(page.locator('.lec-quietbar')).toBeVisible();
+    await expect(page.locator('.lec-tools')).toBeVisible();
+    // and it is genuinely on top of the overlay, not painted under it
+    expect(await page.evaluate(() => {
+      const r = document.querySelector('.lec-quietbar').getBoundingClientRect();
+      const el = document.elementFromPoint(r.left + 12, r.top + r.height / 2);
+      return !!el?.closest('.lec-quietbar');
+    })).toBe(true);
+  });
+
+  test('the page counter is bottom right, the compass bottom left', async ({ page }) => {
+    await openDeck(page);
+    await goToSlide(page, 2);
+    await expect(page.locator('.lec-compass-num')).toHaveText('3/6');
+    expect(await page.evaluate(() => {
+      const num = document.querySelector('.lec-compass-num').getBoundingClientRect();
+      const dots = document.querySelector('.lec-compass-svg').getBoundingClientRect();
+      return { numRight: num.left > window.innerWidth / 2, dotsLeft: dots.left < window.innerWidth / 2 };
+    })).toEqual({ numRight: true, dotsLeft: true });
+  });
+
+  test('the notes glyph counts what is waiting for the assistant', async ({ page }) => {
+    await openDeck(page);
+    await expect(page.locator('.lec-glyph[data-action="glyph-notes"]')).not.toHaveClass(/lec-has-notes/);
+    await page.evaluate(() => window.lectern.editor.insertElement('ainote', { edit: false }));
+    await expect(page.locator('.lec-glyph[data-action="glyph-notes"]')).toHaveClass(/lec-has-notes/);
+    await expect(page.locator('.lec-glyph-count')).toHaveText('1');
+    await page.locator('.lec-glyph[data-action="glyph-notes"]').click();
+    await expect(page.locator('.lec-panels')).toBeVisible();
+  });
+});
+
 test.describe('map', () => {
   test('M opens a column per slide, with the stack drawn downward', async ({ page }) => {
     await openDeck(page);

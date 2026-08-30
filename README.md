@@ -47,9 +47,9 @@ class vocabulary, the notes protocol and the editing rules:
   nothing else jumps; new objects are free-floating (`position: absolute`). Switch either way
   from the inspector.
 - **The quiet room (the default view) and the map** — the slide gets the whole window, with the slides either side of it
-  showing at the edges and three glyphs in the corner: a *compass* (one dot per slide, a descender under
-  any slide with a vertical stack, a seam between sections), the map, and present. On the right, one
-  button summons the tools you actually reach for. `M` opens the map — the deck laid out the way reveal
+  showing at the edges. Along the bottom — in every view, not just this one — a *compass* (one dot per
+  slide, a descender under any slide with a vertical stack, a seam between sections) and glyphs for the
+  map, present and notes for AI; on the right, the page number and one button that summons the tools. `M` opens the map — the deck laid out the way reveal
   walks it, sections left to right and stacks downward — where you add and title slides, reorder them,
   name sections (`data-section`) and drop one slide under another to make it a sub-slide. `Q` brings the
   toolbar, navigator and inspector back for good; hold `Space` for a look at them.

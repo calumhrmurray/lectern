@@ -32,18 +32,25 @@ interface Mark {
 export class Compass {
   private svg: SVGSVGElement;
   private labelEl: HTMLElement;
+  private numEl: HTMLElement;
   private marks: Mark[] = [];
   private sections: DeckSection[] = [];
   private hover: number | null = null;
 
-  constructor(readonly app: App, readonly container: HTMLElement) {
+  /** `counter` is where the page number goes — the other end of the bar. */
+  constructor(readonly app: App, readonly container: HTMLElement, readonly counter: HTMLElement) {
     this.svg = document.createElementNS(NS, 'svg') as SVGSVGElement;
     this.svg.setAttribute('class', 'lec-compass-svg');
     this.labelEl = h('button', {
       class: 'lec-compass-label', type: 'button', title: 'Open the map (M)',
       onclick: () => this.app.map.toggle(),
     });
+    this.numEl = h('button', {
+      class: 'lec-compass-num', type: 'button', title: 'Open the map (M)',
+      onclick: () => this.app.map.toggle(),
+    });
     container.append(this.svg, this.labelEl);
+    counter.appendChild(this.numEl);
     container.addEventListener('pointerleave', () => { this.hover = null; this.setLabel(this.cur()); });
   }
 
@@ -55,6 +62,7 @@ export class Compass {
       this.sections = [];
       this.svg.replaceChildren();
       this.labelEl.textContent = '';
+      this.numEl.textContent = '';
       return;
     }
     const tops = ed.doc.slides.map((s) => s.el);
@@ -80,11 +88,12 @@ export class Compass {
   /** Space between dots, shrinking for a long deck; null when there is no room. */
   private layout(): number | null {
     const n = this.marks.length;
-    // Measure the room we are given, not ourselves: the container shrink-wraps this svg.
-    const parentW = this.container.parentElement?.clientWidth ?? 900;
-    const avail = Math.max(60, Math.min(parentW * 0.5, 620) - 96);
+    // Measure the window, not an ancestor: every box we sit in shrink-wraps this
+    // svg, so asking a parent how wide it is asks how wide we decided to be.
+    const roomW = this.container.ownerDocument.documentElement.clientWidth || 900;
+    const avail = Math.max(60, Math.min(roomW * 0.42, 640) - 40);
     const gaps = this.sections.length - 1;
-    let step = 9;
+    let step = 10;
     while (step > 4 && (n - 1) * step + gaps * 6 > avail) step -= 0.5;
     if ((n - 1) * step + gaps * 6 > avail) {
       this.marks.forEach((m) => { m.x = 0; });
@@ -120,7 +129,7 @@ export class Compass {
 
     const maxDepth = Math.max(0, ...this.marks.map((m) => m.depth));
     const width = (this.marks.at(-1)?.x ?? 0) + 8;
-    const height = 14 + maxDepth * 6;
+    const height = 16 + maxDepth * 7;
     this.svg.setAttribute('width', String(width));
     this.svg.setAttribute('height', String(height));
     this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -134,14 +143,14 @@ export class Compass {
       if (m.depth) {
         const line = document.createElementNS(NS, 'line');
         line.setAttribute('x1', String(m.x)); line.setAttribute('x2', String(m.x));
-        line.setAttribute('y1', '7'); line.setAttribute('y2', String(7 + m.depth * 6));
+        line.setAttribute('y1', '8'); line.setAttribute('y2', String(8 + m.depth * 7));
         line.setAttribute('class', 'lec-compass-stem');
         g.appendChild(line);
         for (let i = 0; i < m.depth; i++) {
           const sub = document.createElementNS(NS, 'circle');
           sub.setAttribute('cx', String(m.x));
-          sub.setAttribute('cy', String(7 + (i + 1) * 6));
-          sub.setAttribute('r', String(isCurrent && cur?.sub === i ? 2.4 : 1.6));
+          sub.setAttribute('cy', String(8 + (i + 1) * 7));
+          sub.setAttribute('r', String(isCurrent && cur?.sub === i ? 2.8 : 1.9));
           sub.setAttribute('class', `lec-compass-sub${isCurrent && cur?.sub === i ? ' lec-on' : ''}`);
           g.appendChild(sub);
         }
@@ -149,8 +158,8 @@ export class Compass {
 
       const dot = document.createElementNS(NS, 'circle');
       dot.setAttribute('cx', String(m.x));
-      dot.setAttribute('cy', '7');
-      dot.setAttribute('r', String(isCurrent ? 3.4 : 2.5));
+      dot.setAttribute('cy', '8');
+      dot.setAttribute('r', String(isCurrent ? 3.8 : 2.9));
       dot.setAttribute('class', `lec-compass-dot${m.hidden ? ' lec-hollow' : ''}`);
       g.appendChild(dot);
 
@@ -177,10 +186,9 @@ export class Compass {
     const mark = this.marks.find((m) => m.top === shown);
     const name = mark ? this.sections[mark.section]?.name : null;
     const num = cur ? (cur.sub === null ? `${cur.top + 1}` : `${cur.top + 1}.${cur.sub + 1}`) : '';
-    const parts: Node[] = [];
-    if (name) parts.push(h('span', { class: 'lec-compass-section' }, name));
-    parts.push(h('span', { class: 'lec-compass-num' }, `${num}/${this.marks.length}`));
-    this.labelEl.replaceChildren(...parts);
+    this.labelEl.replaceChildren(name ? h('span', { class: 'lec-compass-section' }, name) : '');
+    this.labelEl.hidden = !name;
     this.labelEl.title = name ? `${name} — open the map (M)` : 'Open the map (M)';
+    this.numEl.textContent = `${num}/${this.marks.length}`;
   }
 }

@@ -328,18 +328,22 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-ai-reply { color: var(--text-dim); }
 
 
-/* ----------------------------------------------- the quiet room's furniture */
-/* Bottom left: where you are (compass) and the two places you go (map, present).
-   Bottom right: one button that summons the tools. Everything else is the slide. */
+/* ----------------------------------------------------- the editor's furniture */
+/* Bottom left: where you are (compass) and where you can go (map, present, notes).
+   Bottom right: the page number and one button that summons the tools. It sits above
+   the map overlay — this is the editor's furniture, and it belongs in every view. */
+#app { position: relative; }
 .lec-quietbar, .lec-tools {
-  position: absolute; bottom: 10px; z-index: 5; display: flex; align-items: center;
-  opacity: .45; transition: opacity .16s ease;
+  position: absolute; bottom: 12px; z-index: 650; display: flex; align-items: center;
+  opacity: .6; transition: opacity .16s ease;
+  background: color-mix(in srgb, var(--bg) 52%, transparent); backdrop-filter: blur(8px);
+  border-radius: 11px; padding: 2px 6px;
 }
-.lec-quietbar { left: 12px; gap: 10px; max-width: 62%; }
-.lec-tools { right: 12px; gap: 6px; }
+.lec-quietbar { left: 14px; gap: 8px; max-width: 62%; }
+.lec-tools { right: 14px; gap: 6px; }
 .lec-quietbar:hover, .lec-tools:hover, .lec-peek .lec-quietbar, .lec-peek .lec-tools { opacity: 1; }
-.lec-center:has(.lec-panels:not(.lec-hidden)) .lec-quietbar,
-.lec-center:has(.lec-panels:not(.lec-hidden)) .lec-tools { bottom: 220px; }
+#app:has(.lec-panels:not(.lec-hidden)) .lec-quietbar,
+#app:has(.lec-panels:not(.lec-hidden)) .lec-tools { bottom: 236px; }
 
 .lec-compass { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .lec-compass-svg { overflow: visible; display: block; }
@@ -354,20 +358,32 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-compass-mark.lec-on .lec-compass-sub.lec-on { opacity: 1; }
 .lec-compass-mark:hover .lec-compass-dot { fill: var(--text); }
 .lec-compass-label {
-  background: transparent; border: 0; color: var(--text-dim); font-size: 11px; font-family: var(--mono);
-  display: flex; gap: 6px; align-items: baseline; cursor: pointer; padding: 2px 4px; border-radius: 4px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: transparent; border: 0; color: var(--text-soft); font-size: 12.5px;
+  cursor: pointer; padding: 3px 6px; border-radius: 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30ch;
 }
+.lec-compass-label[hidden] { display: none; }
 .lec-compass-label:hover { color: var(--text); background: var(--panel-2); }
-.lec-compass-section { color: var(--text-soft); font-family: var(--font); font-size: 11.5px; }
-.lec-compass-num { font-variant-numeric: tabular-nums; }
+.lec-counter { display: flex; align-items: center; }
+.lec-compass-num {
+  background: transparent; border: 0; color: var(--text-soft); font-family: var(--mono); font-size: 12.5px;
+  font-variant-numeric: tabular-nums; cursor: pointer; padding: 4px 7px; border-radius: 6px;
+}
+.lec-compass-num:hover { color: var(--text); background: var(--panel-2); }
 
 .lec-glyph, .lec-tools-btn {
-  background: transparent; border: 0; color: var(--text-dim); padding: 5px; border-radius: 6px;
+  background: transparent; border: 0; color: var(--text-soft); padding: 7px; border-radius: 8px;
   cursor: pointer; display: flex; align-items: center; position: relative;
 }
 .lec-glyph:hover, .lec-tools-btn:hover, .lec-tools-btn.lec-on { color: var(--text); background: var(--panel-2); }
-.lec-glyph .lec-icon, .lec-tools-btn .lec-icon { width: 16px; height: 16px; }
+.lec-glyph .lec-icon, .lec-tools-btn .lec-icon { width: 21px; height: 21px; }
+.lec-glyph.lec-has-notes { color: var(--warm); }
+.lec-glyph-count {
+  position: absolute; right: 1px; top: 1px; min-width: 14px; height: 14px; padding: 0 3px;
+  border-radius: 7px; background: var(--warm); color: #1b1d22; font-size: 9.5px; font-weight: 600;
+  display: none; align-items: center; justify-content: center; font-family: var(--mono);
+}
+.lec-glyph.lec-has-notes .lec-glyph-count { display: flex; }
 .lec-tools-dot { position: absolute; right: 2px; top: 2px; width: 6px; height: 6px; border-radius: 50%; background: transparent; }
 .lec-tools-dot.lec-on { background: var(--warm); }
 .lec-tools-palette {
