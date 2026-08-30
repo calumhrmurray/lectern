@@ -27,8 +27,8 @@ same folder picker). All three edit the file on disk; `⌘S` and autosave write 
 
 1. **They ask for a deck** → scaffold it, write the slides, open the editor. Tell them: *double-click text to edit,
    drag to move, `N` to leave me a note on a slide.*
-2. **They leave notes for you.** On a slide they press `N` (or double-click empty canvas) and write, at the spot it
-   concerns, things like "draw a whale here", "this is too dense, split it", "add the 1905 law here". The note is saved in
+2. **They leave notes for you.** On a slide they right-click where it concerns (or press `N`, or double-click empty
+   canvas) and write things like "draw a whale here", "this is too dense, split it", "add the 1905 law here". The note is saved in
    the HTML (autosave, ~1 s) as
    `<div hidden data-ai-note="" style="position:absolute;left:640px;top:200px;width:300px;"><p data-by="author">draw a whale here</p></div>`.
 3. **You do the notes**: `npx lectern-editor notes deck.html` lists the pending ones with slide number, position and the

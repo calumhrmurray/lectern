@@ -665,12 +665,38 @@ export class Editor implements InteractionHost {
 
   /** Double-click on empty canvas: a note for the AI, right there. Only on the slide. */
   dblClickEmpty(clientX: number, clientY: number): void {
-    if (!this.doc.length || !this.onSlide(clientX, clientY)) return;
+    this.insertNoteAt(clientX, clientY);
+  }
+
+  /**
+   * A note for the assistant at a point on the slide, whatever is under it.
+   * A dense slide has no empty space to double-click, so this is also reached by
+   * right-click and by N — placing a note must not depend on finding a gap.
+   */
+  insertNoteAt(clientX: number, clientY: number): Element | null {
+    if (!this.doc.length || !this.onSlide(clientX, clientY)) return null;
     const p = this.toSlide(clientX, clientY);
     const size = this.stage.slideSize;
     const w = 300;
-    this.insertElement('ainote', { rect: { x: Math.round(Math.max(0, Math.min(p.x - 20, size.width - w))), y: Math.round(Math.max(0, Math.min(p.y - 16, size.height - 80))), w, h: 80 }, edit: true });
+    return this.insertElement('ainote', {
+      rect: {
+        x: Math.round(Math.max(0, Math.min(p.x - 20, size.width - w))),
+        y: Math.round(Math.max(0, Math.min(p.y - 16, size.height - 80))),
+        w, h: 80,
+      },
+      edit: true,
+    });
   }
+
+  /** Right-click on the canvas; the app puts a menu there. */
+  onContextMenu: ((clientX: number, clientY: number, el: Element | null) => void) | null = null;
+
+  contextMenu(clientX: number, clientY: number, el: Element | null): void {
+    this.onContextMenu?.(clientX, clientY, el);
+  }
+
+  /** Where the pointer last was over the canvas, so N can place a note there. */
+  pointer: { x: number; y: number } | null = null;
 
   rotationOf(src: Element): number {
     const t = (src as HTMLElement).style?.transform ?? '';

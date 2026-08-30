@@ -295,7 +295,7 @@ export function shortcutsDialog(): Promise<string> {
       row('⌥ drag', 'Ignore snapping'), row('Click again', 'Select the parent object'),
       row('PgUp / PgDn', 'Previous / next slide'), row(`${M} ⇧ N`, 'New slide'),
       row(`${M} ] / ${M} [`, 'Bring forward / send backward'), row(`${M} ⇧ ] / [`, 'Front / back'),
-      row('Type', 'With a text object selected: start editing, replacing its text'), row('N', 'New note for AI (nothing selected)'), row('+ / − / 0', 'Zoom in / out / fit (nothing selected)'),
+      row('Type', 'With a text object selected: start editing, replacing its text'), row('N', 'New note for AI, where the pointer is'), row('right-click', 'Note for AI here — works over text too'), row('+ / − / 0', 'Zoom in / out / fit (nothing selected)'),
       row('M', 'Map of the deck — sections across, stacks down'), row('Q', 'Quiet room (the default) — show or hide the panels'), row('Space (hold)', 'Bring the hidden chrome back while held'),
       row(`${M} B / I / U / K`, 'Bold / italic / underline / link (while editing text)'), row('Tab / ⇧ Tab', 'Indent / outdent list item (while editing)'),
       row(`${M} ⏎`, 'Finish editing text / apply HTML'), row('?', 'This list'),

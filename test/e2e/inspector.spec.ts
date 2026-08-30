@@ -155,6 +155,38 @@ test('double-click on empty canvas creates a note there; an untouched note disap
   expect(out.match(/data-ai-note/g)?.length).toBe(1);
 });
 
+test('a note can be placed on a full slide: right-click, N, or alt-double-click', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 1); // a slide with a heading and a list on it
+  const onText = await centerOf(page, 'section.present li');
+
+  // Right-click over text offers the note, and puts it where you pointed.
+  await page.mouse.click(onText.x, onText.y, { button: 'right' });
+  await page.getByText('Note for AI here').click();
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
+  await page.keyboard.type('this line is wrong');
+  await page.keyboard.press('Escape');
+  expect(await serialized(page)).toContain('this line is wrong');
+
+  // N places one where the pointer is, without clearing what is under it.
+  await page.mouse.move(onText.x + 40, onText.y + 20);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('n');
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // Alt-double-click does it over text, where a plain double-click would edit.
+  await page.mouse.dblclick(onText.x, onText.y, { modifiers: ['Alt'] });
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+  expect((await serialized(page)).match(/data-ai-note/g)?.length).toBe(1); // the two empty ones went
+
+  // and a plain double-click on text still edits the text (somewhere the note is not)
+  const heading = await centerOf(page, 'section.present h2');
+  await page.mouse.dblclick(heading.x, heading.y);
+  await expect(frame.locator('section.present h2[contenteditable="true"]')).toBeVisible();
+});
+
 test('a note the assistant has not answered is still editable', async ({ page }) => {
   const frame = await openDeck(page);
   await goToSlide(page, 1);

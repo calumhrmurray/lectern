@@ -164,7 +164,7 @@ your own.
 `⌘C/X/V/D` copy/cut/paste/duplicate · `⌫` delete · arrows nudge (`⇧` 10 px) ·
 `⇧`-drag constrain / keep aspect · `⌥`-drag ignore snapping · `PgUp/PgDn` slides ·
 `⌘⇧N` new slide · `⌘]`/`⌘[` forward/backward · typing with a text object selected edits it ·
-`N` new note for AI · `M` map · `Q` quiet mode · `Space` (hold) show the chrome · `+ − 0` zoom · `?` full list.
+`N` / right-click new note for AI · `M` map · `Q` quiet mode · `Space` (hold) show the chrome · `+ − 0` zoom · `?` full list.
 
 ## Development
 

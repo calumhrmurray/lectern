@@ -193,6 +193,8 @@ export class Interactions {
     ev.preventDefault();
     const target = this.host.hitTest(ev.clientX, ev.clientY);
     if (target && this.host.dblClickTarget?.(target)) return;
+    // Alt says "a note here" even when there is text under the pointer.
+    if (ev.altKey) { this.host.dblClickEmpty?.(ev.clientX, ev.clientY); return; }
     if (target && this.host.isTextEditable(target)) {
       this.host.select([target], 'replace');
       this.host.startTextEdit(target, { clientX: ev.clientX, clientY: ev.clientY });

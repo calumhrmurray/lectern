@@ -28,7 +28,7 @@ import { MapView } from '../ui/MapView';
 import { Neighbours } from '../ui/Neighbours';
 import { Tips } from '../ui/Tips';
 import { Tools } from '../ui/Tools';
-import { closeMenus } from '../ui/Menu';
+import { closeMenus, showMenu } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
 import { Panels } from '../ui/Panels';
 import { ThumbnailRenderer } from '../ui/Thumbnails';
@@ -620,6 +620,23 @@ export class App {
     }
   }
 
+  /** Right-click on the canvas. Leading with the note, since that is what it is for. */
+  private canvasMenu(x: number, y: number, el: Element | null): void {
+    const ed = this.editor;
+    if (!ed.ready) return;
+    const onSlide = ed.onSlide(x, y);
+    const editable = !!el && ed.isTextEditable(el);
+    void showMenu([
+      { label: 'Note for AI here', icon: 'sparkle', disabled: !onSlide, onSelect: () => ed.insertNoteAt(x, y) },
+      { separator: true },
+      { label: 'Edit text', icon: 'text', disabled: !editable, onSelect: () => { if (el) { ed.select([el]); ed.startTextEdit(el); } } },
+      { label: 'Duplicate', icon: 'duplicate', disabled: !el, onSelect: () => { if (el) { ed.select([el]); ed.duplicateSelection(); } } },
+      { label: 'Delete', icon: 'trash', disabled: !el, onSelect: () => { if (el) { ed.select([el]); ed.deleteSelection(); } } },
+      { separator: true },
+      { label: 'Paste', disabled: ed.clipboard?.kind !== 'elements', onSelect: () => ed.paste() },
+    ], { x, y });
+  }
+
   // ---------------------------------------------------------------- slides UI
 
   showNewSlideMenu(at: HTMLElement | { x: number; y: number }): void {
@@ -778,6 +795,7 @@ export class App {
     ed.on('textmode', (on) => { this.toolbar.update(); if (!on) this.scheduleAutosave(); });
     ed.on('geometry', () => this.inspector.updateGeometry());
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
+    ed.onContextMenu = (x, y, el) => this.canvasMenu(x, y, el);
     ed.onTextKey = (ev) => this.handleTextKey(ev);
     // Keyboard shortcuts also arrive from inside the iframe (when it has focus).
     ed.stage.keyHandler = (ev) => { if (!ed.textSession) this.handleKey(ev); };
@@ -801,6 +819,7 @@ export class App {
       this.toggleDark();
       this.tips.show('room');
     });
+    this.els.center.addEventListener('pointermove', (ev) => { this.editor.pointer = { x: ev.clientX, y: ev.clientY }; });
     window.addEventListener('keydown', (ev) => this.handleKey(ev));
     const unpeek = () => this.root.classList.remove('lec-peek');
     window.addEventListener('keyup', (ev) => { if (ev.key === ' ') unpeek(); });
@@ -897,7 +916,12 @@ export class App {
       // Type-to-edit: a printable key with one text object selected starts editing and replaces its text.
       if (hasSel && key.length === 1 && ed.typeIntoSelection(key)) { stop(); return; }
       if (!hasSel) {
-        if (lower === 'n') { stop(); ed.insertElement('ainote', { edit: true }); return; }
+        if (lower === 'n') {
+          stop();
+          const p = ed.pointer;
+          if (!(p && ed.insertNoteAt(p.x, p.y))) ed.insertElement('ainote', { edit: true });
+          return;
+        }
         if (lower === 'm') { stop(); this.map.toggle(); return; }
         if (lower === 'q') { stop(); this.toggleQuiet(); return; }
         if (key === ' ') { stop(); this.root.classList.add('lec-peek'); return; }
