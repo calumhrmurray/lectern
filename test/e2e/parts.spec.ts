@@ -7,7 +7,7 @@ const DIR = join(process.cwd(), 'test', '.tmp', 'demo', 'parts');
 const read = (p: string) => readFileSync(join(DIR, p), 'utf8');
 
 test('multi-file decks: slides come from part files and save back to them', async ({ page }) => {
-  await page.goto('/?ws=local&deck=parts/session.html');
+  await page.goto('/?ws=local&deck=parts/session.html&test=1');
   await page.waitForFunction(() => (window as unknown as { lectern: { editor: { ready: boolean } } }).lectern.editor.ready);
   await expect(page.locator('.lec-slide-card')).toHaveCount(3);
   const shellBefore = read('session.html');

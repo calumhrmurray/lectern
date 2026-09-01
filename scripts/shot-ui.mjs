@@ -11,7 +11,7 @@ try {
   await page.goto(`http://127.0.0.1:${port}/`);
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'test/.shots/ui-welcome.png' });
-  await page.goto(`http://127.0.0.1:${port}/?ws=local&deck=index.html`);
+  await page.goto(`http://127.0.0.1:${port}/?ws=local&test=1&deck=index.html`);
   await page.waitForFunction(() => window.lectern?.editor?.ready);
   await page.waitForTimeout(600);
   await page.locator('.lec-btn[data-action="newslide"]').click();

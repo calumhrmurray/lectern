@@ -23,5 +23,5 @@ the notes-for-AI protocol and the rules for editing a file the editor has open. 
    `data-ai-note="done"`. Never delete a note or its `hidden` attribute.
 5. **Keep untouched slides byte-identical** — edit in place, no reformatting, write the file in one go.
 
-If `npx` is not available, the person can use https://calumhrmurray.github.io/lectern/ (*Open a folder…*) or the
+If `npx` is not available, the person can build and double-click `Lectern.html` (*Open a folder…*) or the
 single-file `Lectern.html` from that page; the file format and the notes are the same.

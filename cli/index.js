@@ -16,7 +16,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } 
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { exec } from 'node:child_process';
-import { createWorkspaceHandler, safeJoin, send, serveFile } from './server.js';
+import { createWorkspaceHandler, isLoopbackHost, safeJoin, send, serveFile } from './server.js';
 import { notesPrompt } from './notes.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -25,7 +25,7 @@ const distDir = join(pkgRoot, 'dist');
 const REVEAL_CDN = 'https://cdn.jsdelivr.net/npm/reveal.js@5';
 
 const HELP = `usage: lectern [folder|deck.html] [--port N] [--host H] [--no-open]
-       lectern new <folder> [--title "…"] [--author "…"] [--theme paper|ink|academic|aquarelle] [--size 1280x720] [--no-reveal] [--force]
+       lectern new <folder> [--title "…"] [--author "…"] [--lang en] [--theme paper|ink|academic|aquarelle] [--size 1280x720] [--no-reveal] [--force]
        lectern notes <deck.html>
        lectern guide
 
@@ -35,7 +35,7 @@ const HELP = `usage: lectern [folder|deck.html] [--port N] [--host H] [--no-open
   guide          instructions for AI assistants: the deck format, the notes protocol, the workflow (AGENTS.md)
 
   options for serve:  --port N (default 8765)  --host H (default 127.0.0.1)  --no-open
-  options for new:    --title, --author, --theme (default paper), --size WxH (default 1280x720),
+  options for new:    --title, --author, --lang (the <html lang>, default en), --theme (default paper), --size WxH (default 1280x720),
                       --no-reveal (load reveal.js from the jsDelivr CDN instead of copying it), --force (overwrite)`;
 
 const args = process.argv.slice(2);
@@ -92,7 +92,7 @@ if (!existsSync(join(distDir, 'index.html'))) {
   process.exit(1);
 }
 
-const workspace = createWorkspaceHandler(rootDir, deckFile, (m) => console.log('  ' + m));
+const workspace = createWorkspaceHandler(rootDir, deckFile, (m) => console.log('  ' + m), { host });
 
 const server = createServer(async (req, res) => {
   try {
@@ -112,6 +112,7 @@ server.listen(port, host, () => {
   const query = deckFile ? `?ws=local&deck=${encodeURIComponent(deckFile)}` : '?ws=local';
   const url = `http://${host}:${port}/${query}`;
   console.log(`\n  lectern · editing ${rootDir}\n  ${url}\n`);
+  if (!isLoopbackHost(host)) console.warn(`  warning: --host ${host} makes ${rootDir} readable and writable by anyone who can reach this machine on port ${port}\n`);
   if (open) {
     const cmd = process.platform === 'darwin' ? `open "${url}"` : process.platform === 'win32' ? `start "" "${url}"` : `xdg-open "${url}"`;
     exec(cmd, () => {});
@@ -128,11 +129,12 @@ server.on('error', (err) => {
 
 async function newDeck(argv) {
   let folder = null;
-  const opts = { title: '', author: '', theme: 'paper', width: 1280, height: 720, reveal: true, force: false };
+  const opts = { title: '', author: '', lang: 'en', theme: 'paper', width: 1280, height: 720, reveal: true, force: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--title') opts.title = argv[++i] ?? '';
     else if (a === '--author') opts.author = argv[++i] ?? '';
+    else if (a === '--lang') opts.lang = argv[++i] || 'en';
     else if (a === '--theme') opts.theme = argv[++i] ?? 'paper';
     else if (a === '--size') {
       const m = /^(\d+)x(\d+)$/i.exec(argv[++i] ?? '');
@@ -145,7 +147,7 @@ async function newDeck(argv) {
     else if (folder === null) folder = a;
     else { console.error(`lectern new: unexpected argument ${a}`); process.exit(1); }
   }
-  if (!folder) { console.error('usage: lectern new <folder> [--title "…"] [--author "…"] [--theme paper|ink|academic|aquarelle] [--size 1280x720] [--no-reveal]'); process.exit(1); }
+  if (!folder) { console.error('usage: lectern new <folder> [--title "…"] [--author "…"] [--lang en] [--theme paper|ink|academic|aquarelle] [--size 1280x720] [--no-reveal]'); process.exit(1); }
 
   const lib = join(distDir, 'lib', 'templates.js');
   if (!existsSync(lib)) {
@@ -176,7 +178,7 @@ async function newDeck(argv) {
   const title = opts.title || basename(dir).replace(/[-_]+/g, ' ').replace(/^\w/, (c) => c.toUpperCase()) || 'Untitled';
   writeFileSync(join(dir, 'theme.css'), theme.css.endsWith('\n') ? theme.css : theme.css + '\n');
   created.unshift(`theme.css  (${theme.name} theme — ${theme.description})`);
-  writeFileSync(indexFile, starterDeckHtml({ title, author: opts.author, width: opts.width, height: opts.height, revealPath, theme }));
+  writeFileSync(indexFile, starterDeckHtml({ title, author: opts.author, lang: opts.lang, width: opts.width, height: opts.height, revealPath, theme }));
   created.unshift(`index.html  (${opts.width}×${opts.height}, "${title}")`);
 
   console.log(`\n  lectern · created ${dir}\n`);

@@ -15,11 +15,20 @@ export class Toolbar {
     this.build();
   }
 
-  private btn(id: string, icon: IconName | null, label: string | null, title: string, onClick: (ev: MouseEvent) => void, opts: { caret?: boolean; cls?: string } = {}): HTMLButtonElement {
-    const b = h('button', { class: `lec-btn${opts.cls ? ' ' + opts.cls : ''}`, type: 'button', title, onclick: onClick, dataset: { action: id } },
+  private btn(id: string, icon: IconName | null, label: string | null, title: string, onClick: (ev: MouseEvent) => void, opts: { caret?: boolean; cls?: string; popup?: 'menu' | 'dialog' } = {}): HTMLButtonElement {
+    const b = h('button', {
+      class: `lec-btn${opts.cls ? ' ' + opts.cls : ''}`, type: 'button', title, 'aria-label': plainLabel(title), onclick: onClick, dataset: { action: id },
+      'aria-haspopup': opts.popup ?? null, 'aria-expanded': opts.popup === 'menu' ? 'false' : null,
+    },
       icon ? svgIcon(icons[icon]) : null, label, opts.caret ? svgIcon(icons.chevronDown, 'lec-icon lec-caret') : null);
     this.buttons.set(id, b);
     return b;
+  }
+
+  /** Opens a menu below `anchor` and keeps its aria-expanded state in step. */
+  private openMenu(anchor: HTMLElement, items: MenuItem[]): void {
+    anchor.setAttribute('aria-expanded', 'true');
+    void showMenu(items, anchor).then(() => anchor.setAttribute('aria-expanded', 'false'));
   }
 
   private build(): void {
@@ -30,7 +39,7 @@ export class Toolbar {
     c.replaceChildren();
 
     c.append(
-      this.btn('menu', 'lectern', null, 'Lectern menu', (e) => this.appMenu(e.currentTarget as HTMLElement), { caret: true, cls: 'lec-brand' }),
+      this.btn('menu', 'lectern', null, 'Lectern menu', (e) => this.appMenu(e.currentTarget as HTMLElement), { caret: true, cls: 'lec-brand', popup: 'menu' }),
       sep(),
       group(
         this.btn('undo', 'undo', null, `Undo (${M}Z)`, () => ed().undo()),
@@ -38,7 +47,7 @@ export class Toolbar {
       ),
       sep(),
       group(
-        this.btn('newslide', 'plus', 'Slide', `New slide (${M}⇧N)`, (e) => app.showNewSlideMenu(e.currentTarget as HTMLElement), { caret: true }),
+        this.btn('newslide', 'plus', 'Slide', `New slide (${M}⇧N)`, (e) => app.showNewSlideMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'dialog' }),
       ),
       (this.insertGroup = group(
         sep(),
@@ -47,10 +56,10 @@ export class Toolbar {
         this.btn('bullets', 'bullets', null, 'Insert a bullet list', () => ed().insertElement('bullets', { edit: true })),
         this.btn('ainote', 'note', 'Note for AI', 'Leave an instruction on the slide for Claude or a colleague — hidden when presenting (N)', () => ed().insertElement('ainote', { edit: true })),
         this.btn('image', 'image', 'Image', 'Insert an image', () => void app.insertImageViaDialog()),
-        this.btn('shape', 'shape', 'Shape', 'Insert a shape', (e) => this.shapeMenu(e.currentTarget as HTMLElement), { caret: true }),
-        this.btn('more', 'more', null, 'More objects', (e) => this.insertMoreMenu(e.currentTarget as HTMLElement)),
+        this.btn('shape', 'shape', 'Shape', 'Insert a shape', (e) => this.shapeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
+        this.btn('more', 'more', null, 'More objects', (e) => this.insertMoreMenu(e.currentTarget as HTMLElement), { popup: 'menu' }),
         sep(),
-        this.btn('arrange', 'objCenterH', 'Arrange', 'Align, distribute, order', (e) => this.arrangeMenu(e.currentTarget as HTMLElement), { caret: true }),
+        this.btn('arrange', 'objCenterH', 'Arrange', 'Align, distribute, order', (e) => this.arrangeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
       )),
       (this.textGroup = group(
         sep(),
@@ -100,12 +109,13 @@ export class Toolbar {
       const b = this.buttons.get(id);
       if (!b) return;
       b.disabled = !enabled;
-      if (on !== undefined) b.classList.toggle('lec-on', on);
+      if (on !== undefined) { b.classList.toggle('lec-on', on); b.setAttribute('aria-pressed', String(on)); }
     };
     set('undo', ed.history.canUndo);
     set('redo', ed.history.canRedo);
     this.buttons.get('undo')!.title = `Undo${ed.history.undoLabel ? ' ' + ed.history.undoLabel : ''} (${modKey()}Z)`;
     this.buttons.get('redo')!.title = `Redo${ed.history.redoLabel ? ' ' + ed.history.redoLabel : ''} (${modKey()}⇧Z)`;
+    for (const id of ['undo', 'redo']) { const b = this.buttons.get(id)!; b.setAttribute('aria-label', plainLabel(b.title)); }
     set('newslide', ed.ready);
     for (const id of ['text', 'title', 'bullets', 'ainote', 'image', 'shape', 'more']) set(id, has);
     set('arrange', has && sel);
@@ -129,7 +139,7 @@ export class Toolbar {
   private appMenu(anchor: HTMLElement): void {
     const app = this.app;
     const M = modKey();
-    void showMenu([
+    this.openMenu(anchor, [
       { label: 'Open folder…', icon: 'folder', shortcut: `${M}O`, onSelect: () => void app.openFolder() },
       { label: 'Open another deck in this folder…', icon: 'file', disabled: !app.workspace, onSelect: () => void app.pickDeckInWorkspace() },
       { label: 'New deck…', icon: 'plus', onSelect: () => void app.newDeck() },
@@ -145,7 +155,7 @@ export class Toolbar {
       { label: 'Tutorial', icon: 'help', onSelect: () => app.showTutorial() },
       { label: 'Keyboard shortcuts', shortcut: '?', onSelect: () => app.showShortcuts() },
       { label: 'About Lectern', onSelect: () => app.showAbout() },
-    ], anchor);
+    ]);
   }
 
   private shapeMenu(anchor: HTMLElement): void {
@@ -159,19 +169,19 @@ export class Toolbar {
       { label: 'Arrow', icon: 'arrow', onSelect: () => ed.insertElement('arrow') },
       { label: 'Callout', icon: 'callout', onSelect: () => ed.insertElement('callout', { edit: true }) },
     ];
-    void showMenu(items, anchor);
+    this.openMenu(anchor, items);
   }
 
   private insertMoreMenu(anchor: HTMLElement): void {
     const ed = this.app.editor;
-    void showMenu([
+    this.openMenu(anchor, [
       { label: 'Table', icon: 'table', onSelect: () => ed.insertElement('table') },
       { label: 'Code block', icon: 'code', onSelect: () => ed.insertElement('code', { edit: true }) },
       { label: 'Equation (LaTeX)', icon: 'equation', onSelect: () => ed.insertElement('equation', { edit: true }), hint: ed.stage.hasMath ? '' : 'no math plugin loaded' },
       { label: 'Web embed (iframe)', icon: 'embed', onSelect: () => ed.insertElement('iframe') },
       { separator: true },
       { label: 'Paste', shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'elements', onSelect: () => ed.paste() },
-    ], anchor);
+    ]);
   }
 
   private arrangeMenu(anchor: HTMLElement): void {
@@ -179,7 +189,7 @@ export class Toolbar {
     const sel = ed.selection();
     const el = ed.primary;
     const M = modKey();
-    void showMenu([
+    this.openMenu(anchor, [
       { label: sel.length > 1 ? 'Align objects' : 'Align to slide', title: true },
       { label: 'Left', icon: 'objLeft', onSelect: () => ed.align('left') },
       { label: 'Centre', icon: 'objCenterH', onSelect: () => ed.align('center') },
@@ -197,9 +207,11 @@ export class Toolbar {
       { label: 'Send to back', icon: 'back', shortcut: `${M}⇧[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'back') },
       { separator: true },
       { label: el && ed.isFree(el) ? 'Return to layout flow' : 'Detach from layout (free)', icon: el && ed.isFree(el) ? 'flow' : 'free', disabled: !el, onSelect: () => { for (const s of sel) ed.setFree(s, !ed.isFree(s)); } },
-    ], anchor);
+    ]);
   }
 }
 
+/** Accessible name from a tooltip: the title without its trailing "(shortcut)". */
+function plainLabel(title: string): string { return title.replace(/\s*\([^()]*\)\s*$/, ''); }
 function sep(): HTMLElement { return h('div', { class: 'lec-sep' }); }
 function group(...children: HTMLElement[]): HTMLElement { return h('div', { class: 'lec-group' }, ...children); }

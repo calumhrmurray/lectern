@@ -4,18 +4,19 @@
   --bg: #1b1d22;
   --panel: #22252c;
   --panel-2: #2a2e36;
-  --line: #34383f;
+  --line: #454a53;
   --line-soft: #2c3037;
   --text: #dcdfe4;
   --text-soft: #9aa0ab;
-  --text-dim: #6b717c;
+  --text-dim: #8a909b;
   --accent: #3b82f6;
-  --accent-soft: rgba(59, 130, 246, 0.25);
+  --accent-rgb: 59 130 246;
+  --accent-strong: #2563eb;
+  --accent-soft: rgb(var(--accent-rgb) / .25);
   --warm: #e0894a;
-  --danger: #e5534b;
+  --danger: #ff7b72;
   --ok: #5fbf7a;
   --guide: #ff3fa4;
-  --radius: 8px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --toolbar-h: 46px;
@@ -37,11 +38,19 @@ a { color: var(--accent); }
 
 #app { display: flex; flex-direction: column; height: 100%; }
 
+/* Keyboard focus: one visible ring everywhere in the editor chrome (the deck iframe has its own styles). */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lec-navigator:focus-visible, .lec-overlay:focus-visible, .lec-insp-body:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
 /* ---------------------------------------------------------------- toolbar */
 .lec-toolbar {
   flex: 0 0 var(--toolbar-h); display: flex; align-items: center; gap: 4px; padding: 0 10px;
   background: var(--panel); border-bottom: 1px solid var(--line);
+  overflow-x: auto; overflow-y: hidden; flex-shrink: 0; scrollbar-width: thin;
 }
+.lec-toolbar::-webkit-scrollbar { height: 4px; }
+.lec-toolbar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+.lec-toolbar > *, .lec-toolbar .lec-group > * { flex-shrink: 0; }
 .lec-toolbar .lec-group { display: flex; align-items: center; gap: 2px; }
 .lec-toolbar .lec-sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
 .lec-toolbar .lec-spacer { flex: 1; }
@@ -52,10 +61,10 @@ a { color: var(--accent); }
 }
 .lec-btn:hover { background: var(--panel-2); }
 .lec-btn:active, .lec-btn.lec-active { background: #33373f; border-color: var(--line); }
-.lec-btn.lec-on { color: #fff; background: var(--accent-soft); border-color: rgba(59,130,246,.5); }
+.lec-btn.lec-on { color: #fff; background: var(--accent-soft); border-color: rgb(var(--accent-rgb) / .5); }
 .lec-btn:disabled { opacity: .38; cursor: default; background: transparent; }
-.lec-btn.lec-primary { background: var(--accent); color: #fff; font-weight: 600; }
-.lec-btn.lec-primary:hover { background: #2f6fdc; }
+.lec-btn.lec-primary { background: var(--accent-strong); color: #fff; font-weight: 600; }
+.lec-btn.lec-primary:hover { background: #1d4fd8; }
 .lec-btn.lec-warm { background: var(--warm); color: #1b1d22; font-weight: 600; }
 .lec-btn.lec-warm:hover { background: #ea9a62; }
 .lec-btn .lec-icon { display: inline-flex; width: 16px; height: 16px; }
@@ -72,7 +81,7 @@ a { color: var(--accent); }
 .lec-main { flex: 1; display: flex; min-height: 0; }
 .lec-navigator {
   flex: 0 0 var(--nav-w); background: var(--panel); border-right: 1px solid var(--line);
-  overflow-y: auto; overflow-x: hidden; padding: 10px 8px 40px; outline: none;
+  overflow-y: auto; overflow-x: hidden; padding: 10px 8px 40px;
 }
 .lec-navigator.lec-hidden, .lec-inspector.lec-hidden { display: none; }
 .lec-center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -87,11 +96,11 @@ a { color: var(--accent); }
 }
 
 /* ---------------------------------------------------------------- overlay */
-.lec-overlay { position: absolute; inset: 0; outline: none; touch-action: none; }
+.lec-overlay { position: absolute; inset: 0; touch-action: none; }
 .lec-overlay.lec-textmode { pointer-events: none; }
 .lec-overlay > div { position: absolute; }
 .lec-canvas-outline { position: absolute; pointer-events: none; box-shadow: 0 10px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06); }
-.lec-hover { position: absolute; pointer-events: none; outline: 1px solid rgba(59,130,246,.75); outline-offset: 0; }
+.lec-hover { position: absolute; pointer-events: none; outline: 1px solid rgb(var(--accent-rgb) / .75); outline-offset: 0; }
 .lec-boxes, .lec-guides { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: visible; }
 .lec-box { position: absolute; pointer-events: none; outline: 1.5px solid var(--accent); transform-origin: center; }
 .lec-box.lec-primary { outline-width: 2px; }
@@ -105,13 +114,17 @@ a { color: var(--accent); }
 .lec-h-e { left: 100%; top: 50%; } .lec-h-se { left: 100%; top: 100%; } .lec-h-s { left: 50%; top: 100%; }
 .lec-h-sw { left: 0; top: 100%; } .lec-h-w { left: 0; top: 50%; }
 .lec-rotate { left: 50%; top: -22px; width: 11px; height: 11px; border-radius: 50%; cursor: grab; }
-.lec-rotate::before { content: ""; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 12px; background: var(--accent); transform: translateX(-50%); }
+.lec-rotate::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 12px; background: var(--accent); transform: translateX(-50%); }
+/* Touch/stylus: a 24px hit area around each handle (WCAG 2.5.8). Not for a mouse — on a one-line heading it would swallow the move target. */
+@media (pointer: coarse) {
+  .lec-handle::before { content: ""; position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; transform: translate(-50%, -50%); }
+}
 .lec-guide { position: absolute; pointer-events: none; background: var(--guide); }
 .lec-guide-x { width: 1px; }
 .lec-guide-y { height: 1px; }
 .lec-guide-center { background: var(--guide); opacity: .85; }
 .lec-guide-canvas { background: var(--guide); opacity: .55; }
-.lec-marquee { position: absolute; pointer-events: none; background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.7); }
+.lec-marquee { position: absolute; pointer-events: none; background: rgb(var(--accent-rgb) / .12); border: 1px solid rgb(var(--accent-rgb) / .7); }
 .lec-size-label {
   position: absolute; pointer-events: none; transform: translate(0, 0); background: #111; color: #fff; font-size: 11px;
   padding: 2px 6px; border-radius: 4px; white-space: nowrap; font-variant-numeric: tabular-nums;
@@ -155,9 +168,10 @@ a { color: var(--accent); }
 .lec-row .lec-fill { flex: 1; min-width: 0; }
 .lec-field {
   height: 26px; padding: 0 7px; background: var(--bg); border: 1px solid var(--line); border-radius: 5px; color: var(--text);
-  min-width: 0; width: 100%; outline: none;
+  min-width: 0; width: 100%;
 }
-.lec-field:focus { border-color: var(--accent); }
+.lec-field:focus { border-color: var(--accent); outline: none; }
+.lec-field:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
 .lec-field[type=number] { -moz-appearance: textfield; padding-right: 2px; }
 .lec-field::-webkit-inner-spin-button { opacity: .6; }
 .lec-field.lec-num { width: 62px; flex: 0 0 62px; text-align: right; font-variant-numeric: tabular-nums; }
@@ -180,8 +194,9 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .lec-chip { height: 22px; padding: 0 8px; border-radius: 11px; border: 1px solid var(--line); background: var(--bg); color: var(--text-soft); font-size: 11.5px; font-family: var(--mono); }
 .lec-chip:hover { color: var(--text); border-color: var(--text-dim); }
-.lec-chip.lec-active { background: var(--accent-soft); border-color: rgba(59,130,246,.6); color: #fff; }
+.lec-chip.lec-active { background: var(--accent-soft); border-color: rgb(var(--accent-rgb) / .6); color: #fff; }
 .lec-chip.lec-custom { border-style: dashed; }
+.lec-class-input { height: 22px; width: 110px; flex: 0 0 auto; font-family: var(--mono); font-size: 11.5px; }
 .lec-crumbs { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; font-family: var(--mono); font-size: 11.5px; color: var(--text-dim); }
 .lec-crumb { background: transparent; border: 0; padding: 2px 4px; border-radius: 4px; color: var(--text-soft); font-family: var(--mono); font-size: 11.5px; }
 .lec-crumb:hover { background: var(--panel-2); color: var(--text); }
@@ -203,7 +218,9 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-panel-head { display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-bottom: 1px solid var(--line-soft); }
 .lec-panel-head .lec-tab { flex: 0 0 auto; padding: 5px 10px; }
 .lec-panel-body { flex: 1; display: flex; min-height: 0; }
-.lec-panel-body textarea { flex: 1; border: 0; border-radius: 0; background: var(--bg); padding: 10px 12px; resize: none; outline: none; }
+.lec-panel-body textarea { flex: 1; border: 0; border-radius: 0; background: var(--bg); padding: 10px 12px; resize: none; }
+.lec-panel-body textarea:focus { outline: none; }
+.lec-panel-body textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .lec-panel-body textarea.lec-notes-text { font-family: var(--font); font-size: 13px; }
 .lec-panel-side { flex: 0 0 280px; display: flex; flex-direction: column; gap: 6px; padding: 8px; border-left: 1px solid var(--line-soft); min-width: 0; }
 .lec-panel-error { color: var(--danger); font-size: 11.5px; }
@@ -224,7 +241,7 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
   border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.5);
 }
 .lec-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; height: 28px; padding: 0 10px 0 8px; border: 0; border-radius: 5px; background: transparent; color: var(--text); text-align: left; white-space: nowrap; }
-.lec-menu-item:hover:not(:disabled) { background: var(--accent); color: #fff; }
+.lec-menu-item:hover:not(:disabled), .lec-menu-item:focus-visible { background: var(--accent-strong); color: #fff; outline: none; }
 .lec-menu-item:disabled { opacity: .4; cursor: default; }
 .lec-menu-item .lec-icon { width: 16px; height: 16px; display: inline-flex; flex: 0 0 16px; }
 .lec-menu-item .lec-icon svg { width: 16px; height: 16px; }
@@ -295,7 +312,7 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 .lec-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-soft); font-size: 14px; z-index: 5; pointer-events: none; }
 .lec-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 950; background: #111; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.5); max-width: 70vw; }
 .lec-toast.lec-error { background: var(--danger); }
-.lec-dropzone { position: absolute; inset: 0; z-index: 6; background: rgba(59,130,246,.12); border: 3px dashed var(--accent); display: none; align-items: center; justify-content: center; color: #fff; font-size: 18px; pointer-events: none; }
+.lec-dropzone { position: absolute; inset: 0; z-index: 6; background: rgb(var(--accent-rgb) / .12); border: 3px dashed var(--accent); display: none; align-items: center; justify-content: center; color: #fff; font-size: 18px; pointer-events: none; }
 .lec-dropzone.lec-on { display: flex; }
 
 /* ---------------------------------------------------------------- theme picker */
@@ -316,13 +333,25 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 
 /* ---------------------------------------------------------------- notes for AI */
 .lec-ai-list { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 4px; background: var(--bg); }
-.lec-ai-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); text-align: left; }
-.lec-ai-item:hover { border-color: var(--accent); }
+.lec-ai-row { display: flex; align-items: center; width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+.lec-ai-row:hover, .lec-ai-row:focus-within { border-color: var(--accent); }
+.lec-ai-item { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; padding: 8px 10px; border: 0; border-radius: 6px 0 0 6px; background: transparent; color: var(--text); text-align: left; }
+.lec-ai-item:focus-visible { outline-offset: -2px; }
 .lec-ai-slide { flex: 0 0 60px; font-size: 11px; color: var(--text-soft); }
 .lec-ai-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lec-ai-where { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
-.lec-ai-done { flex: 0 0 auto; color: var(--text-dim); padding: 0 4px; }
+.lec-ai-done { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; margin-right: 4px; padding: 0 4px; border: 0; border-radius: 4px; background: transparent; color: var(--text-dim); }
 .lec-ai-done:hover { color: var(--danger); }
+.lec-ai-done .lec-icon { display: inline-flex; width: 14px; height: 14px; }
+.lec-ai-done .lec-icon svg { width: 14px; height: 14px; }
 .lec-ai-done-item { border-color: #3f7a45; }
 .lec-ai-done-item .lec-ai-slide { color: #6fbf76; }
 .lec-ai-reply { color: var(--text-dim); }
+
+/* ---------------------------------------------------------------- small windows & preferences */
+@media (max-width: 900px) {
+  :root { --nav-w: 160px; --insp-w: 240px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class^="lec-"], [class*=" lec-"], [class^="lec-"]::before, [class^="lec-"]::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}

@@ -8,10 +8,10 @@ restyle and retype things like you would in Keynote or PowerPoint — then write
 into the file. **The HTML file is the document.** Comments, indentation and untouched slides stay byte-for-byte
 identical, so `git diff` stays readable and a coding assistant can keep editing the same file while you have it open.
 
-- **Try it now:** https://calumhrmurray.github.io/lectern/ — click *Open a folder…* (Chrome/Edge; nothing is uploaded).
-- **Five-minute tutorial:** https://calumhrmurray.github.io/lectern/tutorial.html
-- **No install, no server:** download [`Lectern.html`](https://calumhrmurray.github.io/lectern/Lectern.html) and double-click it.
+- **No install, no server, no network:** build `Lectern.html` (`npm run build`) and double-click it. One file, opened
+  from `file://`; nothing is served and nothing leaves the machine.
 - **From a terminal:** `npx lectern-editor deck.html`
+- **Five-minute tutorial:** `public/tutorial.html` in this repo (the editor's Help menu opens it).
 - **With Claude Code / another assistant:** see [Slides with an AI](#slides-with-an-ai) below — the instructions it needs are in [`AGENTS.md`](AGENTS.md).
 
 ## Slides with an AI
@@ -31,7 +31,7 @@ class vocabulary, the notes protocol and the editing rules:
 - **Codex, Cursor, Copilot, Gemini CLI, …:** they read `AGENTS.md` from the working folder — copy it into your
   project, or paste this into the chat:
 
-  > Read https://calumhrmurray.github.io/lectern/AGENTS.md and make me a slide deck about … in a folder called `talk`.
+  > Read AGENTS.md from https://github.com/calumhrmurray/lectern and make me a slide deck about … in a folder called `talk`.
 
 - **Any agent with a shell:** `npx lectern-editor guide` prints the same document; `npx lectern-editor new talk`
   scaffolds a deck; `npx lectern-editor notes talk/index.html` lists what you asked for on the slides.
@@ -71,18 +71,10 @@ class vocabulary, the notes protocol and the editing rules:
 
 ## Use it
 
-### In the browser — https://calumhrmurray.github.io/lectern/
-
-1. Open the page in Chrome, Edge or another Chromium browser (they have the folder picker; Firefox and Safari
-   need the CLI below).
-2. Click **Open a folder…** and pick the folder that contains your deck; choose the HTML file
-   if the folder has several.
-3. Edit. **`⌘S`** writes straight back to the file on disk (and autosave does it for you).
-
 ### Double-click `Lectern.html` — nothing to install, no server
 
-The same editor as one self-contained file: [download it](https://calumhrmurray.github.io/lectern/Lectern.html)
-(or build it: `npm run build` writes `Lectern.html` here). On a Mac, `sh scripts/make-app.sh` builds **`Lectern.app`**,
+The whole editor as one self-contained file. Build it with `npm run build`, which writes `Lectern.html` here, and
+open it from `file://`: no server, no port, no network — the browser is only there to render HTML. On a Mac, `sh scripts/make-app.sh` builds **`Lectern.app`**,
 a launcher you can drag to the Dock; it opens `Lectern.html` in Chrome. Otherwise:
 
 1. Open **`Lectern.html`** in Chrome, Edge or another Chromium browser.
@@ -181,6 +173,16 @@ src/workspace/  file access: File System Access API (+ service worker), CLI serv
 cli/            `lectern` command: static server for dist/ plus read/write of the deck folder
 public/sw.js    service worker that serves a folder handle at /fs/<id>/…
 ```
+
+### Security model
+
+A deck runs in an iframe on the **same origin** as the editor, by design: the editor reaches into the deck's DOM to select,
+move and retype things, and the deck's own scripts (reveal, KaTeX, a custom driver) must run for the canvas to look right.
+The corollary is that a deck's scripts can reach the editor too — open only decks you trust, exactly as you would any HTML
+file. The `window.lectern` handle to the App is only exposed in dev builds and when the URL carries `?test=1` (the end-to-end
+tests use it). The CLI server binds to `127.0.0.1`, refuses requests whose `Host` or `Origin` is not the machine itself
+(so a DNS-rebinding page cannot read or write the folder) and refuses symlinks that lead outside the deck folder; `--host`
+on any other address prints a warning that the folder is open to the network.
 
 ### How saving works
 

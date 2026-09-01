@@ -1,10 +1,10 @@
-// Copies the fixture deck (plus reveal.js) into a scratch folder so tests can
-// save files without touching the fixture itself. Run before the CLI server.
+// Copies the demo deck (src/demo, plus reveal.js) into a scratch folder so tests can
+// save files without touching the source. Run before the CLI server.
 import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const src = join(root, 'test', 'fixtures', 'demo');
+const src = join(root, 'src', 'demo');
 const dest = join(root, 'test', '.tmp', 'demo');
 rmSync(dest, { recursive: true, force: true });
 mkdirSync(dest, { recursive: true });

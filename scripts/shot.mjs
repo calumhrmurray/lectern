@@ -14,7 +14,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1500, height: 950 } });
   page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') console.log('[console]', m.type(), m.text()); });
   page.on('pageerror', (e) => console.log('[pageerror]', e.message));
-  await page.goto(`http://127.0.0.1:${port}/?ws=local&deck=${encodeURIComponent(deck)}`);
+  await page.goto(`http://127.0.0.1:${port}/?ws=local&test=1&deck=${encodeURIComponent(deck)}`);
   await page.waitForFunction(() => window.lectern?.editor?.ready, null, { timeout: 30000 }).catch((e) => console.log('not ready:', e.message));
   await page.waitForTimeout(800);
   await page.evaluate((i) => window.lectern.editor.goTo({ top: Number(i), sub: null }), slide);

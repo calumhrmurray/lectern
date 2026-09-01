@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 // @ts-expect-error plain JS module without types
@@ -42,13 +42,18 @@ describe('cli notes', () => {
 describe('cli new', () => {
   it('scaffolds a deck', () => {
     const lib = join(root, 'dist', 'lib', 'templates.js');
-    if (!existsSync(lib)) execFileSync('node', [join(root, 'scripts', 'build-cli-lib.mjs')], { cwd: root, stdio: 'pipe' });
+    // (re)build the CLI's copy of the templates so the test sees the current source, not a stale dist/
+    const sources = ['templates.ts', 'themes.ts', 'html.ts'].map((f) => statSync(join(root, 'src', 'deck', f)).mtimeMs);
+    if (!existsSync(lib) || statSync(lib).mtimeMs < Math.max(...sources)) {
+      execFileSync('node', [join(root, 'scripts', 'build-cli-lib.mjs')], { cwd: root, stdio: 'pipe' });
+    }
     const tmp = mkdtempSync(join(tmpdir(), 'lectern-cli-'));
     try {
       const deck = join(tmp, 'deck');
-      const out = execFileSync('node', [cli, 'new', deck, '--no-reveal', '--title', 'T', '--theme', 'ink', '--size', '1920x1080'], { cwd: root, encoding: 'utf8' });
+      const out = execFileSync('node', [cli, 'new', deck, '--no-reveal', '--title', 'T', '--theme', 'ink', '--size', '1920x1080', '--lang', 'fr'], { cwd: root, encoding: 'utf8' });
       expect(out).toContain('created');
       const html = readFileSync(join(deck, 'index.html'), 'utf8');
+      expect(html).toContain('<html lang="fr">');
       expect(html).toContain('<title>T</title>');
       expect(html).toContain('<div class="reveal">');
       expect(html).toContain('width: 1920, height: 1080');
@@ -56,12 +61,16 @@ describe('cli new', () => {
       expect(readFileSync(join(deck, 'theme.css'), 'utf8')).toContain('Ink');
       // refuses to overwrite
       expect(() => execFileSync('node', [cli, 'new', deck, '--no-reveal'], { cwd: root, stdio: 'pipe' })).toThrow();
+      // --lang defaults to en
+      const deck2 = join(tmp, 'deck2');
+      execFileSync('node', [cli, 'new', deck2, '--no-reveal'], { cwd: root, stdio: 'pipe' });
+      expect(readFileSync(join(deck2, 'index.html'), 'utf8')).toContain('<html lang="en">');
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }
   });
   it('prints help listing the subcommands', () => {
     const out = execFileSync('node', [cli, '--help'], { cwd: root, encoding: 'utf8' });
-    for (const s of ['new', 'notes', 'guide', 'AI assistants']) expect(out).toContain(s);
+    for (const s of ['new', 'notes', 'guide', 'AI assistants', '--lang']) expect(out).toContain(s);
   });
 });

@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import { resolve } from 'node:path';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 
 /**
  * Dev-server plugin: exposes a deck folder through the same API the CLI
@@ -15,7 +16,8 @@ function lecternDevWorkspace(): Plugin {
       const target = resolve(process.env.LECTERN_DIR ?? 'test/.tmp/demo');
       const isFile = existsSync(target) && statSync(target).isFile();
       const root = isFile ? resolve(target, '..') : target;
-      const handle = createWorkspaceHandler(root, isFile ? target.slice(root.length + 1) : null, (m) => server.config.logger.info(`  lectern: ${m}`));
+      const bind = server.config.server.host;
+      const handle = createWorkspaceHandler(root, isFile ? target.slice(root.length + 1) : null, (m) => server.config.logger.info(`  lectern: ${m}`), { host: bind === true ? '0.0.0.0' : bind || '127.0.0.1' });
       server.middlewares.use((req, res, next) => {
         void handle(req, res).then((done) => { if (!done) next(); }).catch(next);
       });
@@ -24,10 +26,16 @@ function lecternDevWorkspace(): Plugin {
   };
 }
 
-// Relative base so the built site works both at the root (CLI server) and under
-// a sub-path (GitHub Pages: https://user.github.io/lectern/).
+const pkgVersion = (): string => (JSON.parse(readFileSync(resolve('package.json'), 'utf8')) as { version: string }).version;
+/** Short git SHA so a rebuild of the same commit gives a byte-identical Lectern.html; the date when there is no git (npm tarball). */
+function buildStamp(): string {
+  try { return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); }
+  catch { return new Date().toISOString().slice(0, 10); }
+}
+
+// Relative base so the build works from the CLI server and from file:// alike.
 export default defineConfig({
-  define: { __LECTERN_BUILD__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')) },
+  define: { __LECTERN_VERSION__: JSON.stringify(pkgVersion()), __LECTERN_BUILD__: JSON.stringify(buildStamp()) },
   base: './',
   plugins: [lecternDevWorkspace()],
   build: { outDir: 'dist', sourcemap: true, target: 'es2022' },

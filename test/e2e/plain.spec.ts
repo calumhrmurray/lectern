@@ -7,7 +7,7 @@ const FILE = join(process.cwd(), 'test', '.tmp', 'demo', 'plain', 'index.html');
 
 test.describe('plain HTML decks (custom slide driver)', () => {
   test('opens, navigates, edits and saves a non-reveal deck', async ({ page }) => {
-    await page.goto('/?ws=local&deck=plain/index.html');
+    await page.goto('/?ws=local&deck=plain/index.html&test=1');
     await page.waitForFunction(() => (window as unknown as { lectern: { editor: { ready: boolean } } }).lectern.editor.ready);
     await expect(page.locator('.lec-slide-card')).toHaveCount(3);
     const frame = page.frameLocator('.lec-stage-frame');

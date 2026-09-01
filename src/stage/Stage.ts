@@ -585,6 +585,13 @@ export class Stage {
 
   // ---------------------------------------------------------------- mirrored edits
 
+  /** Runs the same mutation on a source element and its live rendering (when it has one). */
+  applyToBoth(src: Element, fn: (el: Element) => void): void {
+    fn(src);
+    const live = this.liveOf(src);
+    if (live) fn(live);
+  }
+
   /** Sets inline style properties on both trees. `null`/'' removes a property. */
   setStyle(src: Element, props: Record<string, string | null | undefined>): void {
     const live = this.liveOf(src);

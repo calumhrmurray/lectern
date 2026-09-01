@@ -7,6 +7,7 @@ import type { RecentEntry } from '../workspace/fsa';
 import type { DirEntry, Workspace } from '../workspace/Workspace';
 import { h, svgIcon, modKey, isMac } from './dom';
 import { icons } from './icons';
+import { versionLabel } from '../version';
 
 export interface ModalButton { label: string; primary?: boolean; value: string; disabled?: boolean }
 
@@ -19,27 +20,58 @@ export interface ModalOptions {
   onClose?: (value: string) => boolean | void;
 }
 
+let modalSeq = 0;
+/** How many modals are open; the app root is `inert` while it is > 0. */
+let modalDepth = 0;
+
+const FOCUSABLE = 'a[href], button:not(:disabled), input:not(:disabled):not([type=hidden]), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+
+function focusableIn(root: HTMLElement): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
+}
+
 /** Shows a modal and resolves with the chosen button value ('cancel' on escape/backdrop). */
 export function modal(opts: ModalOptions): Promise<string> {
   return new Promise((resolve) => {
     const buttons = opts.buttons ?? [{ label: 'OK', primary: true, value: 'ok' }];
     const backdrop = h('div', { class: 'lec-modal-backdrop' });
+    const titleId = `lec-modal-title-${++modalSeq}`;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const appRoot = document.getElementById('app');
     const finish = (value: string) => {
       if (opts.onClose && opts.onClose(value) === false) return;
       backdrop.remove();
       document.removeEventListener('keydown', onKey, true);
+      if (--modalDepth === 0) appRoot?.removeAttribute('inert');
+      if (opener && opener.isConnected) opener.focus({ preventScroll: true });
       resolve(value);
     };
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); finish('cancel'); }
-      else if (ev.key === 'Enter' && !(ev.target instanceof HTMLTextAreaElement) && !(ev.target instanceof HTMLButtonElement)) {
+      else if (ev.key === 'Tab') {
+        // Keep Tab / Shift+Tab inside the dialog.
+        const items = focusableIn(box);
+        if (items.length) {
+          const cur = document.activeElement as HTMLElement | null;
+          const i = cur ? items.indexOf(cur) : -1;
+          let next: HTMLElement | null = null;
+          if (i === -1 || !box.contains(cur)) next = ev.shiftKey ? items[items.length - 1] : items[0];
+          else if (ev.shiftKey && i === 0) next = items[items.length - 1];
+          else if (!ev.shiftKey && i === items.length - 1) next = items[0];
+          if (next) { ev.preventDefault(); next.focus(); }
+        }
+      }
+      // Enter activates the primary button, except where the focused control handles Enter itself
+      // (buttons, textareas and listbox options such as the image cells).
+      else if (ev.key === 'Enter' && !(ev.target instanceof HTMLTextAreaElement) && !(ev.target instanceof HTMLButtonElement)
+        && !(ev.target instanceof HTMLElement && ev.target.getAttribute('role') === 'option')) {
         const primary = buttons.find((b) => b.primary);
         if (primary) { ev.preventDefault(); finish(primary.value); }
       }
       ev.stopPropagation();
     };
-    const box = h('div', { class: `lec-modal${opts.wide ? ' lec-wide' : ''}`, role: 'dialog', 'aria-modal': 'true' },
-      h('div', { class: 'lec-modal-head' }, opts.title, h('span', { class: 'lec-spacer' }), h('button', { class: 'lec-btn', type: 'button', title: 'Close', onclick: () => finish('cancel') }, svgIcon(icons.close))),
+    const box = h('div', { class: `lec-modal${opts.wide ? ' lec-wide' : ''}`, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId },
+      h('div', { class: 'lec-modal-head' }, h('span', { id: titleId }, opts.title), h('span', { class: 'lec-spacer' }), h('button', { class: 'lec-btn', type: 'button', title: 'Close', 'aria-label': 'Close dialog', onclick: () => finish('cancel') }, svgIcon(icons.close))),
       h('div', { class: 'lec-modal-body' }, ...(Array.isArray(opts.body) ? opts.body : [opts.body])),
       h('div', { class: 'lec-modal-foot' }, ...buttons.map((b) => h('button', { class: `lec-btn${b.primary ? ' lec-primary' : ''}`, type: 'button', disabled: !!b.disabled, onclick: () => finish(b.value) }, b.label))),
     );
@@ -47,8 +79,9 @@ export function modal(opts: ModalOptions): Promise<string> {
     backdrop.addEventListener('pointerdown', (ev) => { if (ev.target === backdrop) finish('cancel'); });
     document.body.appendChild(backdrop);
     document.addEventListener('keydown', onKey, true);
+    if (modalDepth++ === 0) appRoot?.setAttribute('inert', '');
     const first = box.querySelector<HTMLElement>('input, select, textarea, .lec-list-item, .lec-img-cell, button.lec-primary');
-    first?.focus();
+    (first ?? box.querySelector<HTMLElement>('button'))?.focus();
   });
 }
 
@@ -65,8 +98,8 @@ export async function promptDialog(title: string, label: string, value = '', pla
 
 // ---------------------------------------------------------------- welcome
 
-export const TUTORIAL_URL = 'https://calumhrmurray.github.io/lectern/tutorial.html';
-export const AGENTS_URL = 'https://calumhrmurray.github.io/lectern/AGENTS.md';
+export const TUTORIAL_URL = 'tutorial.html';
+export const AGENTS_URL = 'https://github.com/calumhrmurray/lectern/blob/main/AGENTS.md';
 
 export interface ExampleInfo { id: string; title: string; description: string; lang: string; files: string[] }
 
@@ -74,7 +107,7 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
   container.replaceChildren(
     h('div', { class: 'lec-welcome-card' },
       h('h1', {}, svgIcon(icons.lectern), 'Lectern'),
-      h('p', { class: 'lec-tagline' }, 'A visual editor for HTML presentations. The HTML file is the document. ', h('span', { class: 'lec-sub', title: 'Build time' }, `build ${__LECTERN_BUILD__}`)),
+      h('p', { class: 'lec-tagline' }, 'A visual editor for HTML presentations. The HTML file is the document. ', h('span', { class: 'lec-sub', title: 'Version and build' }, versionLabel())),
       h('p', { class: 'lec-links' }, 'New here? ', h('a', { href: TUTORIAL_URL, target: '_blank', rel: 'noopener' }, 'Five-minute tutorial'), ' · ', h('a', { href: AGENTS_URL, target: '_blank', rel: 'noopener' }, 'Instructions for your AI assistant')),
       h('div', { class: 'lec-welcome-actions' },
         h('button', { class: 'lec-btn', type: 'button', disabled: !fsaOk, onclick: () => void app.openFolder() },
@@ -167,13 +200,23 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
   images.sort();
   let chosen: string | null = null;
   let uploaded: string | null = null;
-  const grid = h('div', { class: 'lec-img-grid' });
+  const grid = h('div', { class: 'lec-img-grid', role: 'listbox', 'aria-label': 'Images in this folder' });
+  const choose = (cell: HTMLElement, p: string) => {
+    chosen = p;
+    for (const c of cells) { const on = c === cell; c.classList.toggle('lec-active', on); c.setAttribute('aria-selected', String(on)); }
+  };
   const cells = images.map((p) => {
     const img = h('img', { alt: '', loading: 'lazy' }) as HTMLImageElement;
     void (ws.assetUrl ? ws.assetUrl(p) : Promise.resolve(ws.urlFor(p))).then((u) => { img.src = u; });
-    const cell = h('div', { class: 'lec-img-cell', tabindex: 0, title: p }, img, h('div', { class: 'lec-name' }, p));
-    cell.addEventListener('click', () => { chosen = p; for (const c of cells) c.classList.toggle('lec-active', c === cell); });
-    cell.addEventListener('dblclick', () => { chosen = p; (document.querySelector('.lec-modal .lec-primary') as HTMLButtonElement | null)?.click(); });
+    const cell = h('div', { class: 'lec-img-cell', tabindex: 0, title: p, role: 'option', 'aria-selected': 'false' }, img, h('div', { class: 'lec-name' }, p));
+    cell.addEventListener('click', () => choose(cell, p));
+    cell.addEventListener('dblclick', () => { choose(cell, p); (document.querySelector('.lec-modal .lec-primary') as HTMLButtonElement | null)?.click(); });
+    // The modal's own keydown listener is a capturing one on document, so it runs *before* this handler;
+    // it therefore leaves Enter alone on [role=option] and we activate the primary button here.
+    cell.addEventListener('keydown', (ev) => {
+      if (ev.key === ' ') { ev.preventDefault(); choose(cell, p); }
+      else if (ev.key === 'Enter') { ev.preventDefault(); choose(cell, p); (document.querySelector('.lec-modal .lec-primary') as HTMLButtonElement | null)?.click(); }
+    });
     return cell;
   });
   grid.append(...cells);
@@ -287,13 +330,15 @@ export function shortcutsDialog(): Promise<string> {
   return modal({
     title: 'Keyboard shortcuts', wide: true,
     body: h('div', { class: 'lec-shortcuts' },
-      row(`${M} S`, 'Save'), row(`${M} Z / ${M} ⇧ Z`, 'Undo / redo'),
+      row(`${M} S`, 'Save'), row(`${M} O`, 'Open a folder'),
+      row(`${M} Z / ${M} ⇧ Z`, 'Undo / redo'), row(`${M} Y`, 'Redo'),
       row('Double-click', 'Edit text'), row('Esc', 'Stop editing / deselect'),
       row(`${M} C / X / V`, 'Copy / cut / paste objects'), row(`${M} D`, 'Duplicate'),
       row('⌫', 'Delete selection'), row(`${M} A`, 'Select all objects on the slide'),
       row('Arrows', 'Nudge 1 px (⇧: 10 px)'), row('⇧ drag', 'Constrain / keep aspect'),
       row('⌥ drag', 'Ignore snapping'), row('Click again', 'Select the parent object'),
-      row('PgUp / PgDn', 'Previous / next slide'), row(`${M} ⇧ N`, 'New slide'),
+      row('PgUp / PgDn', 'Previous / next slide'), row('Home / End', 'First / last slide'),
+      row(`${M} C / ${M} V`, 'Copy / paste whole slides (in the slide list)'), row(`${M} ⇧ N`, 'New slide'),
       row(`${M} ] / ${M} [`, 'Bring forward / send backward'), row(`${M} ⇧ ] / [`, 'Front / back'),
       row('Type', 'With a text object selected: start editing, replacing its text'), row('N', 'New note for AI (nothing selected)'), row('+ / − / 0', 'Zoom in / out / fit (nothing selected)'),
       row(`${M} B / I / U / K`, 'Bold / italic / underline / link (while editing text)'), row('Tab / ⇧ Tab', 'Indent / outdent list item (while editing)'),
@@ -308,7 +353,7 @@ export function aboutDialog(): Promise<string> {
     body: [
       h('p', {}, 'Lectern edits reveal.js presentations visually. It loads your HTML file, renders it with the deck’s own reveal.js, and writes only the slides you changed back into the file — comments, indentation and untouched slides stay exactly as they were.'),
       h('p', { class: 'lec-help' }, 'MIT licensed. reveal.js is © Hakim El Hattab and contributors, MIT licensed. Not affiliated with any presentation software vendor.'),
-      h('p', { class: 'lec-help' }, `Build ${__LECTERN_BUILD__} · Mod key: ${modKey()} · Browser support for “Open folder”: Chrome, Edge and other Chromium browsers. Elsewhere, use the CLI.`),
+      h('p', { class: 'lec-help' }, `${versionLabel()} · Mod key: ${modKey()} · Browser support for “Open folder”: Chrome, Edge and other Chromium browsers. Elsewhere, use the CLI.`),
     ],
   });
 }

@@ -16,7 +16,7 @@ export function writeDeck(text: string): void {
 export async function openDeck(page: Page): Promise<FrameLocator> {
   // Tests share one fixture on disk: keep autosave off unless a test turns it on.
   await page.addInitScript(() => { try { localStorage.setItem('lectern:autosave', 'off'); } catch { /* ignore */ } });
-  await page.goto('/?ws=local&deck=index.html');
+  await page.goto('/?ws=local&deck=index.html&test=1');
   await expect(page.locator('.lec-welcome')).toBeHidden();
   const frame = page.frameLocator('.lec-stage-frame');
   await expect(frame.locator('.reveal.ready')).toBeVisible();

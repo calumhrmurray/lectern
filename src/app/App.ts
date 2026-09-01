@@ -3,9 +3,9 @@
  * saving, keyboard shortcuts, clipboard/file drops and the welcome screen.
  */
 
-import demoDeckHtml from '../../test/fixtures/demo/index.html?raw';
-import demoThemeCss from '../../test/fixtures/demo/theme.css?raw';
-import demoPlotSvg from '../../test/fixtures/demo/figures/plot.svg?raw';
+import demoDeckHtml from '../demo/index.html?raw';
+import demoThemeCss from '../demo/theme.css?raw';
+import demoPlotSvg from '../demo/figures/plot.svg?raw';
 import examplesIndex from '../../public/examples/index.json';
 import whaleHtml from '../../public/examples/whale-evolution/index.html?raw';
 import whaleCss from '../../public/examples/whale-evolution/theme.css?raw';
@@ -16,11 +16,12 @@ import { REVEAL_EMBEDDED } from '../deck/revealAssets';
 import { discoverFontFamilies, discoverThemeClasses, type ThemeClass } from '../deck/cssClasses';
 import { DeckDocument } from '../deck/DeckDocument';
 import { detectParts } from '../deck/scan';
-import { SLIDE_LAYOUTS, starterDeckHtml } from '../deck/templates';
+import { starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
 import type { SlideRef } from '../stage/Stage';
-import { h, isMac } from '../ui/dom';
-import { TUTORIAL_URL, aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, promptDialog, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
+import { versionLabel } from '../version';
+import { h } from '../ui/dom';
+import { TUTORIAL_URL, aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
 import { Inspector } from '../ui/Inspector';
 import { closeMenus } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
@@ -374,6 +375,7 @@ export class App {
 
   private startWatching(): void {
     clearInterval(this.watchTimer);
+    this.watchFailures = 0;
     if (!this.workspace || this.workspace.kind === 'memory') return;
     this.watchTimer = window.setInterval(() => void this.checkDisk(), 2000);
   }
@@ -390,17 +392,26 @@ export class App {
   }
 
   private checking = false;
+  private watchFailures = 0;
   private async checkDisk(): Promise<void> {
     if (this.checking || this.saving || !this.editor.ready || document.hidden) return;
     this.checking = true;
     try {
       const changed = await this.changedOnDisk();
+      this.watchFailures = 0;
       if (!changed.length) return;
       if (!this.editor.doc.dirty && !this.editor.textSession && !this.editor.interactions.busy) {
         await this.reloadInPlace();
         this.setMessage(`Reloaded — ${basename(changed[0])} changed on disk`, 'info');
       } else {
         this.showConflict(changed);
+      }
+    } catch (err) {
+      console.warn('Lectern: checking the folder for changes failed', err);
+      if (++this.watchFailures >= 3) {
+        clearInterval(this.watchTimer);
+        this.watchTimer = 0;
+        this.setMessage('Stopped watching the folder — reopen the deck to see changes made outside the editor', 'info');
       }
     } finally {
       this.checking = false;
@@ -652,7 +663,7 @@ export class App {
     const c = ed.current;
     const label = c.sub === null ? `${c.top + 1}` : `${c.top + 1}.${c.sub + 1}`;
     this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
-    this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern build ${__LECTERN_BUILD__}`;
+    this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern ${versionLabel()}`;
   }
 
   // ---------------------------------------------------------------- events
@@ -786,8 +797,5 @@ export class App {
         if (key === '0') { stop(); this.setZoom(1); return; }
       }
     }
-    void isMac;
-    void promptDialog;
-    void SLIDE_LAYOUTS;
   }
 }

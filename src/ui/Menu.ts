@@ -25,13 +25,26 @@ export function showMenu(items: MenuItem[], anchor: HTMLElement | { x: number; y
     const backdrop = h('div', { class: 'lec-menu-backdrop' });
     const menu = h('div', { class: 'lec-menu', role: 'menu' });
     const close = () => {
+      const hadFocus = menu.contains(document.activeElement);
       backdrop.remove(); menu.remove();
       document.removeEventListener('keydown', onKey, true);
       openMenu = null;
+      // Give focus back to the button that opened the menu (only if the menu had it).
+      if (hadFocus && anchor instanceof HTMLElement && anchor.isConnected) anchor.focus({ preventScroll: true });
       resolve();
     };
+    const itemsOf = () => Array.from(menu.querySelectorAll<HTMLButtonElement>('[role=menuitem]:not(:disabled)'));
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); close(); }
+      if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); close(); return; }
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp' || ev.key === 'Home' || ev.key === 'End') {
+        const list = itemsOf();
+        if (!list.length) return;
+        ev.preventDefault(); ev.stopPropagation();
+        const i = list.indexOf(document.activeElement as HTMLButtonElement);
+        const next = ev.key === 'Home' ? 0 : ev.key === 'End' ? list.length - 1
+          : ev.key === 'ArrowDown' ? (i + 1) % list.length : (i <= 0 ? list.length - 1 : i - 1);
+        list[next].focus();
+      } else if (ev.key === 'Tab') { ev.preventDefault(); ev.stopPropagation(); close(); }
     };
     for (const it of items) {
       if (it.separator) { menu.appendChild(h('div', { class: 'lec-menu-sep' })); continue; }

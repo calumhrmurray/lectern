@@ -19,7 +19,7 @@
     "keynote",
     "powerpoint-alternative"
   ],
-  "homepage": "https://calumhrmurray.github.io/lectern/",
+  "homepage": "https://github.com/calumhrmurray/lectern",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/calumhrmurray/lectern.git"

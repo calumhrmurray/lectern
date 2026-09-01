@@ -1,7 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { starterDeckHtml } from '../../src/deck/templates';
 
 describe('docs for assistants', () => {
+  it('the skeleton in AGENTS.md is what `lectern new` writes', () => {
+    const doc = readFileSync('AGENTS.md', 'utf8');
+    const m = /`lectern new` writes exactly this skeleton[^]*?```html\n([^]*?)```/.exec(doc);
+    expect(m, 'AGENTS.md has the skeleton fence').toBeTruthy();
+    const scaffold = starterDeckHtml({ title: 'Talk title', author: 'Author', width: 1280, height: 720, revealPath: 'reveal', theme: 'paper' });
+    expect(m![1].replace(/\n+$/, '')).toBe(scaffold.replace(/\n+$/, ''));
+  });
   it('the skill reference is a copy of AGENTS.md', () => {
     expect(readFileSync('plugins/lectern/skills/slides/reference.md', 'utf8')).toBe(readFileSync('AGENTS.md', 'utf8'));
   });

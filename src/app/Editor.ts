@@ -683,11 +683,7 @@ export class Editor implements InteractionHost {
         }
         this.setBorderBoxSize(el, r.w, r.h, { widthOnly: isImage && keepAspect });
         if (pos) this.stage.setStyle(el, { left: `${Math.round(pos.left + (r.x - start.x))}px`, top: `${Math.round(pos.top + (r.y - start.y))}px` });
-        if (isLine) {
-          updateLineSvg(el as unknown as SVGElement);
-          const live = this.stage.liveOf(el);
-          if (live) updateLineSvg(live as unknown as SVGElement);
-        }
+        if (isLine) this.stage.applyToBoth(el, (e) => updateLineSvg(e as SVGElement));
         const actual = this.rectOfSrc(el);
         this.label = { text: `${Math.round(actual.w)} × ${Math.round(actual.h)}`, x: actual.x, y: actual.y + actual.h + 6 };
         this.refreshOverlay();
@@ -765,11 +761,7 @@ export class Editor implements InteractionHost {
         const w = g.w ?? cur.w;
         const h = g.h ?? cur.h;
         this.setBorderBoxSize(el, w, h, { widthOnly: isImage && g.h === undefined });
-        if (el.tagName.toLowerCase() === 'svg' && el.hasAttribute('data-shape')) {
-          updateLineSvg(el as unknown as SVGElement);
-          const live = this.stage.liveOf(el);
-          if (live) updateLineSvg(live as unknown as SVGElement);
-        }
+        if (el.tagName.toLowerCase() === 'svg' && el.hasAttribute('data-shape')) this.stage.applyToBoth(el, (e) => updateLineSvg(e as SVGElement));
       }
     }, { top: this.topOf(el), coalesce: 'geometry' });
   }

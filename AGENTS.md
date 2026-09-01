@@ -19,9 +19,8 @@ npx lectern-editor notes my-talk/index.html  # 4. later: list the notes they lef
 npx lectern-editor guide                     # prints this document
 ```
 
-Alternatives to step 3: the hosted editor at **https://calumhrmurray.github.io/lectern/** (they click *Open a folder…*
-and pick `my-talk`; nothing is uploaded), or the single-file **`Lectern.html`** (download from the same site, double-click,
-same folder picker). All three edit the file on disk; `⌘S` and autosave write straight back to it.
+Alternative to step 3: the single-file **`Lectern.html`** — one self-contained file, opened from `file://`, with the
+same folder picker and no server at all. Both edit the file on disk; `⌘S` and autosave write straight back to it.
 
 ## The loop with the person
 
@@ -54,13 +53,15 @@ Rules while the editor is open on the file:
 ## Deck format
 
 A deck is a folder: `index.html`, `theme.css`, images next to them (relative `src`), and usually a `reveal/` copy so it
-works offline. `lectern new` writes exactly this skeleton:
+works offline. `lectern new` writes exactly this skeleton (here for `--title "Talk title" --author Author`; `--lang fr`
+changes the `<html lang>`, `--theme` the stylesheet):
 
 ```html
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Talk title</title>
   <link rel="stylesheet" href="reveal/dist/reset.css">
   <link rel="stylesheet" href="reveal/dist/reveal.css">
@@ -77,19 +78,21 @@ works offline. `lectern new` writes exactly this skeleton:
         <p class="meta"><b>Author</b><br>Occasion · Date</p>
       </section>
 
-      <!-- 2 · a content slide -->
+      <!-- 2 · first slide -->
       <section>
-        <div class="kicker">Section name</div>
+        <div class="kicker">Introduction</div>
         <h2>A heading that says one thing.</h2>
         <ul>
-          <li>First point</li>
-          <li>Second point</li>
+          <li>Double-click any text to edit it</li>
+          <li>Drag things around; guides snap to the slide and to other objects</li>
+          <li>Press <strong>⌘S</strong> to save straight back into this HTML file</li>
         </ul>
         <aside class="notes">Speaker notes; put sources here.</aside>
       </section>
 
     </div>
   </div>
+
   <script src="reveal/dist/reveal.js"></script>
   <script src="reveal/plugin/math/math.js"></script>
   <script src="reveal/plugin/notes/notes.js"></script>
@@ -175,12 +178,14 @@ You lose reveal-only features (backgrounds, transitions) but keep the canvas edi
 - Open the deck in a browser (`npx lectern-editor deck.html` shows it in the editor; the *Present* button shows the
   real presentation). If you can drive a browser, screenshot each slide and look for overflow — text running past the
   bottom of a 720-unit-high slide is the commonest fault.
+- PDF export is reveal's print mode: open `index.html?print-pdf` in Chrome and print to PDF (`npx lectern-editor my-talk`
+  serves it, so `http://127.0.0.1:8765/index.html?print-pdf`). Every slide becomes one page; check the last page is
+  not blank and nothing is cut off.
 - `git diff` should touch only the slides you meant to touch.
 
 ## Where things are
 
 - Editor & source: https://github.com/calumhrmurray/lectern (MIT). Issues and ideas welcome there.
-- Hosted editor: https://calumhrmurray.github.io/lectern/ — `Lectern.html` (single file, works from `file://`) is
-  downloadable from the same page.
+- `Lectern.html`: one self-contained file that works from `file://`; `npm run build` writes it.
 - npm: `lectern-editor` — `npx lectern-editor --help`.
 - Claude Code skill: `/plugin marketplace add calumhrmurray/lectern` then `/plugin install lectern@lectern`.

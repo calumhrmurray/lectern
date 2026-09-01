@@ -25,7 +25,7 @@ function collect(dir: string, prefix = ''): { path: string; data: string }[] {
 async function openFolderFromFile(page: import('@playwright/test').Page, folder: string, filter: (p: string) => boolean): Promise<void> {
   const files = collect(folder).filter((f) => filter(f.path) && !f.path.includes('.map'));
   page.on('pageerror', (e) => console.log('[pageerror]', e.message));
-  await page.goto('file://' + resolve('Lectern.html'));
+  await page.goto('file://' + resolve('Lectern.html') + '?test=1');
   await expect(page.locator('.lec-welcome h1')).toContainText('Lectern');
 
   // An in-memory FileSystemDirectoryHandle look-alike filled with the deck; the picker returns it.

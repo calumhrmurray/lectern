@@ -1,11 +1,14 @@
 /** Bottom drawer: speaker notes and the slide's HTML source. */
 
 import type { App } from '../app/App';
-import { h, debounce, modKey } from './dom';
+import { h, svgIcon, debounce, modKey } from './dom';
+import { icons } from './icons';
 import type { SlideRef } from '../stage/Stage';
 import { aiNotesPrompt, collectAiNotes } from '../deck/aiNotes';
 
 export type PanelTab = 'notes' | 'html' | 'ai';
+const PANEL_TABS: PanelTab[] = ['notes', 'html', 'ai'];
+const PANEL_LABELS: Record<PanelTab, string> = { notes: 'Notes', html: 'Slide HTML', ai: 'Notes for AI' };
 
 export class Panels {
   tab: PanelTab = 'notes';
@@ -22,12 +25,19 @@ export class Panels {
 
   constructor(readonly app: App, readonly container: HTMLElement) {
     container.classList.add('lec-panels', 'lec-hidden');
-    this.tabsEl = h('div', { class: 'lec-panel-head' });
+    this.tabsEl = h('div', { class: 'lec-panel-head', role: 'tablist', 'aria-label': 'Slide panels' });
+    this.tabsEl.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight' && ev.key !== 'Home' && ev.key !== 'End') return;
+      ev.preventDefault(); ev.stopPropagation();
+      const i = PANEL_TABS.indexOf(this.tab);
+      this.show(PANEL_TABS[ev.key === 'Home' ? 0 : ev.key === 'End' ? PANEL_TABS.length - 1 : (i + (ev.key === 'ArrowRight' ? 1 : PANEL_TABS.length - 1)) % PANEL_TABS.length]);
+      this.tabsEl.querySelector<HTMLElement>('[aria-selected="true"]')?.focus();
+    });
     this.notesArea = h('textarea', { class: 'lec-field lec-notes-text', placeholder: 'Speaker notes for this slide (shown in the reveal.js speaker view, press S while presenting).', spellcheck: true }) as HTMLTextAreaElement;
     this.htmlArea = h('textarea', { class: 'lec-field', spellcheck: false, placeholder: '<section>…</section>' }) as HTMLTextAreaElement;
     this.errorEl = h('div', { class: 'lec-panel-error' });
     this.aiList = h('div', { class: 'lec-ai-list' });
-    this.body = h('div', { class: 'lec-panel-body' });
+    this.body = h('div', { class: 'lec-panel-body', role: 'tabpanel', id: 'lec-panel-body' });
     container.append(this.tabsEl, this.body);
 
     const saveNotes = debounce(() => {
@@ -78,12 +88,14 @@ export class Panels {
 
   private render(): void {
     this.tabsEl.replaceChildren(
-      h('button', { class: `lec-tab${this.tab === 'notes' ? ' lec-active' : ''}`, type: 'button', onclick: () => this.show('notes') }, 'Notes'),
-      h('button', { class: `lec-tab${this.tab === 'html' ? ' lec-active' : ''}`, type: 'button', onclick: () => this.show('html') }, 'Slide HTML'),
-      h('button', { class: `lec-tab${this.tab === 'ai' ? ' lec-active' : ''}`, type: 'button', onclick: () => this.show('ai') }, 'Notes for AI'),
+      ...PANEL_TABS.map((t) => h('button', {
+        class: `lec-tab${this.tab === t ? ' lec-active' : ''}`, type: 'button', role: 'tab', id: `lec-panel-tab-${t}`, 'aria-controls': 'lec-panel-body',
+        'aria-selected': String(this.tab === t), tabindex: this.tab === t ? 0 : -1, onclick: () => this.show(t),
+      }, PANEL_LABELS[t])),
       h('span', { class: 'lec-spacer', style: 'flex:1' }),
-      h('button', { class: 'lec-btn', type: 'button', title: 'Close', onclick: () => this.hide() }, '✕'),
+      h('button', { class: 'lec-btn', type: 'button', title: 'Close', 'aria-label': 'Close panel', onclick: () => this.hide() }, svgIcon(icons.close)),
     );
+    this.body.setAttribute('aria-labelledby', `lec-panel-tab-${this.tab}`);
     this.body.replaceChildren();
     if (this.tab === 'notes') {
       this.body.appendChild(this.notesArea);
@@ -138,10 +150,11 @@ export class Panels {
       return;
     }
     for (const n of notes) {
-      this.aiList.appendChild(h('button', { class: `lec-ai-item${n.done ? ' lec-ai-done-item' : ''}`, type: 'button', onclick: () => { ed.goTo({ top: n.top, sub: null }); ed.select([n.el]); } },
-        h('span', { class: 'lec-ai-slide' }, n.done ? '✓ ' : '', `Slide ${n.top + 1}`), h('span', { class: 'lec-ai-text' }, ...n.entries.map((e, i) => h('span', { class: e.by === 'ai' ? 'lec-ai-reply' : '' }, (i ? ' → ' : '') + (e.by === 'ai' ? 'AI: ' : '') + e.text)), n.entries.length ? null : '(empty)'),
-        h('span', { class: 'lec-ai-where' }, n.x !== null && n.y !== null ? `(${Math.round(n.x)}, ${Math.round(n.y)})` : ''),
-        h('span', { class: 'lec-ai-done', title: 'Remove this note', onclick: (e: MouseEvent) => { e.stopPropagation(); ed.edit('Remove note', () => ed.stage.remove(n.el), { top: n.top }); } }, '✕')));
+      this.aiList.appendChild(h('div', { class: `lec-ai-row${n.done ? ' lec-ai-done-item' : ''}` },
+        h('button', { class: 'lec-ai-item', type: 'button', onclick: () => { ed.goTo({ top: n.top, sub: null }); ed.select([n.el]); } },
+          h('span', { class: 'lec-ai-slide' }, n.done ? '✓ ' : '', `Slide ${n.top + 1}`), h('span', { class: 'lec-ai-text' }, ...n.entries.map((e, i) => h('span', { class: e.by === 'ai' ? 'lec-ai-reply' : '' }, (i ? ' → ' : '') + (e.by === 'ai' ? 'AI: ' : '') + e.text)), n.entries.length ? null : '(empty)'),
+          h('span', { class: 'lec-ai-where' }, n.x !== null && n.y !== null ? `(${Math.round(n.x)}, ${Math.round(n.y)})` : '')),
+        h('button', { class: 'lec-ai-done', type: 'button', title: 'Remove this note', 'aria-label': 'Remove this note', onclick: () => ed.edit('Remove note', () => ed.stage.remove(n.el), { top: n.top }) }, svgIcon(icons.close))));
     }
   }
 

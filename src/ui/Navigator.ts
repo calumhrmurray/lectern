@@ -10,6 +10,8 @@ import { showMenu } from './Menu';
 
 interface Card { ref: SlideRef; el: HTMLElement; iframe: HTMLIFrameElement; dirty: boolean; visible: boolean }
 
+function cardId(ref: SlideRef): string { return `lec-slide-${ref.top}${ref.sub === null ? '' : '-' + ref.sub}`; }
+
 export class Navigator {
   private cards: Card[] = [];
   private io: IntersectionObserver;
@@ -20,6 +22,7 @@ export class Navigator {
 
   constructor(readonly app: App, readonly container: HTMLElement) {
     container.tabIndex = 0;
+    container.setAttribute('role', 'listbox');
     this.io = new IntersectionObserver((entries) => {
       for (const e of entries) {
         const card = this.cards.find((c) => c.el === e.target);
@@ -55,7 +58,9 @@ export class Navigator {
       const isSub = ref.sub !== null;
       const numLabel = isSub ? `${ref.top + 1}.${(ref.sub ?? 0) + 1}` : String(ref.top + 1);
       if (!isSub) n++;
-      const iframe = h('iframe', { title: `Slide ${numLabel}`, loading: 'lazy', tabindex: -1 });
+      // sandbox without allow-scripts: a deck's <script>/onerror must not run inside the editor's origin;
+      // allow-same-origin keeps service-worker-served images loading. Thumbnails are pure HTML/CSS.
+      const iframe = h('iframe', { title: `Slide ${numLabel}`, loading: 'lazy', tabindex: -1, sandbox: 'allow-same-origin', 'aria-hidden': 'true' });
       iframe.width = String(width); iframe.height = String(height);
       const wrap = h('div', { class: 'lec-thumb-wrap', style: `padding-bottom:${(ratio * 100).toFixed(3)}%` }, iframe);
       const section = ed.stage.srcSection(ref);
@@ -63,7 +68,7 @@ export class Navigator {
       const vis = section.getAttribute('data-visibility');
       const card = h('div', {
         class: `lec-slide-card${isSub ? ' lec-sub' : ''}`, draggable: true, dataset: { top: String(ref.top), sub: ref.sub === null ? '' : String(ref.sub) },
-        title: label,
+        title: label, role: 'option', id: cardId(ref), 'aria-selected': 'false', 'aria-label': `Slide ${numLabel}${label ? ': ' + label : ''}${vis ? ` (${vis})` : ''}`,
       },
         h('div', { class: 'lec-slide-num' }, numLabel),
         h('div', { class: 'lec-thumb' }, wrap, h('div', { class: 'lec-thumb-label' }, label || ' ')),
@@ -100,7 +105,8 @@ export class Navigator {
     for (const c of this.cards) {
       const on = c.ref.top === cur.top && c.ref.sub === cur.sub;
       c.el.classList.toggle('lec-current', on);
-      if (on) c.el.scrollIntoView({ block: 'nearest' });
+      c.el.setAttribute('aria-selected', String(on));
+      if (on) { c.el.scrollIntoView({ block: 'nearest' }); this.container.setAttribute('aria-activedescendant', c.el.id); }
     }
   }
 

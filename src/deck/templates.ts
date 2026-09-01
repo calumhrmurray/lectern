@@ -17,6 +17,9 @@ export interface SlideLayout {
   html: (ctx: { width: number; height: number }) => string;
 }
 
+/** 1×1 transparent SVG: a valid placeholder `src` until the person picks a file in the inspector. */
+export const BLANK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+
 export const SLIDE_LAYOUTS: SlideLayout[] = [
   {
     id: 'blank', name: 'Blank', hint: '',
@@ -44,7 +47,7 @@ export const SLIDE_LAYOUTS: SlideLayout[] = [
   },
   {
     id: 'image', name: 'Heading & image', hint: 'Heading + figure',
-    html: () => `<section>\n  <h2>Heading</h2>\n  <img class="fig" src="" alt="" style="max-width:100%;max-height:70%;">\n</section>`,
+    html: () => `<section>\n  <h2>Heading</h2>\n  <img class="fig" src="${BLANK_IMAGE}" alt="" style="max-width:100%;max-height:70%;">\n</section>`,
   },
 ];
 
@@ -74,7 +77,7 @@ export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
   },
   image: {
     id: 'image', name: 'Image',
-    html: (b) => `<img src="" alt="" style="${boxStyle({ ...b, h: undefined })}">`,
+    html: (b) => `<img src="${BLANK_IMAGE}" alt="" style="${boxStyle({ ...b, h: undefined })}">`,
   },
   rect: {
     id: 'rect', name: 'Rectangle',
@@ -90,7 +93,7 @@ export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
   },
   outline: {
     id: 'outline', name: 'Outlined box',
-    html: (b) => `<div style="${boxStyle(b, 'border:3px solid #333;border-radius:8px;')}"></div>`,
+    html: (b) => `<div style="${boxStyle(b, 'border:3px solid var(--ink,currentColor);border-radius:8px;')}"></div>`,
   },
   line: {
     id: 'line', name: 'Line',
@@ -102,11 +105,11 @@ export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
   },
   callout: {
     id: 'callout', name: 'Callout',
-    html: (b) => `<div style="${boxStyle(b, 'background:#fff3c4;border:2px solid #e0b400;border-radius:8px;padding:12px 16px;font-size:0.6em;')}">Note</div>`,
+    html: (b) => `<div style="${boxStyle(b, 'background:var(--paper-2,#fff3c4);color:var(--ink,#333);border:2px solid var(--accent-2,#e0b400);border-radius:8px;padding:12px 16px;font-size:0.6em;')}">Note</div>`,
   },
   table: {
     id: 'table', name: 'Table',
-    html: (b) => `<table style="${boxStyle({ ...b, h: undefined })}">\n  <thead>\n    <tr><th>Column</th><th>Column</th><th>Column</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Cell</td><td>Cell</td><td>Cell</td></tr>\n    <tr><td>Cell</td><td>Cell</td><td>Cell</td></tr>\n  </tbody>\n</table>`,
+    html: (b) => `<table style="${boxStyle({ ...b, h: undefined })}">\n  <thead>\n    <tr><th scope="col">Column</th><th scope="col">Column</th><th scope="col">Column</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Cell</td><td>Cell</td><td>Cell</td></tr>\n    <tr><td>Cell</td><td>Cell</td><td>Cell</td></tr>\n  </tbody>\n</table>`,
   },
   code: {
     id: 'code', name: 'Code',
@@ -122,13 +125,17 @@ export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
   },
   iframe: {
     id: 'iframe', name: 'Web embed',
-    html: (b) => `<iframe src="https://example.com" style="${boxStyle(b, 'border:0;')}"></iframe>`,
+    html: (b) => `<iframe src="https://example.com" title="Web embed" style="${boxStyle(b, 'border:0;')}"></iframe>`,
   },
 };
 
-/** SVG line/arrow spanning the box diagonally-ish (horizontal by default). */
+/**
+ * SVG line/arrow spanning the box diagonally-ish (horizontal by default). The default colour is
+ * `currentColor`, so the line takes the slide's text colour in any theme; the arrow head is filled
+ * with the same value as the stroke.
+ */
 export function lineSvg(b: { x: number; y: number; w: number; h: number }, arrow: boolean, opts: { color?: string; width?: number } = {}): string {
-  const color = opts.color ?? '#333';
+  const color = opts.color ?? 'currentColor';
   const sw = opts.width ?? 3;
   const w = Math.max(1, Math.round(b.w));
   const h = Math.max(1, Math.round(b.h));
@@ -144,7 +151,7 @@ export function updateLineSvg(svg: SVGElement): void {
   const h = Math.max(1, Math.round(parseFloat(svg.style.height) || Number(svg.getAttribute('height')) || 2));
   const line = svg.querySelector('line');
   const poly = svg.querySelector('polygon');
-  const color = line?.getAttribute('stroke') ?? '#333';
+  const color = line?.getAttribute('stroke') ?? 'currentColor';
   const sw = line?.getAttribute('stroke-width') ?? '3';
   const y = Math.round(h / 2);
   svg.setAttribute('width', String(w));
@@ -163,9 +170,10 @@ export function updateLineSvg(svg: SVGElement): void {
 
 // ---------------------------------------------------------------- starter deck
 
-export function starterDeckHtml(opts: { title: string; author?: string; width: number; height: number; revealPath: string; theme?: DeckTheme | string }): string {
+export function starterDeckHtml(opts: { title: string; author?: string; lang?: string; width: number; height: number; revealPath: string; theme?: DeckTheme | string }): string {
   const title = escapeHtml(opts.title);
   const author = escapeHtml(opts.author ?? '');
+  const lang = escapeHtml(opts.lang || 'en');
   const r = opts.revealPath.replace(/\/$/, '');
   const theme = typeof opts.theme === 'string' ? themeById(opts.theme) : opts.theme ?? themeById('paper');
   const prefix = theme.bodyPrefix ? '\n  ' + theme.bodyPrefix : '';
@@ -173,7 +181,7 @@ export function starterDeckHtml(opts: { title: string; author?: string; width: n
     ? '\n        <div class="wash deep" style="left:-120px;top:40px;width:520px;height:400px;"></div>\n        <div class="wash light" style="left:800px;top:-60px;width:560px;height:480px;"></div>'
     : '';
   return `<!doctype html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -202,6 +210,7 @@ export function starterDeckHtml(opts: { title: string; author?: string; width: n
           <li>Drag things around; guides snap to the slide and to other objects</li>
           <li>Press <strong>⌘S</strong> to save straight back into this HTML file</li>
         </ul>
+        <aside class="notes">Speaker notes; put sources here.</aside>
       </section>
 
     </div>

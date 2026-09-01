@@ -6,6 +6,7 @@ import { h, svgIcon, toHex, fmtNum } from './dom';
 import { icons, type IconName } from './icons';
 
 type Tab = 'format' | 'slide' | 'deck';
+const TABS: Tab[] = ['format', 'slide', 'deck'];
 
 const FRAGMENT_EFFECTS = ['fade-in', 'fade-out', 'fade-up', 'fade-down', 'fade-left', 'fade-right', 'fade-in-then-out', 'fade-in-then-semi-out', 'grow', 'shrink', 'strike', 'highlight-red', 'highlight-green', 'highlight-blue', 'highlight-current-red', 'highlight-current-green', 'highlight-current-blue', 'semi-fade-out', 'current-visible'];
 const TRANSITIONS = ['', 'none', 'fade', 'slide', 'convex', 'concave', 'zoom'];
@@ -18,18 +19,30 @@ export class Inspector {
   private geometryInputs: Partial<Record<'x' | 'y' | 'w' | 'h' | 'r', HTMLInputElement>> = {};
 
   constructor(readonly app: App, readonly container: HTMLElement) {
-    this.tabsEl = h('div', { class: 'lec-tabs' });
-    this.body = h('div', { class: 'lec-insp-body' });
+    this.tabsEl = h('div', { class: 'lec-tabs', role: 'tablist', 'aria-label': 'Inspector' });
+    this.body = h('div', { class: 'lec-insp-body', role: 'tabpanel', id: 'lec-insp-panel' });
     container.append(this.tabsEl, this.body);
+    // Left/Right arrows move between tabs (roving focus: only the active tab is in the Tab order).
+    this.tabsEl.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight' && ev.key !== 'Home' && ev.key !== 'End') return;
+      ev.preventDefault(); ev.stopPropagation();
+      const i = TABS.indexOf(this.tab);
+      this.tab = TABS[ev.key === 'Home' ? 0 : ev.key === 'End' ? TABS.length - 1 : (i + (ev.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length];
+      this.render();
+      this.tabsEl.querySelector<HTMLElement>('[aria-selected="true"]')?.focus();
+    });
     this.renderTabs();
   }
 
   private renderTabs(): void {
     this.tabsEl.replaceChildren(
-      ...(['format', 'slide', 'deck'] as Tab[]).map((t) =>
-        h('button', { class: `lec-tab${this.tab === t ? ' lec-active' : ''}`, type: 'button', onclick: () => { this.tab = t; this.render(); } },
-          t === 'format' ? 'Format' : t === 'slide' ? 'Slide' : 'Deck')),
+      ...TABS.map((t) =>
+        h('button', {
+          class: `lec-tab${this.tab === t ? ' lec-active' : ''}`, type: 'button', role: 'tab', id: `lec-insp-tab-${t}`, 'aria-controls': 'lec-insp-panel',
+          'aria-selected': String(this.tab === t), tabindex: this.tab === t ? 0 : -1, onclick: () => { this.tab = t; this.render(); },
+        }, t === 'format' ? 'Format' : t === 'slide' ? 'Slide' : 'Deck')),
     );
+    this.body.setAttribute('aria-labelledby', `lec-insp-tab-${this.tab}`);
   }
 
   /** Cheap update of geometry fields while dragging. */
@@ -223,7 +236,7 @@ export class Inspector {
     // Classes
     const classes = this.app.themeClasses.filter((c) => !c.tags.size || c.tags.has(tag));
     const active = new Set(Array.from(el.classList));
-    const customInput = h('input', { class: 'lec-field', placeholder: 'add class…', style: 'height:22px;width:110px;flex:0 0 auto;font-family:var(--mono);font-size:11.5px' }) as HTMLInputElement;
+    const customInput = h('input', { class: 'lec-field lec-class-input', placeholder: 'add class…', 'aria-label': 'Add a class' }) as HTMLInputElement;
     customInput.addEventListener('keydown', (ev) => {
       ev.stopPropagation();
       if (ev.key === 'Enter' && customInput.value.trim()) { ed.toggleClass(customInput.value.trim(), true); customInput.value = ''; }
@@ -241,16 +254,16 @@ export class Inspector {
     this.section('Arrange', null,
       h('div', { class: 'lec-btn-row' },
         ...(['left', 'center', 'right', 'top', 'middle', 'bottom'] as const).map((how) =>
-          h('button', { class: 'lec-btn', type: 'button', title: `Align ${how}${multi ? '' : ' to slide'}`, onclick: () => ed.align(how) },
+          h('button', { class: 'lec-btn', type: 'button', title: `Align ${how}${multi ? '' : ' to slide'}`, 'aria-label': `Align ${how}${multi ? '' : ' to slide'}`, onclick: () => ed.align(how) },
             svgIcon(icons[({ left: 'objLeft', center: 'objCenterH', right: 'objRight', top: 'objTop', middle: 'objMiddle', bottom: 'objBottom' } as const)[how]]))),
-        h('button', { class: 'lec-btn', type: 'button', title: 'Distribute horizontally', disabled: ed.selection().length < 3, onclick: () => ed.distribute('h') }, svgIcon(icons.distributeH)),
-        h('button', { class: 'lec-btn', type: 'button', title: 'Distribute vertically', disabled: ed.selection().length < 3, onclick: () => ed.distribute('v') }, svgIcon(icons.distributeV)),
+        h('button', { class: 'lec-btn', type: 'button', title: 'Distribute horizontally', 'aria-label': 'Distribute horizontally', disabled: ed.selection().length < 3, onclick: () => ed.distribute('h') }, svgIcon(icons.distributeH)),
+        h('button', { class: 'lec-btn', type: 'button', title: 'Distribute vertically', 'aria-label': 'Distribute vertically', disabled: ed.selection().length < 3, onclick: () => ed.distribute('v') }, svgIcon(icons.distributeV)),
       ),
       h('div', { class: 'lec-btn-row', style: 'margin-top:6px' },
-        h('button', { class: 'lec-btn', type: 'button', title: 'Bring to front', onclick: () => ed.reorder(el, 'front') }, svgIcon(icons.front), 'Front'),
-        h('button', { class: 'lec-btn', type: 'button', title: 'Bring forward', onclick: () => ed.reorder(el, 'forward') }, svgIcon(icons.arrowUp)),
-        h('button', { class: 'lec-btn', type: 'button', title: 'Send backward', onclick: () => ed.reorder(el, 'backward') }, svgIcon(icons.arrowDown)),
-        h('button', { class: 'lec-btn', type: 'button', title: 'Send to back', onclick: () => ed.reorder(el, 'back') }, svgIcon(icons.back), 'Back'),
+        h('button', { class: 'lec-btn', type: 'button', title: 'Bring to front', 'aria-label': 'Bring to front', onclick: () => ed.reorder(el, 'front') }, svgIcon(icons.front), 'Front'),
+        h('button', { class: 'lec-btn', type: 'button', title: 'Bring forward', 'aria-label': 'Bring forward', onclick: () => ed.reorder(el, 'forward') }, svgIcon(icons.arrowUp)),
+        h('button', { class: 'lec-btn', type: 'button', title: 'Send backward', 'aria-label': 'Send backward', onclick: () => ed.reorder(el, 'backward') }, svgIcon(icons.arrowDown)),
+        h('button', { class: 'lec-btn', type: 'button', title: 'Send to back', 'aria-label': 'Send to back', onclick: () => ed.reorder(el, 'back') }, svgIcon(icons.back), 'Back'),
       ),
       h('div', { class: 'lec-help' }, 'Order = position in the HTML. Later elements draw on top.'),
     );
@@ -303,7 +316,7 @@ export class Inspector {
 
     const active = new Set(Array.from(section.classList));
     const classes = this.app.themeClasses.filter((c) => !c.tags.size || c.tags.has('section'));
-    const customInput = h('input', { class: 'lec-field', placeholder: 'add class…', style: 'height:22px;width:110px;flex:0 0 auto;font-family:var(--mono);font-size:11.5px' }) as HTMLInputElement;
+    const customInput = h('input', { class: 'lec-field lec-class-input', placeholder: 'add class…', 'aria-label': 'Add a class' }) as HTMLInputElement;
     customInput.addEventListener('keydown', (ev) => {
       ev.stopPropagation();
       if (ev.key === 'Enter' && customInput.value.trim()) { ed.toggleSlideClass(ref, customInput.value.trim()); customInput.value = ''; }
@@ -405,7 +418,7 @@ function colorField(value: string | null | undefined, on: (v: string | null) => 
   const picker = h('input', { type: 'color', value: hex ?? '#000000', title: 'Pick a colour' }) as HTMLInputElement;
   const text = h('input', { class: 'lec-field', type: 'text', value: hex ?? '', placeholder: allowClear ? 'none' : '' }) as HTMLInputElement;
   const wrap = h('div', { class: `lec-color${hex ? '' : ' lec-none'}` }, picker, text,
-    allowClear ? h('button', { class: 'lec-btn', type: 'button', title: 'Clear', style: 'height:26px;min-width:26px;padding:0', onclick: () => { text.value = ''; wrap.classList.add('lec-none'); on(null); } }, svgIcon(icons.close)) : null);
+    allowClear ? h('button', { class: 'lec-btn', type: 'button', title: 'Clear', 'aria-label': 'Clear colour', style: 'height:26px;min-width:26px;padding:0', onclick: () => { text.value = ''; wrap.classList.add('lec-none'); on(null); } }, svgIcon(icons.close)) : null);
   picker.addEventListener('input', () => { text.value = picker.value; wrap.classList.remove('lec-none'); on(picker.value); });
   text.addEventListener('change', () => {
     const v = text.value.trim();
@@ -428,7 +441,7 @@ function checkbox(checked: boolean, on: (v: boolean) => void, label = ''): HTMLE
 function segmented(options: { value: string; label: string; icon?: IconName; title?: string }[], value: string | string[], on: (v: string) => void, multi = false): HTMLElement {
   const values = Array.isArray(value) ? value : [value];
   return h('div', { class: 'lec-seg' }, ...options.map((o) =>
-    h('button', { class: values.includes(o.value) ? 'lec-active' : '', type: 'button', title: o.title ?? o.label, onclick: () => on(o.value), 'aria-pressed': multi ? String(values.includes(o.value)) : null },
+    h('button', { class: values.includes(o.value) ? 'lec-active' : '', type: 'button', title: o.title ?? o.label, onclick: () => on(o.value), 'aria-pressed': String(values.includes(o.value)), 'aria-label': o.label ? null : o.title ?? null },
       o.icon ? svgIcon(icons[o.icon]) : null, o.label || null)));
 }
 
