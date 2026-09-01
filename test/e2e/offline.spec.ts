@@ -42,6 +42,17 @@ test('the editor loads, edits and presents a deck with no network at all', async
   expect(escaped, `these requests tried to leave the machine:\n${escaped.join('\n')}`).toEqual([]);
 });
 
+test('the editor is served with a policy that forbids reaching outside it', async ({ page }) => {
+  const res = await page.goto('/?test=1');
+  const csp = res?.headers()['content-security-policy'] ?? '';
+  expect(csp).toContain("default-src 'self'");
+  expect(csp).toContain("object-src 'none'");
+  // A deck is the person's own document and may point where it likes; the editor may not.
+  const deck = await page.request.get('/fs/local/index.html');
+  expect(deck.headers()['content-security-policy']).toBeUndefined();
+  expect(deck.headers()['x-content-type-options']).toBe('nosniff');
+});
+
 test('the welcome screen and a new deck need no network either', async ({ page }) => {
   const escaped = cutTheNetwork(page);
   await page.goto('/?test=1');

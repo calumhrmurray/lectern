@@ -82,9 +82,13 @@ describe('realInside (symlinks)', () => {
         method, url, headers: { host: '127.0.0.1:8765' },
         on(ev: string, fn: (c?: Buffer) => void) { listeners[ev] = fn; if (ev === 'end') { if (body) listeners.data?.(Buffer.from(body)); fn(); } },
       };
-      const res = { writeHead(s: number) { status = s; }, end(b?: Buffer | string) { if (b) chunks.push(Buffer.from(b)); } };
+      let headers: Record<string, string> = {};
+      const res = {
+        writeHead(s: number, h?: Record<string, string>) { status = s; headers = h ?? {}; },
+        end(b?: Buffer | string) { if (b) chunks.push(Buffer.from(b)); },
+      };
       const handled = await handle(req, res);
-      return { handled, status, body: Buffer.concat(chunks).toString('utf8') };
+      return { handled, status, headers, body: Buffer.concat(chunks).toString('utf8') };
     };
     expect((await run('GET', '/fs/local/index.html')).status).toBe(200);
     expect((await run('GET', '/fs/local/link.txt')).status).toBe(403);
@@ -101,5 +105,10 @@ describe('realInside (symlinks)', () => {
     let status = 0;
     await rebinding({ method: 'GET', url: '/fs/local/index.html', headers: { host: 'evil.example' } }, { writeHead(s: number) { status = s; }, end() {} });
     expect(status).toBe(403);
+
+    // Deck files are served to a browser: none of them may be sniffed into a script.
+    expect((await run('GET', '/fs/local/index.html')).headers['X-Content-Type-Options']).toBe('nosniff');
+    expect((await run('GET', '/api/workspace')).headers['X-Content-Type-Options']).toBe('nosniff');
+    expect((await run('GET', '/fs/local/nope.html')).headers['X-Content-Type-Options']).toBe('nosniff');
   });
 });

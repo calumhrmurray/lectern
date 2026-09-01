@@ -80,16 +80,23 @@ export function requestAllowed(headers, bindHost = '127.0.0.1') {
   return null;
 }
 
+/**
+ * `nosniff` on everything: the deck folder is served to a browser, and without it a page
+ * elsewhere could get one of these files treated as a script it is allowed to run.
+ */
 export function send(res, status, body, headers = {}) {
-  res.writeHead(status, { 'Cache-Control': 'no-store', ...headers });
+  res.writeHead(status, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...headers });
   res.end(body);
 }
 
-export async function serveFile(res, filePath, head = false) {
+export async function serveFile(res, filePath, head = false, extraHeaders = {}) {
   let st;
   try { st = await fs.stat(filePath); } catch { return send(res, 404, 'Not found'); }
   if (st.isDirectory()) return send(res, 403, 'Directory');
-  res.writeHead(200, { 'Content-Type': mime(filePath), 'Content-Length': st.size, 'Cache-Control': 'no-store', 'Last-Modified': st.mtime.toUTCString() });
+  res.writeHead(200, {
+    'Content-Type': mime(filePath), 'Content-Length': st.size, 'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff', 'Last-Modified': st.mtime.toUTCString(), ...extraHeaders,
+  });
   if (head) return res.end();
   res.end(await fs.readFile(filePath));
 }

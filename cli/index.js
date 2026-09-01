@@ -94,6 +94,24 @@ if (!existsSync(join(distDir, 'index.html'))) {
 
 const workspace = createWorkspaceHandler(rootDir, deckFile, (m) => console.log('  ' + m), { host });
 
+// The editor itself loads nothing from anywhere but this server, and this says so to the
+// browser: if a future change ever reached for a CDN, the page would fail instead of
+// quietly needing the network. It governs the editor's own pages, not the deck files
+// under /fs/local/ — someone's slides may legitimately point wherever they like.
+const EDITOR_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "media-src 'self' data: blob:",
+  "connect-src 'self' data: blob:",
+  "frame-src 'self' data: blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'none'",
+].join('; ');
+
 const server = createServer(async (req, res) => {
   try {
     if (await workspace(req, res)) return;
@@ -101,7 +119,7 @@ const server = createServer(async (req, res) => {
     let filePath = safeJoin(distDir, url.pathname === '/' ? '/index.html' : url.pathname);
     if (!filePath) return send(res, 400, 'Bad path');
     if (!existsSync(filePath)) filePath = join(distDir, 'index.html');
-    return serveFile(res, filePath, req.method === 'HEAD');
+    return serveFile(res, filePath, req.method === 'HEAD', { 'Content-Security-Policy': EDITOR_CSP });
   } catch (err) {
     console.error(err);
     return send(res, 500, String(err && err.message));
