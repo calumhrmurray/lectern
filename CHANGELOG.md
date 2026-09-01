@@ -2,7 +2,40 @@
 
 All notable changes to Lectern are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [2.0.0] — 2026-09-01
+
+The first release published to npm (`npm i -g lectern-editor`, or `npx lectern-editor`).
+Everything before this lived only in the repository.
+
+The editor now opens in **quiet mode**: the slide, its neighbours in the gutters, a compass
+in one corner and a page count in the other. Panels are there when you ask for them (`Q`),
+and the `M` map is where the deck's structure is edited. Notes for AI became comment
+threads, so a request and its answer stay together on the slide they concern.
+
+### Added
+- Quiet mode, the compass, `Neighbours` in the gutters, and the map overlay (`M`) — the only
+  place that edits deck *structure*: add and title slides, reorder, name a section, nest and
+  unnest along reveal's vertical axis.
+- Named sections: `data-section="Anatomy"` on the first slide of a run, read by the compass
+  and the map (`src/deck/sections.ts`, falling back to a `break` slide or a repeated `.kicker`).
+- Notes for AI are comment threads (`<p data-by="author|ai">`): double-click or right-click
+  anywhere on a slide to leave one, they turn green when answered and reopen on a reply.
+- A light room and a dark one; tips that are said once, beside the thing they are about.
+- KaTeX travels with reveal.js, so a deck with maths typesets with the network unplugged.
+- `test/e2e/offline.spec.ts`: the suite cuts the network at the browser and fails on any
+  request that tries to leave the machine.
+- `lectern new --lang xx` sets the deck's `<html lang>`.
+- `CHANGELOG.md`, `.nvmrc` (Node 20), a root `llms.txt`.
+
+### Security
+- The CLI server refuses requests whose `Host` or `Origin` is not the machine itself, which
+  blocks DNS rebinding and cross-site writes; `--host` on a non-loopback address warns.
+- Symlinks inside the deck folder that point outside it are refused (403) for reading,
+  writing and listing.
+- `X-Content-Type-Options: nosniff` on every response; a `Content-Security-Policy` on the
+  editor's own pages (not on deck files, which are the author's to point where they like).
+- `window.lectern` (the whole App) is only exposed in dev builds or with `?test=1`.
+- No hosted editor and no telemetry: nothing in Lectern talks to a server that is not yours.
 
 ### Changed
 - Build stamp is the package version plus the short git SHA (`v1.0.0 (abc1234)`), so rebuilding the same commit gives a byte-identical `Lectern.html`.
@@ -19,13 +52,15 @@ All notable changes to Lectern are recorded here. The format follows [Keep a Cha
 - `window.lectern` (the whole App) is only exposed in dev builds or with `?test=1`; see *Security model* in the README.
 
 ### Fixed
-- Folder watching stops with a status message after three consecutive failed checks instead of retrying (and logging) forever.
-
-### Added
-- `lectern new --lang xx` sets the deck's `<html lang>`.
-- `CHANGELOG.md`, `.nvmrc` (Node 20), a version-sync test for the Claude Code plugin manifest, unit tests for the canvas pointer state machine and for the CLI server's request checks.
+- A dialog's keystrokes reach the dialog: the modal's capture-phase listener stopped every
+  key before it arrived, so `⏎` on an image in the picker did nothing.
+- Folder watching stops with a status message after three consecutive failed checks instead
+  of retrying (and logging) forever.
+- The comment box opens after the double-click window so a double-click can still dismiss a note.
 
 ## [1.0.0] — 2026-08-29
+
+*Never published to npm; recorded here because the work is in the repository's history.*
 
 ### Added
 - Notes for AI on slides: `N` or double-click on empty canvas leaves a note at that spot; notes are comment threads (`<p data-by="author|ai">`), turn green when done, reopen on reply, dismiss with a double-click. `lectern notes deck.html` lists the pending ones.

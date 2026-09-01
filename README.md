@@ -1,18 +1,30 @@
-# Lectern
+# Lectern — a visual editor for slides your AI assistant writes
 
-**A visual editor for HTML slide decks — built so a person and an AI assistant can make a presentation together.**
-Works with [reveal.js](https://revealjs.com) decks and any hand-rolled page of `<section>` slides.
+**Ask Claude, ChatGPT, Copilot or any coding agent for a presentation, then move things around
+yourself.** Lectern is a drag-and-drop editor for HTML slide decks: the assistant writes the
+file, you fix the layout on a canvas, and each of you sees the other's changes within a second.
 
-Lectern opens your deck, renders it with the deck's own reveal.js, theme and plugins, and lets you move, resize,
-restyle and retype things like you would in Keynote or PowerPoint — then writes only the slides you changed back
-into the file. **The HTML file is the document.** Comments, indentation and untouched slides stay byte-for-byte
-identical, so `git diff` stays readable and a coding assistant can keep editing the same file while you have it open.
+```bash
+npx lectern-editor new my-talk --title "Why whales lost their legs"   # scaffold a deck
+npx lectern-editor my-talk/index.html                                 # open the editor
+```
 
-- **No install, no server, no network:** build `Lectern.html` (`npm run build`) and double-click it. One file, opened
-  from `file://`; nothing is served and nothing leaves the machine.
-- **From a terminal:** `npx lectern-editor deck.html`
-- **Five-minute tutorial:** `public/tutorial.html` in this repo (the editor's Help menu opens it).
-- **With Claude Code / another assistant:** see [Slides with an AI](#slides-with-an-ai) below — the instructions it needs are in [`AGENTS.md`](AGENTS.md).
+**The `.html` file is the deck** — a [reveal.js](https://revealjs.com) presentation. There is no
+proprietary format, no import and no export step: it opens in any browser, prints to PDF, and
+lives in git like any other file. Lectern writes back only the slides you changed, byte for byte,
+so `git diff` stays readable and your assistant can keep editing the same file while you have it
+open.
+
+- **Nothing leaves your machine.** No account, no telemetry, no hosted version, no runtime
+  dependencies. Works with the wifi off — the tests fail if any part of the editor so much as
+  tries to reach the network.
+- **One file, no install:** double-click `Lectern.html` (a single self-contained page, from
+  `file://`). Or `npx lectern-editor` for Firefox and Safari, which have no folder picker.
+- **Works on decks you already have,** and on any hand-rolled page of `<section>` slides.
+- **Five-minute tutorial:** `public/tutorial.html` (the editor's Help menu opens it).
+
+*Made for people who like the slides an LLM writes but not the layout it leaves behind: a
+PowerPoint- or Keynote-shaped canvas over plain HTML, with the assistant still in the loop.*
 
 ## Slides with an AI
 
@@ -191,7 +203,16 @@ The corollary is that a deck's scripts can reach the editor too — open only de
 file. The `window.lectern` handle to the App is only exposed in dev builds and when the URL carries `?test=1` (the end-to-end
 tests use it). The CLI server binds to `127.0.0.1`, refuses requests whose `Host` or `Origin` is not the machine itself
 (so a DNS-rebinding page cannot read or write the folder) and refuses symlinks that lead outside the deck folder; `--host`
-on any other address prints a warning that the folder is open to the network.
+on any other address prints a warning that the folder is open to the network. Every response carries
+`X-Content-Type-Options: nosniff`, and the editor's own pages are served under a `Content-Security-Policy` of
+`default-src 'self'` — deck files are not, because your slides may point wherever you like.
+
+**No network, checked by the tests.** Lectern has no runtime dependencies, no telemetry and no hosted version;
+reveal.js and KaTeX are copied into the deck folder so a deck with maths typesets offline. `test/e2e/offline.spec.ts`
+cuts the network at the browser and fails if any request tries to leave the machine — the editor, the welcome
+screen, a scaffolded deck, and a deck opened from `Lectern.html` over `file://`. The one thing that reaches the
+internet is `lectern new --no-reveal`, which you have to ask for by name: it points the deck at a CDN instead of
+copying reveal.js next to it.
 
 ### How saving works
 
@@ -209,11 +230,32 @@ Both receive identical structural edits, so an element is located in the other t
 path from the top-level section — plugin rewrites (KaTeX, highlighting) happen below the elements
 you select and never disturb the paths. Undo is a whole-section snapshot restore.
 
-## Deploying the web editor
+## Releasing
 
-The `dist/` folder is a static site; `.github/workflows/pages.yml` builds it on every push to `main` and publishes it
-to GitHub Pages together with `AGENTS.md`, `README.md` and `llms.txt`. The service worker needs HTTPS (or localhost).
-`npm publish` ships the CLI, `dist/` and `AGENTS.md` as the `lectern-editor` package.
+`npm publish` ships the CLI, `dist/` (the built editor, `Lectern.html`, reveal.js and KaTeX) and `AGENTS.md` as the
+`lectern-editor` package; `prepublishOnly` runs the build. There is **no hosted editor** and there is not going to be
+one: Lectern is a local tool, and a page on someone's server is the opposite of that. `dist/` is a static site if you
+want to serve it yourself on a machine you control (the service worker needs HTTPS or localhost).
+
+## Questions
+
+**Can I use this with ChatGPT / Copilot / Cursor / Gemini instead of Claude?** Yes. Any assistant that can read a file
+and write one works; give it [`AGENTS.md`](AGENTS.md) (or run `npx lectern-editor guide`). The Claude Code plugin is a
+convenience, not a requirement.
+
+**Do I need an API key or an account?** No. Lectern is an editor, not an AI client — it never talks to a model. Your
+assistant edits the file with its own tools, wherever it already runs.
+
+**Does it work offline?** Yes, entirely, and the test suite enforces it.
+
+**Can I edit a reveal.js deck I already have?** Yes — `npx lectern-editor path/to/deck.html`. Lectern renders it with
+the deck's own theme and plugins and writes back only what you change. Plain HTML decks (a page of `<section>`s with
+your own script) work too.
+
+**How do I get a PDF?** reveal's print mode: open `index.html?print-pdf` in Chrome and print. Every slide is one page.
+
+**What happens to my deck if I stop using Lectern?** Nothing. It is an ordinary reveal.js HTML file that you can
+open, present and edit by hand; Lectern leaves no runtime attributes and no lock-in behind.
 
 ## Licence
 
