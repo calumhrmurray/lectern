@@ -68,7 +68,11 @@ export function modal(opts: ModalOptions): Promise<string> {
         const primary = buttons.find((b) => b.primary);
         if (primary) { ev.preventDefault(); finish(primary.value); }
       }
-      ev.stopPropagation();
+      // Keys aimed at something inside the dialog must reach it: this listener captures on
+      // document, so stopping here would swallow Enter on an image cell and every keystroke
+      // in an input. The dialog's own bubble listener (below) is what keeps the editor's
+      // shortcuts from firing; anything outside the dialog is stopped here.
+      if (!(ev.target instanceof Node && box.contains(ev.target))) ev.stopPropagation();
     };
     const box = h('div', { class: `lec-modal${opts.wide ? ' lec-wide' : ''}`, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId },
       h('div', { class: 'lec-modal-head' }, h('span', { id: titleId }, opts.title), h('span', { class: 'lec-spacer' }), h('button', { class: 'lec-btn', type: 'button', title: 'Close', 'aria-label': 'Close dialog', onclick: () => finish('cancel') }, svgIcon(icons.close))),
@@ -76,6 +80,8 @@ export function modal(opts: ModalOptions): Promise<string> {
       h('div', { class: 'lec-modal-foot' }, ...buttons.map((b) => h('button', { class: `lec-btn${b.primary ? ' lec-primary' : ''}`, type: 'button', disabled: !!b.disabled, onclick: () => finish(b.value) }, b.label))),
     );
     backdrop.appendChild(box);
+    // The editor's shortcuts listen on window; a dialog's keystrokes are its own.
+    box.addEventListener('keydown', (ev) => { ev.stopPropagation(); });
     backdrop.addEventListener('pointerdown', (ev) => { if (ev.target === backdrop) finish('cancel'); });
     document.body.appendChild(backdrop);
     document.addEventListener('keydown', onKey, true);

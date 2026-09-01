@@ -61,6 +61,7 @@ class FakeHost implements InteractionHost {
   rotationOf(): number { return 0; }
   clickTarget(el: Element): void { this.calls.push(`click:${el.id}`); }
   dblClickEmpty(x: number, y: number): void { this.calls.push(`dblEmpty:${x},${y}`); }
+  dblClickTarget(el: Element): boolean { const handled = el.id === 'note'; if (handled) this.calls.push(`dblNote:${el.id}`); return handled; }
 }
 
 const el = (id: string, tag = 'div'): Element => { const e = document.createElement(tag); e.id = id; return e; };
@@ -201,16 +202,17 @@ describe('Interactions', () => {
     expect(actions()).toEqual([]);
   });
 
-  it('double-click edits text objects, reports empty canvas, and does nothing on other objects', () => {
+  it('double-click leaves a note everywhere except on a note, which handles it itself', () => {
     const dbl = (x: number) => overlay.el.dispatchEvent(new MouseEvent('dblclick', { clientX: x, clientY: 5, bubbles: true }));
-    dbl(300);
-    expect(actions()).toEqual(['select:replace:p', 'edit:p']);
+    dbl(300); // on a text object: a note, not text editing (Enter / type-over edit text)
+    expect(actions()).toEqual(['dblEmpty:300,5']);
     host.calls = [];
-    dbl(50);
+    dbl(50); // empty canvas
     expect(actions()).toEqual(['dblEmpty:50,5']);
     host.calls = [];
-    dbl(100);
-    expect(actions()).toEqual([]);
+    host.hits.set(70, el('note'));
+    dbl(70); // an existing note: its own handler, no new note
+    expect(actions()).toEqual(['dblNote:note']);
   });
 
   it('hovering reports the object under the pointer, and nothing while over a handle', () => {
