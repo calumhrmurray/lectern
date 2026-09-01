@@ -79,7 +79,7 @@ test('a deck written from Lectern.html typesets maths from its own folder', asyn
     put('reveal/katex/dist/katex.min.js', join(reveal, 'katex/dist/katex.min.js'));
     put('reveal/katex/dist/contrib/auto-render.min.js', join(reveal, 'katex/dist/contrib/auto-render.min.js'));
     // The embedded stylesheet carries its fonts, because there is no folder to serve them from.
-    put('reveal/katex/dist/katex.min.css', join(reveal, 'katex/dist/katex.embedded.css'));
+    put('reveal/katex/dist/katex.min.css', join(process.cwd(), '.build', 'katex.embedded.css'));
     execFileSync(process.execPath, [join(process.cwd(), 'cli', 'index.js'), 'new', dir, '--title', 'Maths', '--no-reveal', '--force'], { stdio: 'pipe' });
     // --no-reveal kept the copy above; point the deck back at it and give it a formula.
     const deck = join(dir, 'index.html');

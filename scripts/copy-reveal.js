@@ -40,6 +40,8 @@ cpSync(join(root, 'node_modules', 'katex', 'LICENSE'), join(dest, 'katex', 'LICE
 // folder to serve fonts from, so this is the copy it writes beside a deck it creates on
 // file:// — maths then typesets with the network unplugged. The woff/ttf alternatives go:
 // every browser that runs the editor reads woff2, and a missing file is a wasted request.
+// It lives outside public/reveal, which is copied wholesale into every deck folder: this
+// one is only ever an input to the bundle (see src/deck/revealAssets.ts).
 const katexCss = readFileSync(join(katexSrc, 'katex.min.css'), 'utf8');
 const inlined = katexCss.replace(
   /url\(fonts\/([\w-]+)\.woff2\)\s*format\("woff2"\)(?:\s*,\s*url\(fonts\/[\w-]+\.(?:woff|ttf)\)\s*format\("(?:woff|truetype)"\))*/g,
@@ -50,7 +52,9 @@ const inlined = katexCss.replace(
   },
 );
 if (inlined.includes('url(fonts/')) throw new Error('copy-reveal: some KaTeX fonts were not inlined');
-writeFileSync(join(katexDest, 'katex.embedded.css'), inlined);
+const buildDir = join(root, '.build');
+mkdirSync(buildDir, { recursive: true });
+writeFileSync(join(buildDir, 'katex.embedded.css'), inlined);
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {

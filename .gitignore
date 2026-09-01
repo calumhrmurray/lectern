@@ -1,6 +1,7 @@
 node_modules/
 dist/
 public/reveal/
+.build/
 test-results/
 playwright-report/
 .playwright/

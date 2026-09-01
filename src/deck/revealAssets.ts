@@ -11,7 +11,7 @@ import mathJs from '../../public/reveal/plugin/math/math.js?raw';
 import zoomJs from '../../public/reveal/plugin/zoom/zoom.js?raw';
 import license from '../../public/reveal/LICENSE?raw';
 import katexJs from '../../public/reveal/katex/dist/katex.min.js?raw';
-import katexCss from '../../public/reveal/katex/dist/katex.embedded.css?raw';
+import katexCss from '../../.build/katex.embedded.css?raw';
 import katexAutoRender from '../../public/reveal/katex/dist/contrib/auto-render.min.js?raw';
 import katexLicense from '../../public/reveal/katex/LICENSE?raw';
 
