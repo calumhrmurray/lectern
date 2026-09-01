@@ -67,6 +67,8 @@ a { color: var(--accent); }
 /* Keyboard focus: one visible ring everywhere in the editor chrome (the deck iframe has its own styles). */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lec-navigator:focus-visible, .lec-overlay:focus-visible, .lec-insp-body:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* The canvas is given the keyboard when a deck opens; that is not a Tab, so it gets no ring. */
+.lec-overlay[data-quiet-focus]:focus-visible { outline: none; }
 
 /* ---------------------------------------------------------------- toolbar */
 .lec-toolbar {

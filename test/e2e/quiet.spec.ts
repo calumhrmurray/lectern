@@ -415,3 +415,21 @@ test.describe('the second axis', () => {
     })).toBe(false);
   });
 });
+
+test.describe('opening', () => {
+  test('the canvas takes the keyboard without wearing a focus ring', async ({ page }) => {
+    await page.goto('/?ws=local&deck=index.html&test=1');
+    await page.waitForFunction(() => window.lectern?.editor?.ready, null, { timeout: 20000 });
+
+    // Focused, so the arrow keys work straight away...
+    const ring = () => page.evaluate(() => {
+      const el = document.querySelector('.lec-overlay') as HTMLElement;
+      return { focused: document.activeElement === el, outline: getComputedStyle(el).outlineStyle };
+    });
+    expect(await ring()).toEqual({ focused: true, outline: 'none' });
+
+    // ...but the ring belongs to the keyboard: once someone uses it, it comes back.
+    await page.keyboard.press('ArrowRight');
+    expect(await ring()).toEqual({ focused: true, outline: 'solid' });
+  });
+});

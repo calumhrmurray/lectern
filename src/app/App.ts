@@ -377,7 +377,7 @@ export class App {
       this.panels.update();
       this.toolbar.update();
       this.updateStatus();
-      this.editor.overlay.el.focus({ preventScroll: true });
+      this.focusCanvasQuietly();
       await this.recordBaseline();
       this.startWatching();
       this.toast(`Opened ${basename(deckPath)} · ${this.editor.slideRefs().length} slides`);
@@ -760,6 +760,26 @@ export class App {
     this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
     this.tools.update();
     this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern ${versionLabel()}`;
+  }
+
+  /**
+   * Gives the canvas the keyboard as soon as a deck opens, so the arrow keys and the
+   * shortcuts work without clicking first — but without painting a focus ring at someone
+   * who has not touched the keyboard. The ring is how a Tab tells you where you are; on a
+   * fresh load Chrome would otherwise draw it round the whole canvas before any input.
+   * The first real key or click settles it, and from then on :focus-visible decides.
+   */
+  private focusCanvasQuietly(): void {
+    const el = this.editor.overlay.el;
+    el.dataset.quietFocus = '';
+    el.focus({ preventScroll: true });
+    const wake = () => {
+      delete el.dataset.quietFocus;
+      window.removeEventListener('keydown', wake, true);
+      window.removeEventListener('pointerdown', wake, true);
+    };
+    window.addEventListener('keydown', wake, true);
+    window.addEventListener('pointerdown', wake, true);
   }
 
   // ---------------------------------------------------------------- events
