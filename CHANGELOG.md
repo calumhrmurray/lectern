@@ -2,6 +2,28 @@
 
 All notable changes to Lectern are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.1.0] — 2026-09-01
+
+A deck is HTML, and HTML is not what most people want to edit by hand. This release adds a
+human-readable form: the deck as Quarto/Pandoc markdown, converted both ways, so simple edits
+need a text editor rather than an LLM, and people with a Quarto setup can render the same talk
+through their own themes.
+
+### Added
+- `lectern convert deck.html` ⇄ `lectern convert deck.qmd` — the deck as Quarto reveal.js
+  markdown, and back. Headings, lists, columns, figures with captions, code, tables, speaker
+  notes, fragments and slide attributes become markdown; inline SVG, absolutely positioned
+  objects and anything else without a faithful markdown form travel as verbatim HTML islands,
+  so the trip is lossless. Importing splices into the existing deck: a slide whose markdown is
+  unchanged keeps its exact bytes (`git diff` shows only what you edited). A simple title slide
+  becomes YAML front matter; `::: {.kicker}`, `::: {.backdrop}` and `::: {.stack}` carry the
+  kicker, the behind-the-heading decorations and reveal's vertical stacks. Converting refuses
+  to overwrite an output file newer than its input unless `--force` is passed.
+- **Export Markdown (Quarto)…** in the editor's menu — the same `.qmd`, as a download, from
+  the browser and from `Lectern.html` on `file://`.
+- `dist/lib/markdown.js`: the converter as a DOM-free library (parse5 bundled in), so the
+  published package still has zero runtime dependencies.
+
 ## [2.0.0] — 2026-09-01
 
 The first release published to npm (`npm i -g lectern-editor`, or `npx lectern-editor`).

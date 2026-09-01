@@ -26,22 +26,28 @@ const REVEAL_CDN = 'https://cdn.jsdelivr.net/npm/reveal.js@5';
 
 const HELP = `usage: lectern [folder|deck.html] [--port N] [--host H] [--no-open]
        lectern new <folder> [--title "…"] [--author "…"] [--lang en] [--theme paper|ink|academic|aquarelle] [--size 1280x720] [--no-reveal] [--force]
+       lectern convert <deck.html> [out.qmd] | <deck.qmd|deck.md> [out.html]
        lectern notes <deck.html>
        lectern guide
 
   (no command)   serve the visual editor for a deck folder or file and open it in the browser
   new            create a deck: index.html, theme.css and a local copy of reveal.js
+  convert        deck ⇄ Quarto/Pandoc markdown, by file extension. HTML → .qmd writes headings, lists,
+                 notes and columns as markdown and keeps everything else (SVG, positioned objects) as
+                 verbatim HTML islands. .qmd/.md → HTML splices the slides into the target deck if it
+                 exists (slides whose markdown is unchanged keep their exact bytes) or scaffolds one.
   notes          print the deck's pending notes for AI as a prompt (elements marked data-ai-note)
   guide          instructions for AI assistants: the deck format, the notes protocol, the workflow (AGENTS.md)
 
-  options for serve:  --port N (default 8765)  --host H (default 127.0.0.1)  --no-open
-  options for new:    --title, --author, --lang (the <html lang>, default en), --theme (default paper), --size WxH (default 1280x720),
-                      --no-reveal (load reveal.js from the jsDelivr CDN instead of copying it), --force (overwrite)`;
+  options for serve:   --port N (default 8765)  --host H (default 127.0.0.1)  --no-open
+  options for new:     --title, --author, --lang (the <html lang>, default en), --theme (default paper), --size WxH (default 1280x720),
+                       --no-reveal (load reveal.js from the jsDelivr CDN instead of copying it), --force (overwrite)
+  options for convert: --force (write even when the output file is newer than the input)  - as output prints to stdout`;
 
 const args = process.argv.slice(2);
 if (args[0] === '--help' || args[0] === '-h' || args[0] === 'help') { console.log(HELP); process.exit(0); }
 
-const command = ['new', 'notes', 'guide'].includes(args[0]) ? args.shift() : 'serve';
+const command = ['new', 'notes', 'guide', 'convert'].includes(args[0]) ? args.shift() : 'serve';
 
 if (command === 'guide') {
   const file = join(pkgRoot, 'AGENTS.md');
@@ -61,6 +67,11 @@ if (command === 'notes') {
 
 if (command === 'new') {
   await newDeck(args);
+  process.exit(0);
+}
+
+if (command === 'convert') {
+  await convert(args);
   process.exit(0);
 }
 
@@ -202,4 +213,69 @@ async function newDeck(argv) {
   console.log(`\n  lectern · created ${dir}\n`);
   for (const c of created) console.log(`    ${c}`);
   console.log(`\n  Slides are <section> elements inside <div class="slides">; edit index.html directly or run:\n\n    lectern ${folder}\n\n  Run \`lectern guide\` for the deck format and the notes-for-AI protocol.\n`);
+}
+
+// ---------------------------------------------------------------- convert
+
+async function convert(argv) {
+  let input = null;
+  let output = null;
+  let force = false;
+  for (const a of argv) {
+    if (a === '--force') force = true;
+    else if (a.startsWith('--')) { console.error(`lectern convert: unknown option ${a}\n\n${HELP}`); process.exit(1); }
+    else if (input === null) input = a;
+    else if (output === null) output = a;
+    else { console.error(`lectern convert: unexpected argument ${a}`); process.exit(1); }
+  }
+  if (!input) { console.error('usage: lectern convert <deck.html> [out.qmd] | <deck.qmd|deck.md> [out.html]   (- as output prints to stdout)'); process.exit(1); }
+  const toMd = /\.html?$/i.test(input);
+  if (!toMd && !/\.(qmd|md|markdown)$/i.test(input)) { console.error(`lectern convert: ${input} is neither .html nor .qmd/.md`); process.exit(1); }
+  const inPath = resolve(input);
+  if (!existsSync(inPath)) { console.error(`lectern: ${inPath} does not exist`); process.exit(1); }
+  const lib = join(distDir, 'lib', 'markdown.js');
+  if (!existsSync(lib)) { console.error(`lectern convert: ${lib} is missing. In a source checkout run \`node scripts/build-cli-lib.mjs\` (or \`npm run build\`).`); process.exit(1); }
+  const mdlib = await import(pathToFileURL(lib).href);
+  const outPath = output === '-' ? null : resolve(output ?? inPath.replace(/\.[^.]+$/, toMd ? '.qmd' : '.html'));
+  if (outPath === inPath) { console.error('lectern convert: input and output are the same file'); process.exit(1); }
+  // Both files are working copies of the same talk: never silently clobber the newer one.
+  if (outPath && !force && existsSync(outPath) && statSync(outPath).mtimeMs > statSync(inPath).mtimeMs + 1000) {
+    console.error(`lectern convert: ${outPath} is newer than ${inPath} — converting would overwrite newer work. Pass --force if that is what you want.`);
+    process.exit(1);
+  }
+  const src = readFileSync(inPath, 'utf8');
+
+  if (toMd) {
+    const md = mdlib.deckToMarkdown(src, mdlib.parseHtml);
+    if (!outPath) { process.stdout.write(md); return; }
+    writeFileSync(outPath, md);
+    console.log(`wrote ${outPath}\n  Edit the markdown by hand or render it with Quarto; \`lectern convert ${basename(outPath)}\` brings the slides back into the deck.`);
+    return;
+  }
+
+  const existing = outPath && existsSync(outPath) ? readFileSync(outPath, 'utf8') : undefined;
+  let theme = null;
+  let scaffold;
+  if (existing === undefined) {
+    const tlib = await import(pathToFileURL(join(distDir, 'lib', 'templates.js')).href);
+    theme = tlib.themeById('paper');
+    const outDir = dirname(outPath ?? inPath);
+    const revealPath = existsSync(join(outDir, 'reveal', 'dist', 'reveal.js')) ? 'reveal' : REVEAL_CDN;
+    scaffold = (meta) =>
+      tlib.starterDeckHtml({
+        title: (meta.pagetitle ?? meta.title ?? basename(inPath).replace(/\.[^.]+$/, '')).replace(/[*_`\\]/g, ''),
+        author: '', lang: meta.lang || 'en',
+        width: meta.width || 1280, height: meta.height || 720,
+        revealPath, theme,
+      });
+  }
+  const result = mdlib.markdownToDeck(src, { existing, scaffold, parse: mdlib.parseHtml });
+  if (!outPath) { process.stdout.write(result.html); return; }
+  writeFileSync(outPath, result.html);
+  if (theme && !existsSync(join(dirname(outPath), 'theme.css'))) {
+    writeFileSync(join(dirname(outPath), 'theme.css'), theme.css.endsWith('\n') ? theme.css : theme.css + '\n');
+    console.log(`wrote theme.css  (${theme.name} theme)`);
+  }
+  const kept = existing === undefined ? '' : `, ${result.reused} unchanged slide(s) kept byte-identical`;
+  console.log(`wrote ${outPath}  (${result.slides} slide(s)${kept})`);
 }

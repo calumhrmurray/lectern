@@ -21,3 +21,21 @@ await build({
   logLevel: 'warning',
 });
 console.log('built dist/lib/templates.js');
+
+// The markdown converter for `lectern convert`, with parse5 bundled in so the
+// published package still has no runtime dependencies.
+await build({
+  stdin: {
+    contents: "export * from './src/deck/markdown'; export { parseHtml } from './src/deck/markdownParse5';",
+    resolveDir: root,
+    loader: 'ts',
+  },
+  outfile: join(root, 'dist', 'lib', 'markdown.js'),
+  bundle: true,
+  format: 'esm',
+  platform: 'neutral',
+  target: 'es2022',
+  minify: false,
+  logLevel: 'warning',
+});
+console.log('built dist/lib/markdown.js');

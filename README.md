@@ -118,8 +118,14 @@ them appear; drag things around, `⌘S`, and the assistant reads your version.
 npx lectern-editor deck.html            # serve the editor for a deck (or a folder) and open the browser
 npx lectern-editor new my-talk          # scaffold a deck: index.html, theme.css, reveal/ (--title --author --theme --size)
 npx lectern-editor notes deck.html      # list the pending notes for an AI, as a prompt
+npx lectern-editor convert deck.html    # ⇄ deck.qmd — the deck as Quarto/Pandoc markdown, and back
 npx lectern-editor guide                # print AGENTS.md, the instructions for assistants
 ```
+
+`convert` is the escape hatch from raw HTML: it writes the deck as human-readable Quarto reveal.js
+markdown (headings, lists, notes and columns as markdown; SVG and hand-placed objects as verbatim
+HTML islands) that `quarto render` also accepts, and converts the edited `.qmd` back — slides whose
+markdown you didn't touch keep their exact bytes.
 
 The server is a tiny local one (`127.0.0.1:8765`); it works in Firefox and Safari too, which lack the folder picker.
 Needs Node 18+. Any static host can also serve `dist/` (HTTPS is required for the folder-serving worker).

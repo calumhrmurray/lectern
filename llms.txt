@@ -17,6 +17,8 @@ reach the network.
 
 - `npx lectern-editor new my-talk --title "Talk title"` — scaffold a deck folder (index.html,
   theme.css, and local copies of reveal.js and KaTeX so it works offline)
+- `npx lectern-editor convert my-talk/index.html` — the deck as Quarto reveal.js markdown
+  (`index.qmd`), and the same command converts the edited `.qmd` back into the deck
 - `npx lectern-editor my-talk/index.html` — open the visual editor for the person (local server on
   127.0.0.1, opens the browser)
 - `npx lectern-editor notes my-talk/index.html` — list the notes they left on the slides for you

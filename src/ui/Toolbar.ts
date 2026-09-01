@@ -152,6 +152,7 @@ export class Toolbar {
       { label: 'Save', icon: 'save', shortcut: `${M}S`, disabled: !app.editor.ready, onSelect: () => void app.save() },
       { label: 'Autosave', checked: app.autosave, onSelect: () => app.setAutosave(!app.autosave) },
       { label: 'Download a copy…', icon: 'download', disabled: !app.editor.ready, onSelect: () => app.download() },
+      { label: 'Export Markdown (Quarto)…', disabled: !app.editor.ready, onSelect: () => app.exportMarkdown() },
       { label: 'Reload from disk', disabled: !app.editor.ready, onSelect: () => void app.reload() },
       { separator: true },
       { label: 'Present', icon: 'play', disabled: !app.editor.ready, onSelect: () => app.present() },

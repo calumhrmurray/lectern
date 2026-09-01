@@ -16,6 +16,7 @@ import { REVEAL_EMBEDDED } from '../deck/revealAssets';
 import { discoverFontFamilies, discoverThemeClasses, type ThemeClass } from '../deck/cssClasses';
 import { DeckDocument } from '../deck/DeckDocument';
 import { detectParts } from '../deck/scan';
+import { deckToMarkdown, treeFromDom } from '../deck/markdown';
 import { starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
 import type { SlideRef } from '../stage/Stage';
@@ -545,6 +546,24 @@ export class App {
     const text = this.editor.doc.serialize();
     const blob = new Blob([text], { type: 'text/html' });
     const a = h('a', { href: URL.createObjectURL(blob), download: basename(this.deckPath) || 'deck.html' });
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  /** Downloads the deck as Quarto/Pandoc markdown (what `lectern convert` writes). */
+  exportMarkdown(): void {
+    if (!this.editor.ready) return;
+    this.editor.endTextEdit();
+    const text = this.editor.doc.serialize();
+    let md: string;
+    try {
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      md = deckToMarkdown(text, () => treeFromDom(doc));
+    } catch (err) {
+      this.toast(err instanceof Error ? err.message : String(err), 'error');
+      return;
+    }
+    const name = (basename(this.deckPath) || 'deck.html').replace(/\.[^.]*$/, '') + '.qmd';
+    const a = h('a', { href: URL.createObjectURL(new Blob([md], { type: 'text/markdown' })), download: name });
     document.body.appendChild(a); a.click(); a.remove();
   }
 

@@ -16,6 +16,7 @@ npx lectern-editor new my-talk --title "Why whales lost their legs" --theme pape
 #   2. write the slides into my-talk/index.html — one <section> per slide (format below)
 npx lectern-editor my-talk/index.html        # 3. open the editor for the person (local server, opens the browser)
 npx lectern-editor notes my-talk/index.html  # 4. later: list the notes they left for you on the slides; do them
+npx lectern-editor convert my-talk/index.html   # ⇄ index.qmd — the deck as Quarto markdown, and back
 npx lectern-editor guide                     # prints this document
 ```
 
@@ -174,6 +175,31 @@ someone inserts an image. Give every `<img>` an `alt` and a `width` in the style
 
 **Plain (non-reveal) decks** also work: any page whose slides are `<section>` elements driven by the page's own script.
 You lose reveal-only features (backgrounds, transitions) but keep the canvas editing and the notes.
+
+## The deck as markdown — `lectern convert`
+
+For hand edits without an assistant, and for people who already have a Quarto setup and themes:
+
+```bash
+npx lectern-editor convert my-talk/index.html   # → my-talk/index.qmd  (Quarto reveal.js markdown)
+npx lectern-editor convert my-talk/index.qmd    # → back into my-talk/index.html
+```
+
+- The `.qmd` is ordinary Quarto: YAML front matter (a simple title slide becomes `title:` /
+  `subtitle:` / `author:` / `date:`), one `##` heading per slide with the slide's attributes in
+  `{…}`, `# Heading {.break}` for a break slide, fenced divs for the class vocabulary
+  (`::: {.kicker}`, `::: {.notes}`, `::: {.columns}` › `::: {.column}`, `::: {.incremental}`),
+  `![caption](fig.png){.fig}` figures, fenced code, pipe tables, `$…$` math. `quarto render`
+  accepts it as-is.
+- Anything with no faithful markdown form — inline SVG, absolutely positioned objects, notes for
+  AI — stays in the file as verbatim HTML, which Quarto and the importer both pass through, so the
+  conversion is lossless. Two conventions: `::: {.backdrop}` holds decorations that sit *above* the
+  heading in the HTML, and `::: {.stack}` wraps a vertical stack.
+- Converting back splices into the existing HTML file: a slide whose markdown you did not touch
+  keeps its exact bytes, so `git diff` shows only real edits. The command refuses to overwrite an
+  output file newer than its input (`--force` overrides) — still, work in one direction at a time:
+  convert, edit, convert back.
+- The editor's menu offers the same export (*Export Markdown (Quarto)…*).
 
 ## Writing good slides
 
