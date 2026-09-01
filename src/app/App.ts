@@ -20,9 +20,15 @@ import { starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
 import type { SlideRef } from '../stage/Stage';
 import { versionLabel } from '../version';
-import { h } from '../ui/dom';
-import { TUTORIAL_URL, aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
+import { h, isMac, svgIcon } from '../ui/dom';
+import { icons } from '../ui/icons';
+import { TUTORIAL_URL, aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, promptDialog, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
+import { Compass } from '../ui/Compass';
 import { Inspector } from '../ui/Inspector';
+import { MapView } from '../ui/MapView';
+import { Neighbours } from '../ui/Neighbours';
+import { Tips } from '../ui/Tips';
+import { Tools } from '../ui/Tools';
 import { closeMenus } from '../ui/Menu';
 import { Navigator } from '../ui/Navigator';
 import { Panels } from '../ui/Panels';
@@ -48,13 +54,22 @@ export class App {
   readonly inspector: Inspector;
   readonly panels: Panels;
   readonly thumbs: ThumbnailRenderer;
+  readonly compass: Compass;
+  readonly map: MapView;
+  readonly tools: Tools;
+  readonly tips: Tips;
+  readonly neighbours: Neighbours;
   workspace: Workspace | null = null;
   deckPath = '';
   themeClasses: ThemeClass[] = [];
   fonts: string[] = [];
   zoom = 1;
   visible = { navigator: true, inspector: true };
-  private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement };
+  /** The editor's room: off-white by default, dark when you click the background. Remembered. */
+  dark = localStorage.getItem('lectern:dark') === 'on';
+  /** Quiet mode: the slide keeps the screen, the panels step out of the way. On by default; remembered. */
+  quiet = localStorage.getItem('lectern:quiet') !== 'off';
+  private els: { navigator: HTMLElement; stageWrap: HTMLElement; stage: HTMLElement; inspector: HTMLElement; status: HTMLElement; msg: HTMLElement; pos: HTMLElement; path: HTMLElement; welcome: HTMLElement; loading: HTMLElement; dropzone: HTMLElement; compass: HTMLElement; bar: HTMLElement; counter: HTMLElement; center: HTMLElement; map: HTMLElement };
   private toastEl: HTMLElement | null = null;
   /** Last-modified times of the deck's files as we last read or wrote them. */
   private baseline = new Map<string, number | null>();
@@ -79,6 +94,17 @@ export class App {
     const dropzone = h('div', { class: 'lec-dropzone' }, 'Drop images to insert them');
     const stageWrap = h('div', { class: 'lec-stage-wrap' }, stage, loading, dropzone);
     const panelsEl = h('div', {});
+    const compassEl = h('div', { class: 'lec-compass', 'aria-label': 'Deck position' });
+    const glyph = (action: string, icon: 'map' | 'play', title: string, onclick: () => void) =>
+      h('button', { class: 'lec-glyph', type: 'button', dataset: { action }, title, onclick }, svgIcon(icons[icon]));
+    // Bottom left: where you can go, and everything else. Bottom right: where you are.
+    const toolsEl = h('div', { class: 'lec-tools' });
+    const barEl = h('div', { class: 'lec-quietbar' },
+      glyph('glyph-map', 'map', 'Map of the deck (M)', () => this.map.toggle()),
+      glyph('glyph-present', 'play', 'Present', () => void this.present()),
+      toolsEl,
+    );
+    const counterEl = h('div', { class: 'lec-counter' });
     const center = h('div', { class: 'lec-center' }, stageWrap, panelsEl);
     const inspectorEl = h('div', { class: 'lec-inspector', 'aria-label': 'Inspector' });
     const msg = h('span', { class: 'lec-msg' });
@@ -86,15 +112,26 @@ export class App {
     const path = h('span', { class: 'lec-path' });
     const status = h('div', { class: 'lec-status' }, path, h('span', { class: 'lec-spacer' }), msg, h('span', { class: 'lec-spacer' }), pos);
     const welcome = h('div', { class: 'lec-welcome' });
-    root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, welcome);
-    this.els = { navigator: navigatorEl, stageWrap, stage, inspector: inspectorEl, status, msg, pos, path, welcome, loading, dropzone };
+    const mapEl = h('div', { class: 'lec-map lec-hidden', 'aria-label': 'Map of the deck' });
+    // The bar and the tools sit above the map overlay: they are the editor's
+    // furniture, not the canvas's, and they stay put in every view.
+    root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, mapEl, compassEl, barEl, counterEl, welcome);
+    this.els = { navigator: navigatorEl, stageWrap, stage, inspector: inspectorEl, status, msg, pos, path, welcome, loading, dropzone, compass: compassEl, bar: barEl, counter: counterEl, center, map: mapEl };
 
     this.editor = new Editor(stage);
     this.thumbs = new ThumbnailRenderer(this.editor);
     this.panels = new Panels(this, panelsEl);
+    // The compass, map and cluster exist before the toolbar: its first update() reads their state.
+    this.compass = new Compass(this, compassEl, counterEl);
+    this.map = new MapView(this, mapEl);
+    this.tools = new Tools(this, toolsEl);
+    this.tips = new Tips(this);
+    this.neighbours = new Neighbours(this, center);
     this.toolbar = new Toolbar(this, toolbarEl);
     this.navigator = new Navigator(this, navigatorEl);
     this.inspector = new Inspector(this, inspectorEl);
+    if (this.quiet) root.classList.add('lec-quiet');
+    document.documentElement.classList.toggle('lec-dark', this.dark);
     this.wireEditorEvents();
     this.wireGlobalEvents();
   }
@@ -329,6 +366,13 @@ export class App {
       if (savedSize && doc.info.kind === 'plain') { const [w, h] = savedSize.split('x').map(Number); if (w && h) this.editor.stage.setLogicalSize(w, h); }
       if (ws instanceof FsaWorkspace) void rememberRecent({ id: ws.id, name: ws.name, deckPath, handle: ws.handle, openedAt: Date.now() });
       this.navigator.render();
+      this.compass.render();
+      this.map.render();
+      this.neighbours.invalidate();
+      this.tools.update();
+      this.paintRoom();
+      // After the "opened" toast has gone: two things on the same spot is noise.
+      window.setTimeout(() => { this.tips.show('note'); this.tips.show('panels'); }, 2500);
       this.inspector.render();
       this.panels.update();
       this.toolbar.update();
@@ -608,6 +652,57 @@ export class App {
     if (panel === 'navigator' && this.visible.navigator) this.navigator.fitThumbs();
   }
 
+  /**
+   * Quiet mode: the panels step out of the way and the slide keeps the screen.
+   * The compass and the cluster stay — they are what makes it navigable rather
+   * than merely empty — and holding space brings everything back for a look.
+   */
+  setQuiet(on: boolean): void {
+    this.quiet = on;
+    this.root.classList.toggle('lec-quiet', on);
+    localStorage.setItem('lectern:quiet', on ? 'on' : 'off');
+    this.toolbar.update();
+    this.compass.render();
+    this.tools.setOpen(false);
+    if (this.visible.navigator) this.navigator.fitThumbs();
+    // The stage is inset in quiet mode: measure the neighbours after it re-fits.
+    requestAnimationFrame(() => requestAnimationFrame(() => this.neighbours.update()));
+  }
+
+  toggleQuiet(): void { this.setQuiet(!this.quiet); }
+
+  /** Anchors for the tips. */
+  barRect(): DOMRect { return this.els.bar.getBoundingClientRect(); }
+  compassRect(): DOMRect { return this.els.compass.getBoundingClientRect(); }
+  counterRect(): DOMRect { return this.els.counter.getBoundingClientRect(); }
+  mapHeadRect(): DOMRect | null {
+    const head = this.els.map.querySelector('.lec-map-head');
+    return head ? head.getBoundingClientRect() : null;
+  }
+
+  /**
+   * Light and dark. A click on the background — the surround, not the slide —
+   * switches rooms: the deck you are working on is usually light, and the wall
+   * behind it should be whichever one lets you see the deck.
+   */
+  setDark(on: boolean): void {
+    this.dark = on;
+    document.documentElement.classList.toggle('lec-dark', on);
+    localStorage.setItem('lectern:dark', on ? 'on' : 'off');
+    this.paintRoom();
+    this.navigator.invalidate(null);
+    this.map.invalidate(null);
+    this.neighbours.invalidate();
+  }
+
+  toggleDark(): void { this.setDark(!this.dark); }
+
+  /** Tells the deck's iframe what colour the room is, so the canvas is all one colour. */
+  private paintRoom(): void {
+    const colour = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    if (colour) this.editor.stage.setRoomColour(colour);
+  }
+
   setZoom(z: number): void {
     this.zoom = Math.max(0.25, Math.min(4, z));
     const wrap = this.els.stageWrap;
@@ -663,6 +758,7 @@ export class App {
     const c = ed.current;
     const label = c.sub === null ? `${c.top + 1}` : `${c.top + 1}.${c.sub + 1}`;
     this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
+    this.tools.update();
     this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern ${versionLabel()}`;
   }
 
@@ -670,37 +766,59 @@ export class App {
 
   private wireEditorEvents(): void {
     const ed = this.editor;
-    ed.on('selection', () => { this.inspector.render(); this.toolbar.update(); });
-    ed.on('slide', () => { this.navigator.updateCurrent(); this.inspector.render(); this.panels.update(); this.updateStatus(); });
+    ed.on('selection', () => { this.inspector.render(); this.toolbar.update(); if (ed.selection().length) this.tips.show('select'); });
+    ed.on('slide', () => { if (ed.current.sub !== null) this.tips.show('stack'); this.navigator.updateCurrent(); this.compass.update(); this.neighbours.update(); this.map.updateCurrent(); this.inspector.render(); this.panels.update(); this.updateStatus(); });
     ed.on('change', ({ tops, label }) => {
       if (tops === null || label === 'Add slide' || label === 'Delete slide' || label === 'Move slide' || label === 'restore' || label === 'Duplicate slide') {
         this.navigator.render();
         this.navigator.invalidate(null);
+        this.map.render();
       } else {
         this.navigator.invalidate(tops);
+        this.map.invalidate(tops);
       }
+      this.compass.render();
+      this.neighbours.invalidate();
       this.inspector.render();
       this.panels.update();
       this.toolbar.update();
+      this.tools.update();
       this.updateStatus();
     });
-    ed.on('history', () => { this.toolbar.update(); this.updateStatus(); this.scheduleAutosave(); });
+    ed.on('history', () => { this.toolbar.update(); this.tools.update(); this.updateStatus(); this.scheduleAutosave(); if (this.autosave && ed.doc.dirty) this.tips.show('autosave'); });
     ed.on('textmode', (on) => { this.toolbar.update(); if (!on) this.scheduleAutosave(); });
     ed.on('geometry', () => this.inspector.updateGeometry());
     ed.on('message', (m) => this.setMessage(m.text, m.kind === 'error' ? 'error' : 'info'));
     ed.onTextKey = (ev) => this.handleTextKey(ev);
     // Keyboard shortcuts also arrive from inside the iframe (when it has focus).
     ed.stage.keyHandler = (ev) => { if (!ed.textSession) this.handleKey(ev); };
+    ed.stage.on('resize', () => this.neighbours.update());
     ed.stage.on('ready', () => {
       ed.stage.doc.addEventListener('paste', (ev) => { if (!ed.textSession) this.handlePaste(ev); });
+      ed.stage.doc.addEventListener('keyup', (ev) => { if ((ev as KeyboardEvent).key === ' ') this.root.classList.remove('lec-peek'); });
       ed.stage.doc.addEventListener('selectionchange', () => { if (ed.textSession) this.toolbar.update(); });
     });
   }
 
   private wireGlobalEvents(): void {
+    // A click on the background — anywhere on the canvas that is not the slide,
+    // an object or a piece of furniture — switches between the light and dark room.
+    this.els.center.addEventListener('click', (ev) => {
+      if (ev.detail > 1) return; // the second click of a double-click must not undo the first
+      const t = ev.target as HTMLElement | null;
+      if (t?.closest('.lec-neighbour, .lec-quietbar, .lec-tools, .lec-panels, .lec-map, .lec-banner, .lec-modal-backdrop')) return;
+      if (this.editor.textSession || !this.editor.ready) return;
+      if (this.editor.onSlide(ev.clientX, ev.clientY)) return;
+      this.toggleDark();
+      this.tips.show('room');
+    });
+    this.els.center.addEventListener('pointermove', (ev) => { this.editor.pointer = { x: ev.clientX, y: ev.clientY }; });
     window.addEventListener('keydown', (ev) => this.handleKey(ev));
+    const unpeek = () => this.root.classList.remove('lec-peek');
+    window.addEventListener('keyup', (ev) => { if (ev.key === ' ') unpeek(); });
+    window.addEventListener('blur', unpeek);
     window.addEventListener('paste', (ev) => this.handlePaste(ev));
-    window.addEventListener('resize', () => { this.setZoom(this.zoom); this.navigator.fitThumbs(); });
+    window.addEventListener('resize', () => { this.setZoom(this.zoom); this.navigator.fitThumbs(); this.compass.render(); this.map.fit(); this.neighbours.update(); });
     window.addEventListener('beforeunload', (ev) => {
       if (this.editor.ready && this.editor.doc.dirty && this.workspace?.kind !== 'memory') { ev.preventDefault(); ev.returnValue = ''; }
     });
@@ -758,7 +876,7 @@ export class App {
     const navFocused = this.els.navigator.contains(target);
     const stop = () => { ev.preventDefault(); ev.stopPropagation(); };
 
-    if (key === 'Escape') { stop(); closeMenus(); if (this.panels.visible) this.panels.hide(); else if (ed.selection().length) ed.clearSelection(); return; }
+    if (key === 'Escape') { stop(); closeMenus(); this.tips.dismiss(); if (this.map.visible) this.map.hide(); else if (this.panels.visible) this.panels.hide(); else if (ed.selection().length) ed.clearSelection(); return; }
     if (mod && lower === 'z') { stop(); if (ev.shiftKey) ed.redo(); else ed.undo(); return; }
     if (mod && lower === 'y') { stop(); ed.redo(); return; }
     if (mod && ev.shiftKey && lower === 'n') { stop(); this.showNewSlideMenu({ x: window.innerWidth / 2, y: 80 }); return; }
@@ -791,7 +909,15 @@ export class App {
       // Type-to-edit: a printable key with one text object selected starts editing and replaces its text.
       if (hasSel && key.length === 1 && ed.typeIntoSelection(key)) { stop(); return; }
       if (!hasSel) {
-        if (lower === 'n') { stop(); ed.insertElement('ainote', { edit: true }); return; }
+        if (lower === 'n') {
+          stop();
+          const p = ed.pointer;
+          if (!(p && ed.insertNoteAt(p.x, p.y))) ed.insertElement('ainote', { edit: true });
+          return;
+        }
+        if (lower === 'm') { stop(); this.map.toggle(); return; }
+        if (lower === 'q') { stop(); this.toggleQuiet(); return; }
+        if (key === ' ') { stop(); this.root.classList.add('lec-peek'); return; }
         if (key === '+' || key === '=') { stop(); this.zoomBy(1); return; }
         if (key === '-') { stop(); this.zoomBy(-1); return; }
         if (key === '0') { stop(); this.setZoom(1); return; }

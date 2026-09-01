@@ -81,6 +81,8 @@ export class Stage {
   /** Plain decks: logical viewport size. */
   private logical = { width: 1280, height: 720 };
   private frameK = 1;
+  /** The deck page's own background, moved onto the slide canvas. */
+  private paper: { color: string; image: string; size: string; position: string; repeat: string } | null = null;
   private zoom = 1;
   ready = false;
 
@@ -152,10 +154,12 @@ export class Stage {
     this.reconcile();
     this.doc.documentElement.classList.add('lec-editing');
     this.injectEditingStyles();
+    this.paintSlideCanvas();
     this.installGuards();
 
     if (this.reveal) {
       this.reveal.on('slidechanged', () => {
+        this.syncBackgroundsBox();
         this.syncCurrentFromReveal();
         this.showAllFragments();
         this.emit('slidechanged', this._current);
@@ -163,7 +167,7 @@ export class Stage {
     } else {
       this.win.addEventListener('hashchange', () => this.applyVisibility());
     }
-    this.resizeObserver = new ResizeObserver(() => { this.fit(this.zoom); this.reveal?.layout(); this.emit('resize', undefined); });
+    this.resizeObserver = new ResizeObserver(() => { this.fit(this.zoom); this.reveal?.layout(); this.syncBackgroundsBox(); this.emit('resize', undefined); });
     this.resizeObserver.observe(this.container);
     this.ready = true;
     if (this.reveal) this.syncCurrentFromReveal(); else this.applyVisibility();
@@ -208,6 +212,17 @@ export class Stage {
     const style = this.doc.createElement('style');
     style.id = 'lec-editing-styles';
     style.textContent = `
+      /* The deck's colour belongs to the slide, not to the room around it: the
+         page goes transparent so the editor's own background shows through, and
+         what the page was painting moves onto the slide canvas itself. */
+      /* An iframe paints its own white canvas even when its document is transparent,
+         so the room's colour is set inside it rather than shown through it. */
+      .lec-paper, .lec-paper body, .lec-paper .reveal, .lec-paper .reveal-viewport {
+        background: var(--lec-room, transparent) !important;
+      }
+      /* reveal paints a slide's own background across the whole viewport, which in
+         an editor is the whole canvas. Keep it inside the slide. */
+      .lec-paper .reveal .backgrounds { overflow: hidden; }
       /* No transitions while editing: measurements right after a style change must be final. */
       .lec-editing .lec-slides section, .lec-editing .lec-slides section * { transition: none !important; }
       .lec-editing .lec-slides section .fragment { visibility: visible !important; opacity: 1 !important; transform: none !important; }
@@ -234,6 +249,61 @@ export class Stage {
       .lec-editing [data-ai-note="done"][data-ai-reply]::after { content: "✓ AI · " attr(data-ai-reply); display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #9ad197; font-weight: 500; color: #2f7d3a; }
     `;
     this.doc.head.appendChild(style);
+  }
+
+  /**
+   * Moves the deck's page background onto the slide canvas and keeps reveal's
+   * per-slide backgrounds inside it, so the editor's canvas is one flat colour
+   * of its own and the deck's colour appears only where a slide is.
+   */
+  private paintSlideCanvas(): void {
+    if (this.kind !== 'reveal') return;
+    const source = this.doc.querySelector('.reveal-viewport') ?? this.doc.body;
+    // Read it before the rules below make it transparent. It goes on reveal's
+    // background layer rather than on `.slides`, which sits above that layer and
+    // would hide a slide's own data-background-color.
+    if (source) {
+      const cs = this.win.getComputedStyle(source);
+      const colour = cs.backgroundColor;
+      const image = cs.backgroundImage;
+      this.paper = {
+        color: colour && colour !== 'transparent' && !/rgba\(0, ?0, ?0, ?0\)/.test(colour) ? colour : '',
+        image: image && image !== 'none' ? image : '',
+        size: cs.backgroundSize, position: cs.backgroundPosition, repeat: cs.backgroundRepeat,
+      };
+    }
+    this.doc.documentElement.classList.add('lec-paper');
+    this.syncBackgroundsBox();
+  }
+
+  /** The colour of the room around the slide — the editor's canvas colour. */
+  setRoomColour(colour: string): void {
+    if (!this.ready || this.kind !== 'reveal') return;
+    this.doc.documentElement.style.setProperty('--lec-room', colour);
+  }
+
+  /** Pins reveal's background layer to the slide canvas (it is viewport-sized by default). */
+  private syncBackgroundsBox(): void {
+    if (this.kind !== 'reveal') return;
+    const backgrounds = this.doc.querySelector('.reveal .backgrounds') as HTMLElement | null;
+    if (!backgrounds) return;
+    const r = this.liveRoot.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    backgrounds.style.position = 'absolute';
+    backgrounds.style.left = `${r.left}px`;
+    backgrounds.style.top = `${r.top}px`;
+    backgrounds.style.width = `${r.width}px`;
+    backgrounds.style.height = `${r.height}px`;
+    backgrounds.style.transform = 'none';
+    if (this.paper) {
+      backgrounds.style.backgroundColor = this.paper.color;
+      if (this.paper.image) {
+        backgrounds.style.backgroundImage = this.paper.image;
+        backgrounds.style.backgroundSize = this.paper.size;
+        backgrounds.style.backgroundPosition = this.paper.position;
+        backgrounds.style.backgroundRepeat = this.paper.repeat;
+      }
+    }
   }
 
   /** Keeps the deck's own click/keyboard handlers from navigating while we edit. */

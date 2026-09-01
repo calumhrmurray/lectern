@@ -81,7 +81,8 @@ test.describe('inspector and arrange', () => {
     await page.locator('.lec-btn[data-action="image"]').click();
     const cell = page.locator('.lec-img-cell', { hasText: 'figures/plot.svg' });
     await expect(cell).toBeVisible();
-    await cell.dblclick();
+    await cell.click();
+    await page.keyboard.press('Enter');
     await expect(page.locator('.lec-modal')).toHaveCount(0);
     await page.waitForFunction(() => (window as unknown as { lectern: { editor: { selection: () => Element[] } } }).lectern.editor.selection().length === 1);
     const [sel] = await selectionInfo(page);
@@ -155,23 +156,68 @@ test('double-click on empty canvas creates a note there; an untouched note disap
   expect(out.match(/data-ai-note/g)?.length).toBe(1);
 });
 
-test('a click on a note opens a new comment box; earlier comments stay fixed', async ({ page }) => {
+test('a note lands where you point, even on a slide full of text', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 1); // a heading and a list: no empty space to aim at
+  const onText = await centerOf(page, 'section.present li');
+
+  // Double-click over text leaves a note rather than editing the text.
+  await page.mouse.dblclick(onText.x, onText.y);
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
+  await page.keyboard.type('this line is wrong');
+  await page.keyboard.press('Escape');
+  expect(await serialized(page)).toContain('this line is wrong');
+
+  // So does right-click, somewhere else on the same text.
+  await page.mouse.click(onText.x + 60, onText.y + 24, { button: 'right' });
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
+  await page.keyboard.type('and here');
+  await page.keyboard.press('Escape');
+  const out = await serialized(page);
+  expect(out).toContain('and here');
+  expect(out.match(/data-ai-note/g)?.length).toBe(2);
+
+  // Text is still editable: select it and press Enter.
+  const heading = await centerOf(page, 'section.present h2');
+  await page.mouse.click(heading.x, heading.y);
+  await page.keyboard.press('Enter');
+  await expect(frame.locator('section.present h2[contenteditable="true"]')).toBeVisible();
+});
+
+test('a note the assistant has not answered is still editable', async ({ page }) => {
   const frame = await openDeck(page);
   await goToSlide(page, 1);
   await page.locator('.lec-btn[data-action="ainote"]').click();
-  await page.keyboard.type('first request');
+  await page.keyboard.type('draw a whale here');
   await page.keyboard.press('Escape');
   const note = await centerOf(page, 'section.present [data-ai-note]');
+  // Clicking opens what you wrote, with the caret at the end — not a second comment.
   await page.mouse.click(note.x, note.y);
-  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toHaveCount(1);
-  await page.keyboard.type('and a second one');
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toHaveText('draw a whale here');
+  await page.keyboard.type(', facing left');
+  await page.keyboard.press('Escape');
+  let out = await serialized(page);
+  expect(out).toContain('<p data-by="author">draw a whale here, facing left</p>');
+  expect(out.match(/<p data-by="author">/g)?.length).toBe(1);
+  // Emptying it peels the comment off again (and the note with it, being the last one).
+  await page.mouse.click(note.x, note.y);
+  await page.keyboard.press('Meta+a');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Escape');
+  expect(await serialized(page)).not.toContain('data-ai-note');
+});
+
+test('once the assistant has replied, a click adds to the thread instead', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 1);
+  await page.evaluate(() => window.lectern.editor.addSlide('<section><h2>Notes</h2><div hidden data-ai-note="" style="position:absolute;left:200px;top:200px;width:300px;"><p data-by="author">draw a whale here</p><p data-by="ai">Added a whale silhouette.</p></div></section>'));
+  const c = await centerOf(page, 'section.present [data-ai-note]');
+  await page.mouse.click(c.x, c.y);
+  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toHaveText('');
+  await page.keyboard.type('make it bigger');
   await page.keyboard.press('Escape');
   const out = await serialized(page);
-  expect(out).toMatch(/<p data-by="author">first request<\/p>\s*<p data-by="author">and a second one<\/p>/);
-  // clicking and leaving the box empty adds nothing
-  await page.mouse.click(note.x, note.y);
-  await page.keyboard.press('Escape');
-  expect((await serialized(page)).match(/<p data-by="author">/g)?.length).toBe(2);
+  expect(out).toMatch(/<p data-by="author">draw a whale here<\/p>\s*<p data-by="ai">Added a whale silhouette\.<\/p>\s*<p data-by="author">make it bigger<\/p>/);
 });
 
 test('done notes are green, a follow-up makes them pending again, double-click dismisses', async ({ page }) => {

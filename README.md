@@ -41,11 +41,20 @@ class vocabulary, the notes protocol and the editing rules:
 - **Canvas editing** — click to select, drag to move with snapping guides (slide edges, centre
   lines, other objects' edges), 8-handle resize (images keep their aspect ratio), rotate,
   marquee and shift-click multi-select, arrow-key nudging, align / distribute / z-order.
-- **Text in place** — double-click any text; bold/italic/underline/lists/links, `Tab` to indent
+- **Text in place** — click any text and press `⏎` (or just type over it); bold/italic/underline/lists/links, `Tab` to indent
   list items, LaTeX kept as source and re-typeset by the deck's KaTeX/MathJax on commit.
 - **Layout-aware** — elements laid out by your CSS are *nudged* (`position: relative`) so
   nothing else jumps; new objects are free-floating (`position: absolute`). Switch either way
   from the inspector.
+- **The quiet room (the default view) and the map** — the slide gets the whole window on an off-white
+  background (click the background for the dark room, click again to come back), with the neighbouring
+  slides showing at the edges: the previous and next along the sides, and a vertical stack's slides above
+  and below, on the axis the arrow keys would actually take. Along the bottom — in every view, not just this one — a *compass* (one dot per
+  slide, a descender under any slide with a vertical stack, a seam between sections) and glyphs for the
+  map, present and notes for AI; on the right, the page number and one button that summons the tools. `M` opens the map — the deck laid out the way reveal
+  walks it, sections left to right and stacks downward — where you add and title slides, reorder them,
+  name sections (`data-section`) and drop one slide under another to make it a sub-slide. `Q` brings the
+  toolbar, navigator and inspector back for good; hold `Space` for a look at them.
 - **Insert** — text, headings, bullet lists, images (copied into the deck folder), shapes
   (rectangle, ellipse, outline, line, arrow, callout), tables, code, equations, web embeds.
 - **Slides** — thumbnails rendered with the deck's own stylesheet, drag to reorder, add from
@@ -143,11 +152,11 @@ your own.
 
 ## Keyboard
 
-`⌘S` save · `⌘Z / ⌘⇧Z` undo/redo · double-click edit text · `Esc` stop editing / deselect ·
+`⌘S` save · `⌘Z / ⌘⇧Z` undo/redo · double-click / right-click leave a note for AI · `⏎` edit selected text · `Esc` stop editing / deselect ·
 `⌘C/X/V/D` copy/cut/paste/duplicate · `⌫` delete · arrows nudge (`⇧` 10 px) ·
 `⇧`-drag constrain / keep aspect · `⌥`-drag ignore snapping · `PgUp/PgDn` slides ·
 `⌘⇧N` new slide · `⌘]`/`⌘[` forward/backward · typing with a text object selected edits it ·
-`N` new note for AI · `+ − 0` zoom · `?` full list.
+`N` note for AI at the pointer · `M` map · `Q` quiet mode · `Space` (hold) show the chrome · `+ − 0` zoom · `?` full list.
 
 ## Development
 

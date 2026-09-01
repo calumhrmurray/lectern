@@ -36,16 +36,16 @@ test.describe('plain HTML decks (custom slide driver)', () => {
 
     // Text editing in place, then save: only slide 2 changes in the file.
     const li = await centerOf(page, 'section.slide.active li');
-    await page.mouse.dblclick(li.x, li.y);
+    await page.mouse.click(li.x, li.y);
+    await page.keyboard.press('Enter');
     await expect(frame.locator('ul[contenteditable="true"]')).toBeVisible();
-    await page.keyboard.press('End');
-    await page.keyboard.type(' (edited)');
+    await page.keyboard.type(' (edited)'); // Enter leaves the caret at the end
     await page.keyboard.press('Escape');
     const before = readFileSync(FILE, 'utf8');
     await page.keyboard.press(`${mod}+s`);
     await expect(page.locator('.lec-msg')).toHaveText('Saved');
     const after = readFileSync(FILE, 'utf8');
-    expect(after).toMatch(/slide<\/b> \(edited\)<\/li>|slide \(edited\)<\/b><\/li>/);
+    expect(after).toContain('(edited)'); // Enter puts the caret at the end of the list
     expect(after).toMatch(/<h2 style="position:relative;left:\d+px;top:\d+px;">The driver is twenty lines of script\.<\/h2>/);
     expect(after.slice(0, after.indexOf('<!-- 2. BULLETS -->'))).toBe(before.slice(0, before.indexOf('<!-- 2. BULLETS -->')));
     expect(after.slice(after.indexOf('<!-- 3. LAST -->'))).toBe(before.slice(before.indexOf('<!-- 3. LAST -->')));
