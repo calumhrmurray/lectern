@@ -177,6 +177,9 @@ export function starterDeckHtml(opts: { title: string; author?: string; lang?: s
   const r = opts.revealPath.replace(/\/$/, '');
   const theme = typeof opts.theme === 'string' ? themeById(opts.theme) : opts.theme ?? themeById('paper');
   const prefix = theme.bodyPrefix ? '\n  ' + theme.bodyPrefix : '';
+  // With a local reveal, KaTeX sits beside it and the deck needs no internet access.
+  // With --no-reveal the deck is already loading reveal from a CDN; leave the plugin's default.
+  const katexLocal = /^[a-z]+:\/\//i.test(r) ? '' : `      katex: { local: '${r}/katex' },\n`;
   const decoration = theme.id === 'aquarelle'
     ? '\n        <div class="wash deep" style="left:-120px;top:40px;width:520px;height:400px;"></div>\n        <div class="wash light" style="left:800px;top:-60px;width:560px;height:480px;"></div>'
     : '';
@@ -224,7 +227,7 @@ export function starterDeckHtml(opts: { title: string; author?: string; lang?: s
       width: ${opts.width}, height: ${opts.height}, margin: 0.04,
       center: false, hash: true, transition: 'none',
       controls: false, progress: true, slideNumber: 'c/t',
-      plugins: [ RevealMath.KaTeX, RevealNotes ],
+${katexLocal}      plugins: [ RevealMath.KaTeX, RevealNotes ],
     });
   </script>
 </body>

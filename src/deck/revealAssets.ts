@@ -10,6 +10,10 @@ import notesJs from '../../public/reveal/plugin/notes/notes.js?raw';
 import mathJs from '../../public/reveal/plugin/math/math.js?raw';
 import zoomJs from '../../public/reveal/plugin/zoom/zoom.js?raw';
 import license from '../../public/reveal/LICENSE?raw';
+import katexJs from '../../public/reveal/katex/dist/katex.min.js?raw';
+import katexCss from '../../public/reveal/katex/dist/katex.embedded.css?raw';
+import katexAutoRender from '../../public/reveal/katex/dist/contrib/auto-render.min.js?raw';
+import katexLicense from '../../public/reveal/katex/LICENSE?raw';
 
 export const REVEAL_EMBEDDED: Record<string, string> = {
   'dist/reveal.js': revealJs,
@@ -19,4 +23,11 @@ export const REVEAL_EMBEDDED: Record<string, string> = {
   'plugin/math/math.js': mathJs,
   'plugin/zoom/zoom.js': zoomJs,
   'LICENSE': license,
+  // KaTeX, so a deck written from Lectern.html typesets its maths offline. The
+  // stylesheet is the one with the fonts inlined (see scripts/copy-reveal.js);
+  // it is written under the name the math plugin asks for.
+  'katex/dist/katex.min.js': katexJs,
+  'katex/dist/katex.min.css': katexCss,
+  'katex/dist/contrib/auto-render.min.js': katexAutoRender,
+  'katex/LICENSE': katexLicense,
 };

@@ -105,6 +105,7 @@ changes the `<html lang>`, `--theme` the stylesheet):
       width: 1280, height: 720, margin: 0.04,
       center: false, hash: true, transition: 'none',
       controls: false, progress: true, slideNumber: 'c/t',
+      katex: { local: 'reveal/katex' },
       plugins: [ RevealMath.KaTeX, RevealNotes ],
     });
   </script>
