@@ -6,7 +6,7 @@ import { chromium } from '@playwright/test';
 
 const [folder, deck, out = 'shot.png', slide = '0', clickSel = ''] = process.argv.slice(2);
 if (!folder || !deck) { console.error('usage: node scripts/shot.mjs <folder> <deck.html> <out.png> [slide] [selector]'); process.exit(1); }
-const port = 8799;
+const port = Number(process.env.LECTERN_SHOT_PORT ?? 8799);
 const server = spawn('node', ['cli/index.js', folder, '--port', String(port), '--no-open'], { stdio: 'inherit' });
 await new Promise((r) => setTimeout(r, 800));
 try {

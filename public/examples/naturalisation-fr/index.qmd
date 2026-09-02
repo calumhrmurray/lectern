@@ -1,0 +1,661 @@
+---
+pagetitle: "Préparer l'entretien de naturalisation"
+lang: fr
+format:
+  revealjs:
+    width: 1280
+    height: 720
+    css: "theme.css"
+---
+
+<!-- 1 · titre -->
+# []{.tricolore}Préparer l'entretien de naturalisation. {.title-slide data-ref="Code civil art. 21-24 ; décret 93-1362 art. 41"}
+
+::: {.sub}
+L'« entretien d'assimilation » de la naturalisation par décret
+:::
+
+::: {.meta}
+**Cadre juridique · déroulement · connaissances attendues · conseils**\
+[Sources sur chaque diapositive (attribut `data-ref` et notes de l'orateur, touche S). État du droit : août 2026 — vérifiez les textes en vigueur.]{.soft}
+:::
+
+::: {.notes}
+Sources générales : Code civil, articles 21-15 à 21-28 (Légifrance) ; décret n° 93-1362 du 30 décembre 1993 relatif aux déclarations de nationalité, aux décisions de naturalisation, de réintégration, de perte, de déchéance et de retrait de la nationalité française, notamment l'article 41 (entretien) ; « Livret du citoyen », ministère de l'Intérieur ; fiche service-public.fr « Naturalisation » (F2213). Les conditions de naturalisation évoluent (loi n° 2024-42 du 26 janvier 2024 et ses décrets d'application) : toujours confronter ces diapositives aux textes du jour.
+:::
+
+<!-- 2 · qu'est-ce que l'entretien -->
+## Qu'est-ce que l'entretien ? {data-ref="Code civil art. 21-24 ; décret 93-1362 art. 41 ; décret 2012-127 (Charte)"}
+
+::: {.kicker}
+Le cadre
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- Un entretien individuel avec un agent de la **préfecture** (plateforme de naturalisation), prévu par l'article 41 du décret du 30 décembre 1993.
+- Son objet : vérifier l'**assimilation à la communauté française** exigée par l'article 21-24 du Code civil.
+- Il porte sur : votre **parcours**, votre connaissance de la **langue**, de l'**histoire**, de la **culture** et de la **société** françaises, des **droits et devoirs** du citoyen, et votre **adhésion aux principes et valeurs** de la République.
+- À l'issue, vous signez la **Charte des droits et devoirs du citoyen français** (décret n° 2012-127 du 30 janvier 2012).
+:::
+
+::: {.column width="50%"}
+::: {.card}
+### Ce qu'il n'est pas
+
+Ce n'est ni un examen scolaire ni un interrogatoire : l'agent rédige un compte rendu d'entretien qui est transmis, avec le dossier, au ministère chargé des naturalisations, qui prend la décision.
+:::
+
+<div class="warn" style="margin-top:14px;">Depuis la loi du 26 janvier 2024, l'appréciation de l'assimilation s'appuie aussi sur un <strong>examen civique</strong> et sur un niveau de langue relevé (voir diapositive suivante). Les modalités exactes sont fixées par décret : consultez service-public.fr.</div>
+:::
+:::
+
+::: {.notes}
+Code civil, art. 21-24 : « Nul ne peut être naturalisé s'il ne justifie de son assimilation à la communauté française, notamment par une connaissance suffisante, selon sa condition, de la langue, de l'histoire, de la culture et de la société françaises, dont le niveau et les modalités d'évaluation sont fixés par décret en Conseil d'État, et des droits et devoirs conférés par la nationalité française ainsi que par l'adhésion aux principes et aux valeurs essentiels de la République. À l'issue du contrôle de son assimilation, l'intéressé signe la charte des droits et devoirs du citoyen français. » Décret n° 93-1362, art. 41 : l'agent chargé de recevoir la demande vérifie l'assimilation au cours d'un entretien individuel et en dresse un compte rendu. Charte : décret n° 2012-127 du 30 janvier 2012 approuvant la charte des droits et devoirs du citoyen français. Loi n° 2024-42 du 26 janvier 2024 pour contrôler l'immigration, améliorer l'intégration (JORF du 27 janvier 2024).
+:::
+
+<!-- 3 · conditions -->
+## Les conditions de la naturalisation par décret. {data-ref="Code civil art. 21-16 à 21-27 ; loi 2024-42 ; décret 2019-1507 ; service-public.fr F2213"}
+
+::: {.kicker}
+Rappel
+:::
+
+| Condition | Règle | Texte |
+| --- | --- | --- |
+| Âge | Être majeur (18 ans) | C. civ. art. 21-22 |
+| Résidence | Résider en France au moment de la signature du décret et y avoir sa résidence habituelle depuis **5 ans** (2 ans après deux années d'études supérieures réussies en France ; dispenses dans certains cas) | C. civ. art. 21-16 à 21-20 |
+| Langue | Niveau **B2** (oral et écrit) du cadre européen depuis le 1^er^ janvier 2026 ; B1 auparavant (depuis le 1^er^ avril 2020) | Loi 2024-42 ; décret 2019-1507 |
+| Connaissances | Histoire, culture, société, droits et devoirs — vérifiées à l'entretien et, depuis 2026, par un examen civique | C. civ. art. 21-24 |
+| Moralité | Bonnes vie et mœurs ; absence de condamnations incompatibles (casier judiciaire) | C. civ. art. 21-23, 21-27 |
+| Insertion | Ressources stables et suffisantes, insertion professionnelle appréciées par l'administration | Pratique administrative (circulaires) |
+| Formalités | Dépôt en ligne (ANEF), timbre fiscal de **55 €** | service-public.fr |
+
+::: {.notes}
+Résidence : art. 21-17 (5 ans), 21-18 (réduction à 2 ans : études supérieures, services importants), 21-19 et 21-20 (dispenses de stage, notamment pour les ressortissants d'États dont la langue officielle ou l'une des langues officielles est le français, sous conditions). Langue : décret n° 2019-1507 du 30 décembre 2019 (niveau B1 oral et écrit à compter du 1er avril 2020) ; la loi n° 2024-42 relève le niveau à B2 pour la naturalisation, avec entrée en vigueur au 1er janvier 2026 fixée par décret d'application. Les diplômes et tests acceptés (TCF, TEF, DELF/DALF…) sont listés sur service-public.fr. Le montant du droit de timbre (55 €) et la procédure dématérialisée sont ceux indiqués par service-public.fr (fiche F2213) à la date de mise à jour de ce diaporama ; vérifier.
+:::
+
+<!-- 4 · déroulement -->
+## Comment cela se passe, avant et après l'entretien. {data-ref="Code civil art. 21-25-1 ; décret 93-1362 art. 44 et s. ; service-public.fr F2213"}
+
+::: {.kicker}
+La procédure
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+### Avant
+
+- Dépôt du dossier complet ; récépissé de dépôt.
+- Convocation à l'entretien par la préfecture (parfois plusieurs mois après).
+- Apportez les **originaux** des pièces du dossier et une pièce d'identité.
+
+### Pendant
+
+- De 20 minutes à une heure, seul avec l'agent.
+- Questions sur votre parcours, puis sur la France ; signature de la Charte.
+:::
+
+::: {.column width="50%"}
+### Après
+
+- Délai maximal de réponse : **18 mois** à compter du récépissé (**12 mois** si vous résidez en France depuis au moins 10 ans) — C. civ. art. 21-25-1.
+- Issues possibles : **décret de naturalisation** publié au Journal officiel ; **ajournement** (motivé, avec un délai) ; **rejet** ; irrecevabilité.
+- Recours : recours administratif préalable obligatoire auprès du ministre dans les **2 mois**, puis tribunal administratif de **Nantes**.
+:::
+:::
+
+::: {.cite}
+Les délais de traitement effectifs varient fortement selon les préfectures.
+:::
+
+::: {.notes}
+Code civil, art. 21-25-1 : « La réponse de l'autorité publique à une demande d'acquisition de la nationalité française par naturalisation doit intervenir au plus tard dix-huit mois à compter de la date de délivrance du récépissé constatant la remise de toutes les pièces nécessaires… Le délai est réduit à douze mois lorsque l'étranger… justifie avoir en France sa résidence habituelle depuis une période d'au moins dix ans. » Décret n° 93-1362, art. 44 à 49 (décision, ajournement, rejet, recours). Le recours administratif préalable obligatoire (RAPO) devant le ministre chargé des naturalisations est exercé dans les deux mois ; le tribunal administratif de Nantes est compétent (art. 45 et s. du décret ; R. 312-18 CJA).
+:::
+
+<!-- 5 · parcours personnel (+ réponses, en dessous) -->
+::: {.stack data-ref="Livret du citoyen ; pratique des plateformes de naturalisation"}
+
+## Votre parcours : les questions que l'on vous posera presque sûrement. {data-ref="Livret du citoyen ; pratique des plateformes de naturalisation"}
+
+::: {.kicker}
+Première partie de l'entretien
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- [Quand et pourquoi êtes-vous venu·e en France ?]{.q}
+- [Que faites-vous aujourd'hui ? Où avez-vous travaillé, étudié ?]{.q}
+- [Où vivez-vous, avec qui ? Votre famille est-elle en France ?]{.q}
+- [Pourquoi demandez-vous la nationalité française ?]{.q}
+- [Quels liens avez-vous avec votre pays d'origine ?]{.q}
+- [Êtes-vous engagé·e dans une association, une activité locale ?]{.q}
+:::
+
+::: {.column width="50%"}
+::: {.card}
+### Conseils
+
+Racontez un parcours **cohérent avec votre dossier** (dates, employeurs, adresses). Préparez une réponse sincère et concrète sur vos motivations : la France comme lieu de vie, de travail, de famille, d'avenir — plutôt qu'un avantage pratique. Parlez de vos impôts, de votre logement, de votre insertion : ce sont des critères d'appréciation.
+:::
+:::
+:::
+
+::: {.notes}
+Le contenu des questions personnelles n'est pas fixé par un texte ; il découle de l'objet de l'entretien (art. 21-24 C. civ. : assimilation « selon sa condition ») et de la pratique des plateformes de naturalisation. Le « Livret du citoyen » du ministère de l'Intérieur indique les thèmes de connaissances attendus.
+:::
+
+## Deux phrases par question : le fait, puis l'exemple. {data-ref="Livret du citoyen ; pratique des plateformes de naturalisation"}
+
+::: {.kicker}
+Première partie · comment répondre
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- [Quand et pourquoi êtes-vous venu·e en France ?]{.q}\
+Une date, un motif, une suite : « Arrivé en 2016 pour mes études, installé à Paris depuis 2019. » Les dates doivent être celles du dossier.
+- [Que faites-vous aujourd'hui ? Où avez-vous travaillé, étudié ?]{.q}\
+Métier, employeur, ancienneté, puis le parcours en une phrase. Ayez vos trois derniers employeurs en tête.
+- [Où vivez-vous, avec qui ?]{.q}\
+L'adresse, avec qui vous vivez, qui d'autre est en France : « Dans le 3e, avec ma compagne et notre fils, scolarisé ici. »
+:::
+
+::: {.column width="50%"}
+- [Pourquoi demandez-vous la nationalité française ?]{.q}\
+La France comme lieu de vie, non comme avantage : « J'y travaille, j'y paie mes impôts, mes enfants y grandissent ; je veux voter. »
+- [Quels liens avec votre pays d'origine ?]{.q}\
+Dire la vérité sans opposer les deux pays : « Ma mère y vit, j'y retourne chaque année ; mon avenir est ici. » La double nationalité est admise.
+- [Un engagement, une activité locale ?]{.q}\
+Un exemple concret et vérifiable : bénévolat, parent délégué, club sportif. Si vous n'en avez pas, dites-le simplement.
+:::
+:::
+
+::: {.cite}
+Ces réponses sont des formes à adapter : ce qui est apprécié, c'est la cohérence avec votre dossier, pas une récitation.
+:::
+
+::: {.notes}
+Réponses modèles : elles n'ont rien d'officiel. L'agent vérifie la cohérence entre le récit et les pièces du dossier (dates d'entrée, employeurs, adresses, situation familiale).
+:::
+
+<aside class="notes">
+          Cette diapositive a une suite en dessous (flèche bas) : les réponses modèles.
+        </aside>
+
+:::
+
+<!-- 6 · symboles -->
+## Les symboles de la République. {data-ref="Constitution du 4 octobre 1958, art. 2 ; loi du 6 juillet 1880 ; Livret du citoyen"}
+
+::: {.kicker}
+Connaissances · les symboles
+:::
+
+| Symbole | Ce qu'il faut savoir |
+| --- | --- |
+| **Le drapeau** bleu, blanc, rouge | Emblème national (Constitution, art. 2). Les couleurs de Paris (bleu et rouge) associées au blanc royal en 1789 ; forme actuelle fixée en 1794. |
+| **La Marseillaise** | Hymne national (art. 2). Composée à Strasbourg en 1792 par Rouget de Lisle ; hymne national en 1795, puis définitivement en 1879. |
+| **La devise** | « Liberté, Égalité, Fraternité » (art. 2) ; héritée de la Révolution, inscrite dans les constitutions de 1946 et 1958. |
+| **Le 14 juillet** | Fête nationale depuis la loi du 6 juillet 1880 ; commémore la prise de la Bastille (1789) et la fête de la Fédération (1790). |
+| **Marianne** | Figure allégorique de la République, coiffée du bonnet phrygien ; présente dans les mairies, sur les timbres et les pièces. |
+| **La langue** | « La langue de la République est le français » (art. 2, depuis 1992). |
+| **Le sceau, le coq** | Le sceau de l'État est utilisé pour les textes solennels ; le coq gaulois est un symbole populaire mais non officiel. |
+
+::: {.notes}
+Constitution du 4 octobre 1958, article 2 : langue (loi constitutionnelle du 25 juin 1992), emblème, hymne, devise, principe « gouvernement du peuple, par le peuple et pour le peuple ». Loi du 6 juillet 1880 établissant le 14 juillet comme fête nationale annuelle. Marseillaise : décret du 14 juillet 1795 (26 messidor an III) la déclarant chant national ; loi du 14 février 1879 la rétablissant comme hymne national. Drapeau : décret de la Convention du 15 février 1794 (27 pluviôse an II) fixant le pavillon national. Présentation officielle des symboles : elysee.fr (« Les symboles de la République ») et vie-publique.fr.
+:::
+
+<!-- 7 · valeurs -->
+## Les principes et valeurs essentiels de la République. {data-ref="Constitution art. 1er ; loi du 9 décembre 1905 ; Charte des droits et devoirs (décret 2012-127)"}
+
+::: {.kicker}
+Connaissances · les valeurs
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- **Liberté** : de conscience, d'expression, de religion, d'association, de circulation — dans les limites de la loi.
+- **Égalité** : devant la loi, sans distinction d'origine, de race ou de religion (Constitution, art. 1^er^) ; **égalité entre les femmes et les hommes**.
+- **Fraternité** : solidarité nationale (Sécurité sociale, services publics, impôt).
+- **Laïcité** : loi du 9 décembre 1905 — la République garantit le libre exercice des cultes et ne reconnaît ni ne subventionne aucun culte ; l'État est neutre, chacun croit ou ne croit pas.
+:::
+
+::: {.column width="50%"}
+::: {.card}
+### La Charte que vous signerez
+
+Elle rappelle les principes de la République (indivisible, laïque, démocratique et sociale), les droits (libertés, égalité, protection sociale) et les devoirs (respecter les lois, contribuer aux charges publiques, participer à la défense, la scolarité des enfants). Sachez expliquer ces mots avec vos propres exemples.
+:::
+:::
+:::
+
+::: {.notes}
+Constitution, art. 1er : « La France est une République indivisible, laïque, démocratique et sociale. Elle assure l'égalité devant la loi de tous les citoyens sans distinction d'origine, de race ou de religion. Elle respecte toutes les croyances… La loi favorise l'égal accès des femmes et des hommes aux mandats électoraux et fonctions électives… » Loi du 9 décembre 1905 concernant la séparation des Églises et de l'État, art. 1er et 2. Charte des droits et devoirs du citoyen français, annexée au décret n° 2012-127 du 30 janvier 2012.
+:::
+
+<!-- 8 · institutions -->
+## Qui fait quoi dans la V^e^ République ? {data-ref="Constitution de 1958 (art. 6, 8, 24, 56) ; vie-publique.fr"}
+
+::: {.kicker}
+Connaissances · les institutions
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- **Le Président de la République** : élu pour **5 ans** au suffrage universel direct (depuis le référendum de 1962 ; quinquennat depuis 2000 ; deux mandats consécutifs au plus depuis 2008). Chef de l'État, chef des armées, nomme le Premier ministre.
+- **Le Gouvernement** : Premier ministre et ministres ; détermine et conduit la politique de la Nation ; responsable devant l'Assemblée nationale.
+- **Le Parlement** vote la loi : **Assemblée nationale** (577 députés, 5 ans, suffrage direct) et **Sénat** (348 sénateurs, 6 ans, suffrage indirect, renouvelé par moitié tous les 3 ans).
+:::
+
+::: {.column width="50%"}
+- **Le Conseil constitutionnel** : 9 membres nommés pour 9 ans ; contrôle la conformité des lois à la Constitution.
+- **La justice** : indépendante ; ordre judiciaire (Cour de cassation au sommet) et ordre administratif (Conseil d'État).
+- **Le Conseil économique, social et environnemental**, le Défenseur des droits : institutions de conseil et de protection.
+- Séparation des pouvoirs : exécutif, législatif, judiciaire.
+:::
+:::
+
+::: {.notes}
+Constitution : art. 6 (mandat de cinq ans, deux mandats consécutifs — loi constitutionnelle du 23 juillet 2008), art. 7 (élection au suffrage universel direct, issu de la loi constitutionnelle du 6 novembre 1962), art. 8 (nomination du Premier ministre), art. 20 (Gouvernement), art. 24 (Parlement : 577 députés au plus, 348 sénateurs au plus — plafonds inscrits en 2008, effectifs actuels 577 et 348), art. 56 (Conseil constitutionnel), art. 64 (autorité judiciaire). Quinquennat : loi constitutionnelle du 2 octobre 2000 après le référendum du 24 septembre 2000.
+:::
+
+<!-- 9 · territoire -->
+## L'organisation territoriale et quelques repères. {data-ref="INSEE ; loi du 16 janvier 2015 ; vie-publique.fr"}
+
+::: {.kicker}
+Connaissances · le territoire
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- Environ **35 000 communes**, dirigées par un maire élu par le conseil municipal ; élections municipales tous les 6 ans.
+- **101 départements** (96 en métropole, 5 outre-mer : Guadeloupe, Martinique, Guyane, La Réunion, Mayotte), avec un conseil départemental.
+- **18 régions** : 13 en métropole depuis le 1^er^ janvier 2016 (loi du 16 janvier 2015), et 5 régions d'outre-mer.
+- Des collectivités d'outre-mer à statut particulier (Polynésie française, Nouvelle-Calédonie, Saint-Pierre-et-Miquelon…).
+:::
+
+::: {.column width="50%"}
+- Le préfet représente l'État dans le département et la région.
+- Population : environ **68,6 millions** d'habitants au 1^er^ janvier 2025 (INSEE).
+- Capitale : Paris. Fleuves : Loire, Seine, Rhône, Garonne, Rhin (frontalier).
+- Pays frontaliers en Europe : Belgique, Luxembourg, Allemagne, Suisse, Italie, Monaco, Espagne, Andorre (et le Brésil, le Suriname en Guyane).
+:::
+:::
+
+<svg viewBox="0 0 262 257" width="188" height="184" style="position:absolute;left:534px;top:452px;width:202px;height:184px;" role="img" aria-label="Carte de la France métropolitaine et de la Corse, Paris marqué">
+  <path d="M130.2 3.0L120.9 5.1L116.6 11.1L115.6 24.6L107.0 32.4L89.8 43.0L77.1 44.3L68.1 46.7L59.0 38.1L59.2 48.0L59.2 59.9L51.7 64.9L33.2 64.1L16.6 63.1L7.5 71.6L3.0 80.7L9.6 87.0L27.5 88.3L38.6 94.0L48.3 100.5L49.9 109.1L56.0 120.8L67.3 129.6L69.4 143.7L74.4 152.0L66.9 168.6L64.6 180.6L59.9 199.3L64.6 210.5L74.4 217.0L93.2 219.1L115.6 223.5L127.2 225.6L142.2 224.3L141.5 207.9L152.6 200.9L157.6 197.5L174.6 200.9L183.9 204.0L194.0 208.7L209.0 200.9L217.8 193.6L222.6 191.5L213.1 181.9L211.3 171.5L206.5 162.4L209.5 152.0L210.6 138.2L200.6 131.2L197.9 128.6L209.5 123.4L203.3 111.7L213.1 98.7L223.7 93.5L223.5 79.2L226.5 66.7L229.9 54.7L214.0 50.6L201.8 43.8L192.0 41.5L185.4 35.0L174.3 30.3L163.0 25.9L154.9 20.7L145.1 16.3L133.5 10.3Z" fill="#ebe6d9" stroke="#a34823" stroke-width="1.6" stroke-linejoin="round"></path>
+  <path d="M255.2 211.8L257.0 216.2L258.4 223.5L258.8 235.2L256.1 244.3L252.8 254.2L245.3 249.5L241.7 240.4L240.9 231.3L243.5 222.2L248.9 215.7Z" fill="#ebe6d9" stroke="#a34823" stroke-width="1.6" stroke-linejoin="round"></path>
+  <circle cx="129.9" cy="59.4" r="4" fill="#2b4a8b"></circle>
+  <text x="139" y="63" font-size="13" fill="#5a6070" font-family="-apple-system, BlinkMacSystemFont, sans-serif">Paris</text>
+</svg>
+
+<p class="caption" style="position:absolute;left:454px;top:646px;width:348px;margin:0;">France métropolitaine et Corse ; les 5 régions d'outre-mer ne sont pas représentées.</p>
+
+::: {.notes}
+Loi n° 2015-29 du 16 janvier 2015 relative à la délimitation des régions (13 régions métropolitaines au 1er janvier 2016). Régions d'outre-mer : Guadeloupe, Martinique, Guyane, La Réunion, Mayotte (Mayotte est département et région depuis 2011). Nombre de communes : 34 935 au 1er janvier 2025 selon l'INSEE (Code officiel géographique) — « environ 35 000 ». Population : INSEE, bilan démographique 2024 (68,6 millions au 1er janvier 2025, France entière hors Mayotte : 68,3 ; avec Mayotte 68,6). Chiffre à actualiser chaque janvier.
+:::
+
+<!-- 10 · histoire 1 -->
+## De la Révolution à 1905 : les dates que l'on attend. {data-ref="Livret du citoyen ; Légifrance (textes cités)"}
+
+::: {.kicker}
+Connaissances · l'histoire (1/2)
+:::
+
+| Date | Événement |
+| --- | --- |
+| **14 juillet 1789** | Prise de la Bastille ; début de la Révolution française. |
+| **26 août 1789** | Déclaration des droits de l'homme et du citoyen (art. 1^er^ : « Les hommes naissent et demeurent libres et égaux en droits »). |
+| **1792** | Proclamation de la I^re^ République (21 septembre). |
+| **1804** | Code civil (« Code Napoléon ») ; Napoléon Bonaparte devient empereur. |
+| **1848** | II^e^ République ; suffrage universel masculin ; abolition définitive de l'esclavage (décret du 27 avril 1848, Victor Schœlcher). |
+| **1870** | Proclamation de la III^e^ République (4 septembre). |
+| **1881–1882** | Lois Jules Ferry : école primaire gratuite (1881), obligatoire et laïque (1882). |
+| **9 décembre 1905** | Loi de séparation des Églises et de l'État. |
+
+::: {.notes}
+Textes : Déclaration des droits de l'homme et du citoyen du 26 août 1789 (Légifrance) ; décret du 27 avril 1848 relatif à l'abolition de l'esclavage dans les colonies ; loi du 16 juin 1881 (gratuité) et loi du 28 mars 1882 (obligation, laïcité de l'enseignement primaire public) ; loi du 9 décembre 1905. Une première abolition de l'esclavage avait été votée par la Convention le 4 février 1794, puis rétablie en 1802.
+:::
+
+<!-- 11 · histoire 2 -->
+## Le XX^e^ siècle et aujourd'hui. {data-ref="Légifrance (textes cités) ; vie-publique.fr"}
+
+::: {.kicker}
+Connaissances · l'histoire (2/2)
+:::
+
+| Date | Événement |
+| --- | --- |
+| **1914–1918** | Première Guerre mondiale ; armistice du 11 novembre 1918. |
+| **18 juin 1940** | Appel du général de Gaulle depuis Londres ; Résistance ; Libération en 1944. |
+| **21 avril 1944** | Ordonnance accordant le droit de vote aux femmes ; premier vote aux municipales du 29 avril 1945. |
+| **1945** | Création de la Sécurité sociale (ordonnances des 4 et 19 octobre 1945). |
+| **4 octobre 1958** | Constitution de la V^e^ République (Charles de Gaulle, premier président en 1959). |
+| **1962** | Élection du Président au suffrage universel direct (référendum du 28 octobre) ; fin de la guerre d'Algérie (accords d'Évian, 18 mars). |
+| **17 janvier 1975** | Loi Veil dépénalisant l'interruption volontaire de grossesse. |
+| **9 octobre 1981** | Abolition de la peine de mort (loi Badinter). |
+| **17 mai 2013** | Ouverture du mariage aux couples de même sexe. |
+| **8 mars 2024** | La liberté de recourir à l'IVG inscrite dans la Constitution (art. 34). |
+
+::: {.notes}
+Ordonnance du 21 avril 1944 portant organisation des pouvoirs publics en France après la Libération, art. 17 (« Les femmes sont électrices et éligibles dans les mêmes conditions que les hommes »). Ordonnances n° 45-2250 du 4 octobre 1945 et n° 45-2454 du 19 octobre 1945 (Sécurité sociale). Loi n° 75-17 du 17 janvier 1975 (IVG) ; loi n° 81-908 du 9 octobre 1981 (abolition de la peine de mort) ; loi n° 2013-404 du 17 mai 2013 (mariage) ; loi constitutionnelle n° 2024-200 du 8 mars 2024 relative à la liberté de recourir à l'interruption volontaire de grossesse. Référendum du 28 octobre 1962 et loi constitutionnelle du 6 novembre 1962.
+:::
+
+<!-- 12 · Europe et monde -->
+## L'Europe et les relations internationales. {data-ref="Traité de Rome (1957) ; europa.eu ; vie-publique.fr"}
+
+::: {.kicker}
+Connaissances · la France dans le monde
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- Membre **fondateur** de la construction européenne : CECA (1951), traité de Rome (**25 mars 1957**) créant la CEE ; Union européenne depuis le traité de Maastricht (1992).
+- **L'euro** : monnaie unique (pièces et billets depuis le 1^er^ janvier 2002) ; la Banque centrale européenne est à Francfort.
+- **Espace Schengen** : libre circulation sans contrôle aux frontières intérieures (accord de 1985, appliqué depuis 1995).
+- Le Parlement européen siège à **Strasbourg** ; les députés européens sont élus tous les 5 ans.
+:::
+
+::: {.column width="50%"}
+- La France est l'un des **5 membres permanents** du Conseil de sécurité de l'ONU.
+- Membre de l'OTAN, du G7, de l'OCDE, du Conseil de l'Europe (siège à Strasbourg).
+- La **francophonie** : le français est parlé sur les cinq continents ; l'Organisation internationale de la Francophonie regroupe plusieurs dizaines d'États et gouvernements.
+- Devise commune de l'UE : « Unie dans la diversité » ; drapeau à douze étoiles.
+:::
+:::
+
+::: {.notes}
+Traité instituant la Communauté économique européenne, signé à Rome le 25 mars 1957 ; traité sur l'Union européenne signé à Maastricht le 7 février 1992 ; convention d'application de l'accord de Schengen (1990), entrée en vigueur le 26 mars 1995 ; euro fiduciaire au 1er janvier 2002 (l'euro scriptural date du 1er janvier 1999). Charte des Nations unies, art. 23 (membres permanents du Conseil de sécurité).
+:::
+
+<!-- 13 · droits et devoirs -->
+## Ce que la nationalité donne, et ce qu'elle demande. {data-ref="Charte des droits et devoirs ; Code électoral ; Code du service national (art. L114-1 et s.) ; Code de l'éducation art. L131-1"}
+
+::: {.kicker}
+Connaissances · droits et devoirs
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+### Des droits
+
+- **Voter** et être élu·e à toutes les élections (à partir de 18 ans) ; inscription d'office sur les listes électorales après la naturalisation.
+- Accéder à tous les emplois publics, y compris ceux réservés aux nationaux.
+- Un passeport et une carte d'identité français ; la protection consulaire ; la libre circulation dans l'UE.
+- Transmettre la nationalité à ses enfants.
+:::
+
+::: {.column width="50%"}
+### Des devoirs
+
+- Respecter les **lois** et les valeurs de la République.
+- Contribuer aux charges publiques : payer ses **impôts**.
+- Participer à la **défense** : recensement et journée défense et citoyenneté pour les jeunes (16–25 ans), y compris naturalisés.
+- Être **juré** en cour d'assises si l'on est tiré au sort.
+- Faire instruire ses enfants : instruction obligatoire de **3 à 16 ans**.
+:::
+:::
+
+::: {.cite}
+La France admet la plurinationalité : acquérir la nationalité française n'oblige pas à renoncer à la sienne (sous réserve du droit de l'autre pays).
+:::
+
+::: {.notes}
+Charte des droits et devoirs du citoyen français (décret n° 2012-127). Inscription d'office sur les listes électorales des personnes ayant acquis la nationalité française : Code électoral, art. L. 11 (répertoire électoral unique, loi n° 2016-1048). Journée défense et citoyenneté : Code du service national, art. L. 114-1 et suivants (recensement à 16 ans ; les personnes acquérant la nationalité entre 16 et 25 ans sont soumises aux mêmes obligations). Instruction obligatoire de 3 à 16 ans : Code de l'éducation, art. L. 131-1 (loi n° 2019-791 du 26 juillet 2019 pour une école de la confiance). Plurinationalité : la France n'exige pas la renonciation à la nationalité d'origine (pas de disposition contraire dans le Code civil ; voir service-public.fr « Double nationalité »).
+:::
+
+<!-- 14 · culture : noms et oeuvres -->
+## Quelques noms que l'on peut vous demander de citer. {data-ref="Livret du citoyen (repères culturels) ; Ministère de la Culture ; Institut Pasteur ; Nobel Foundation"}
+
+::: {.kicker}
+Connaissances · la culture
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+### Écrire et penser
+
+- **Molière** (1622-1673), le théâtre et la comédie ; on appelle le français « la langue de Molière ».
+- **Victor Hugo** (1802-1885), *Les Misérables* (1862) : le roman de la misère et de la justice ; enterré au Panthéon.
+- **Albert Camus**, prix Nobel de littérature en 1957 ; *L'Étranger*, *La Peste*.
+- **Simone de Beauvoir**, *Le Deuxième Sexe* (1949), un livre fondateur pour les droits des femmes.
+:::
+
+::: {.column width="50%"}
+### Voir, entendre, chercher
+
+- **Claude Monet** et l'impressionnisme : *Impression, soleil levant* (1872) a donné son nom au mouvement.
+- Les **frères Lumière** : première séance publique de cinéma à Paris, le 28 décembre 1895.
+- **Édith Piaf** et la chanson française ; **Claude Debussy** pour la musique.
+- **Louis Pasteur** (vaccin contre la rage, 1885) et **Marie Curie**, deux fois prix Nobel.
+:::
+:::
+
+::: {.cite}
+On n'attend pas une liste apprise : un nom, ce qu'il a fait, et pourquoi il vous parle — c'est une réponse complète.
+:::
+
+::: {.notes}
+Le Livret du citoyen consacre quelques pages aux repères culturels ; aucune liste n'est officielle ni exigée. Dates : Molière 1622-1673 ; Hugo 1802-1885, Les Misérables 1862, panthéonisé en 1885 ; Camus prix Nobel de littérature 1957 ; Beauvoir, Le Deuxième Sexe 1949 ; Monet, Impression, soleil levant 1872 (exposé en 1874, musée Marmottan Monet) ; première projection publique payante des frères Lumière le 28 décembre 1895, salon indien du Grand Café, boulevard des Capucines ; Pasteur, première vaccination antirabique en juillet 1885, Institut Pasteur fondé en 1888 ; Marie Curie, Nobel de physique 1903 et de chimie 1911.
+:::
+
+<!-- 15 · patrimoine et fêtes -->
+## Ce qui se visite, et ce qui se célèbre. {data-ref="UNESCO (listes du patrimoine immatériel) ; Ministère de la Culture ; Code du travail art. L3133-1"}
+
+::: {.kicker}
+Connaissances · le patrimoine
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+### Monuments et musées
+
+- La **tour Eiffel** (Exposition universelle de 1889), longtemps la plus haute construction du monde.
+- **Notre-Dame de Paris**, incendiée en avril 2019 et rouverte en décembre 2024 après cinq ans de chantier.
+- Le **château de Versailles**, le **Mont-Saint-Michel**, les grottes de **Lascaux** en Dordogne.
+- Le **Louvre**, le musée **d'Orsay** (les impressionnistes), le **Centre Pompidou** (l'art moderne).
+:::
+
+::: {.column width="50%"}
+### Fêtes et rendez-vous
+
+- **Onze jours fériés**, dont le 1er mai, le 8 mai, le 14 juillet et le 11 novembre.
+- La **Fête de la musique**, le 21 juin, depuis 1982 : tout le monde joue, dans la rue, gratuitement.
+- Les **Journées européennes du patrimoine**, en septembre depuis 1984 : on visite ce qui est fermé le reste de l'année.
+- Le **repas gastronomique des Français** (UNESCO, 2010) et la **baguette** (UNESCO, 2022).
+:::
+:::
+
+::: {.cite}
+Dans le 3e arrondissement : le musée Carnavalet raconte l'histoire de Paris, le musée des Arts et Métiers celle des inventions — deux réponses concrètes à « que visitez-vous ? ».
+:::
+
+::: {.notes}
+Tour Eiffel : construite pour l'Exposition universelle de 1889. Notre-Dame : incendie du 15 avril 2019, réouverture au culte et au public en décembre 2024. Fête de la musique : créée en 1982 (ministère de la Culture, Jack Lang), le 21 juin. Journées européennes du patrimoine : créées en 1984, troisième week-end de septembre. UNESCO, patrimoine culturel immatériel : « le repas gastronomique des Français » inscrit en 2010, « les savoir-faire artisanaux et la culture de la baguette de pain » en 2022. Jours fériés : Code du travail, art. L. 3133-1 (onze jours ; l'Alsace-Moselle en compte deux de plus).
+:::
+
+<!-- 16 · questions fréquentes (+ réponses, en dessous) -->
+::: {.stack data-ref="Livret du citoyen ; retours d'expérience (non normatif)"}
+
+## Des questions fréquentes, pour répondre en deux phrases. {data-ref="Livret du citoyen ; retours d'expérience (non normatif)"}
+
+::: {.kicker}
+S'entraîner
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- [Que signifie la laïcité pour vous ?]{.q}
+- [Citez trois symboles de la République.]{.q}
+- [Qui est le Président ? Le Premier ministre ? Votre maire ?]{.q}
+- [Que s'est-il passé le 14 juillet 1789 ?]{.q}
+- [Combien y a-t-il de régions, de départements ?]{.q}
+- [Quels sont vos devoirs de citoyen ?]{.q}
+:::
+
+::: {.column width="50%"}
+- [Que pensez-vous de l'égalité entre les femmes et les hommes ?]{.q}
+- [Citez un écrivain, un scientifique, un monument français.]{.q}
+- [Quelle est la devise de la République ? D'où vient-elle ?]{.q}
+- [Que ferez-vous une fois français·e ?]{.q}
+- [Que retenez-vous de la Charte que vous allez signer ?]{.q}
+:::
+:::
+
+<div class="card" style="margin-top:12px;">
+  <p><strong>Méthode.</strong> Une réponse courte, exacte, puis un exemple personnel. On attend moins un cours d'histoire qu'une preuve que vous comprenez la société dans laquelle vous vivez et que vous en partagez les principes. Les noms des responsables politiques changent : vérifiez-les la veille.</p>
+</div>
+
+<div hidden="" data-ai-note="done" style="position:absolute;left:405px;top:320px;width:300px;"><p data-by="author">find the responses to each of these questions and put a slide below with the answers. I live in the paris 75103</p>
+
+<p data-by="ai">Ajouté deux diapositives en dessous (touche bas) avec une réponse courte à chaque question, dont vos élus du 3e arrondissement, vérifiés le 30 août 2026.</p></div>
+
+::: {.notes}
+Les questions listées reflètent les thèmes du Livret du citoyen (symboles, histoire, institutions, valeurs, droits et devoirs) et ne constituent pas une liste officielle. Les noms des titulaires de fonctions (président, Premier ministre, ministres, maire) doivent être vérifiés au moment de l'entretien.
+:::
+
+## Ce qu'il suffit de dire, en deux phrases. {data-ref="Livret du citoyen ; elysee.fr ; gouvernement.fr ; paris.fr ; assemblee-nationale.fr (consultés le 30 août 2026)"}
+
+::: {.kicker}
+S'entraîner · les réponses (1/2)
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- [La laïcité ?]{.q}\
+La loi du 9 décembre 1905 sépare les Églises et l'État : liberté de croire ou non, égalité des citoyens, neutralité de l'État et de ses agents.
+- [Trois symboles ?]{.q}\
+Le drapeau tricolore, La Marseillaise (1792) et la devise « Liberté, Égalité, Fraternité » ; on peut ajouter Marianne et le 14 juillet.
+- [Le 14 juillet 1789 ?]{.q}\
+La prise de la Bastille, symbole de la fin de l'arbitraire royal. La fête nationale (loi du 6 juillet 1880) célèbre aussi la Fête de la Fédération de 1790.
+:::
+
+::: {.column width="50%"}
+- [Le Président, le Premier ministre, votre maire ?]{.q}\
+Emmanuel Macron, président depuis 2017 (réélu en 2022). Sébastien Lecornu, Premier ministre depuis octobre 2025. Emmanuel Grégoire, maire de Paris depuis le 29 mars 2026. Pour le 3e : Ariel Weil, maire de Paris Centre (1er-4e), et Pouria Amirshahi, député de la 5e circonscription.
+- [Combien de régions, de départements ?]{.q}\
+18 régions (13 en métropole depuis 2016, 5 outre-mer), 101 départements, environ 35 000 communes.
+- [Vos devoirs de citoyen ?]{.q}\
+Respecter la loi et les valeurs de la République, payer ses impôts, être juré si l'on est tiré au sort, voter — un droit qui est aussi un devoir civique.
+:::
+:::
+
+::: {.cite}
+Titulaires de fonctions vérifiés le 30 août 2026 (elysee.fr, gouvernement.fr, paris.fr, assemblee-nationale.fr) : revérifiez-les la veille de l'entretien.
+:::
+
+::: {.notes}
+Vérifié le 30 août 2026 : Emmanuel Macron (élu en 2017, réélu en 2022, mandat jusqu'en mai 2027) ; Sébastien Lecornu, Premier ministre depuis le 10 octobre 2025 ; Emmanuel Grégoire, élu maire de Paris par le Conseil de Paris le 29 mars 2026, succédant à Anne Hidalgo ; Ariel Weil, maire du secteur Paris Centre (1er-4e) réélu le 6 avril 2026 ; Pouria Amirshahi, député de la 5e circonscription de Paris (3e et 10e arrondissements) depuis juillet 2024. Le préfet de police de Paris est Patrice Faure depuis le 27 octobre 2025.
+:::
+
+## Et les questions qui portent sur vous. {data-ref="Livret du citoyen ; décret n° 2012-127 du 30 janvier 2012 (charte des droits et devoirs)"}
+
+::: {.kicker}
+S'entraîner · les réponses (2/2)
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- [L'égalité entre les femmes et les hommes ?]{.q}\
+Un principe constitutionnel : mêmes droits au travail, dans la famille, en politique. C'est une valeur de la République, pas une opinion parmi d'autres.
+- [La devise, et d'où vient-elle ?]{.q}\
+« Liberté, Égalité, Fraternité », héritée de la Révolution française et inscrite à l'article 2 de la Constitution ; elle s'impose sous la IIIe République.
+- [Un écrivain, un scientifique, un monument ?]{.q}\
+Victor Hugo ; Marie Curie, deux fois prix Nobel ; la tour Eiffel — ou, dans le 3e, le musée Carnavalet.
+:::
+
+::: {.column width="50%"}
+- [Que ferez-vous une fois français·e ?]{.q}\
+Du concret : m'inscrire sur les listes électorales et voter aux prochaines élections, continuer mon travail et mon engagement ici.
+- [Que retenez-vous de la Charte ?]{.q}\
+La charte des droits et devoirs du citoyen français (décret du 30 janvier 2012) rappelle les principes de la République — liberté, égalité, fraternité, laïcité — et les devoirs qui vont avec. On la signe au moment de l'entretien.
+:::
+:::
+
+::: {.cite}
+Une réponse courte et exacte, puis un exemple personnel : on vérifie que vous vivez ici, pas que vous avez appris un cours.
+:::
+
+::: {.notes}
+Charte des droits et devoirs du citoyen français : approuvée par le décret n° 2012-127 du 30 janvier 2012, signée lors de l'entretien ou de la cérémonie d'accueil.
+:::
+
+<aside class="notes">
+          Cette diapositive a deux suites en dessous (flèche bas) : les réponses, dont les titulaires de fonctions au 30 août 2026.
+        </aside>
+
+:::
+
+<!-- 17 · après -->
+## Après le décret : l'accueil dans la citoyenneté. {data-ref="Code civil art. 21-28 ; décret 93-1362 ; service-public.fr"}
+
+::: {.kicker}
+Et ensuite
+:::
+
+- Le décret de naturalisation est publié au **Journal officiel** ; la préfecture vous en informe et vous remet une ampliation du décret.
+- Vous êtes invité·e à une **cérémonie d'accueil dans la citoyenneté française**, organisée dans les six mois par le préfet (ou le maire), au cours de laquelle sont rappelés les droits et devoirs du citoyen (C. civ. art. 21-28).
+- Vous pouvez ensuite demander une carte nationale d'identité et un passeport, et vous êtes inscrit·e d'office sur les listes électorales.
+- Vos enfants mineurs qui résident habituellement avec vous deviennent français en même temps que vous s'ils sont mentionnés dans le décret (C. civ. art. 22-1).
+
+<div class="card" style="margin-top:12px;">
+  <h3>Un mot sur la francisation du nom</h3>
+  <p>Lors de la demande, vous pouvez demander la <strong>francisation</strong> de votre nom ou de vos prénoms (loi n° 72-964 du 25 octobre 1972). C'est facultatif.</p>
+</div>
+
+::: {.notes}
+Code civil, art. 21-28 : cérémonie d'accueil dans la citoyenneté française organisée par le représentant de l'État dans le département, dans un délai de six mois à compter de l'acquisition de la nationalité ; art. 22-1 (effet collectif pour les enfants mineurs). Loi n° 72-964 du 25 octobre 1972 relative à la francisation des noms et prénoms des personnes qui acquièrent ou recouvrent la nationalité française.
+:::
+
+<!-- 18 · ressources -->
+# Préparez-vous avec les sources officielles. {.break data-ref="ressources officielles"}
+
+::: {.sub}
+Le **Livret du citoyen** (ministère de l'Intérieur) résume ce que l'entretien attend. **service-public.fr** décrit la procédure à jour ; **vie-publique.fr** explique les institutions ; **legifrance.gouv.fr** donne le texte des lois. Lisez la Charte avant de la signer.
+:::
+
+::: {.notes}
+Livret du citoyen : publié par la Direction générale des étrangers en France (ministère de l'Intérieur), téléchargeable sur immigration.interieur.gouv.fr. Fiche service-public.fr F2213 « Naturalisation » ; vie-publique.fr (Découverte des institutions) ; Légifrance.
+:::
+
+<!-- 19 · références -->
+## Textes et sources. {data-ref="références" visibility=uncounted}
+
+::: {.kicker}
+Références
+:::
+
+<div class="cols">
+  <div class="col refs">
+    <ul>
+      <li>Code civil, art. 21-15 à 21-28 (naturalisation) et 22-1 — legifrance.gouv.fr.</li>
+      <li>Décret n° 93-1362 du 30 décembre 1993, notamment art. 37 à 49.</li>
+      <li>Décret n° 2012-127 du 30 janvier 2012 approuvant la Charte des droits et devoirs du citoyen français.</li>
+      <li>Décret n° 2019-1507 du 30 décembre 2019 (niveau de langue B1).</li>
+      <li>Loi n° 2024-42 du 26 janvier 2024 pour contrôler l'immigration, améliorer l'intégration.</li>
+      <li>Constitution du 4 octobre 1958, art. 1<sup>er</sup>, 2, 6, 7, 8, 20, 24, 34, 56, 64.</li>
+      <li>Loi du 9 décembre 1905 concernant la séparation des Églises et de l'État.</li>
+      <li>Loi du 6 juillet 1880 (fête nationale) ; loi du 14 février 1879 (Marseillaise).</li>
+    </ul>
+  </div>
+  <div class="col refs">
+    <ul>
+      <li>Ordonnance du 21 avril 1944 ; ordonnances des 4 et 19 octobre 1945.</li>
+      <li>Lois n° 75-17 (1975), 81-908 (1981), 2013-404 (2013) ; loi constitutionnelle n° 2024-200 (2024).</li>
+      <li>Loi n° 2015-29 du 16 janvier 2015 (régions) ; loi n° 2019-791 du 26 juillet 2019 (instruction obligatoire).</li>
+      <li>Loi n° 72-964 du 25 octobre 1972 (francisation).</li>
+      <li>INSEE, bilan démographique 2024 ; Code officiel géographique 2025.</li>
+      <li>Ministère de l'Intérieur, <em>Livret du citoyen</em>.</li>
+      <li>service-public.fr, fiche F2213 « Naturalisation » ; vie-publique.fr ; elysee.fr (symboles).</li>
+    </ul>
+  </div>
+</div>
+
+::: {.cite}
+Ce diaporama est une aide à la préparation, pas un document officiel. Dernière vérification des textes : août 2026.
+:::
+
+::: {.notes}
+Toutes les références sont accessibles librement en ligne (Légifrance, INSEE, sites gouvernementaux).
+:::

@@ -1,0 +1,93 @@
+---
+pagetitle: "Demo deck — Lectern"
+lang: en
+format:
+  revealjs:
+    width: 1280
+    height: 720
+    css: "theme.css"
+---
+
+<!-- ============ 1 · title ============ -->
+# A deck you can edit. {.title-slide}
+
+::: {.sub}
+reveal.js slides, edited like a canvas
+:::
+
+::: {.meta}
+**Calum Murray** · CEA Paris-Saclay\
+Somewhere · Someday
+:::
+
+::: {.notes}
+Open on the title. Say who you are.
+:::
+
+<!-- ============ 2 · bullets ============ -->
+## Three things to remember.
+
+::: {.kicker}
+Introduction
+:::
+
+<ul>
+  <li>Double-click any text to edit it in place</li>
+  <li>Drag objects; <span class="tide">guides</span> snap to the slide and to each other</li>
+  <li class="fragment">Fragments are shown while editing</li>
+</ul>
+
+::: {.cite}
+A citation line, absolutely positioned by the theme.
+:::
+
+<!-- ============ 3 · two columns ============ -->
+## Two columns, one figure.
+
+::: {.kicker}
+Layout
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+- Left column text
+- with **emphasis**
+:::
+
+::: {.column width="50%"}
+![Figure 1 — a line going up.](figures/plot.svg){.fig fig-alt="A plot"}
+:::
+:::
+
+<!-- ============ 4 · free objects ============ -->
+## {background-color="#0e0c1a"}
+
+<h2 style="color:#fff">Free objects on a dark slide.</h2>
+
+<div style="position:absolute;left:120px;top:220px;width:300px;height:180px;background:#4a7bd0;border-radius:12px;"></div>
+
+<p style="position:absolute;left:480px;top:260px;width:600px;margin:0;color:#fff;">A free text box next to a shape.</p>
+
+<!-- ============ 5 · equation ============ -->
+## An equation, typeset by KaTeX.
+
+::: {.kicker}
+Math
+:::
+
+<p class="eq">\[ \xi_{g+}(r_p) = \frac{S_+D - S_+R}{RR} \]</p>
+
+Inline math like $\gamma_{\rm IA}$ stays LaTeX in the file.
+
+<!-- ============ 6 · vertical stack ============ -->
+::: {.stack}
+
+## Vertical 1
+
+The first of two stacked slides.
+
+## Vertical 2
+
+The second one.
+
+:::

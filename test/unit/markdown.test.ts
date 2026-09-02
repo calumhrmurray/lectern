@@ -29,6 +29,13 @@ describe('deck ⇄ markdown round trip', () => {
     });
   }
 
+  for (const file of DECKS) {
+    it(`${file.replace('index.html', 'index.qmd')} is the current export of the deck (regenerate with \`lectern convert\`)`, () => {
+      const html = readFileSync(file, 'utf8');
+      expect(readFileSync(file.replace('index.html', 'index.qmd'), 'utf8')).toBe(deckToMarkdown(html, parseHtml));
+    });
+  }
+
   it('a starter deck becomes front matter and comes back byte-identical', () => {
     const html = starterDeckHtml({ title: 'Talk title', author: 'Author', width: 1280, height: 720, revealPath: 'reveal', theme: 'paper' });
     const md = deckToMarkdown(html, parseHtml);
