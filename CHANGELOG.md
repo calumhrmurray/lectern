@@ -2,6 +2,16 @@
 
 All notable changes to Lectern are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.1.1] — 2026-09-02
+
+### Fixed
+- The slides in quiet mode's gutters (and every other thumbnail) rendered unstyled when the
+  editor was served over HTTP: the deck's `<link>` stylesheets live in the deck iframe's own
+  realm, so an `instanceof HTMLLinkElement` check never matched them and each link was copied
+  into the thumbnail as an empty `<style>`. Duck-typed on the tag name instead; thumbnails now
+  carry the deck's stylesheets in every mode. (`Lectern.html` on `file://` was unaffected —
+  inline mode already inlines CSS into real `<style>` elements.)
+
 ## [2.1.0] — 2026-09-01
 
 A deck is HTML, and HTML is not what most people want to edit by hand. This release adds a

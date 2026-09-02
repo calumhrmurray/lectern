@@ -77,6 +77,20 @@ test.describe('the slides either side', () => {
     expect(await currentSlide(page)).toEqual({ top: 3, sub: null });
   });
 
+  test('wear the deck’s stylesheets, not the browser default', async ({ page }) => {
+    // Regression: the deck's <link> elements live in the iframe's realm, where an
+    // `instanceof HTMLLinkElement` check fails — the thumbnails then copied every
+    // stylesheet as an empty <style> and the gutter slides rendered unstyled.
+    await openDeck(page);
+    await page.evaluate(() => window.lectern.setQuiet(true));
+    await goToSlide(page, 2);
+    await expect(page.locator('.lec-neighbour.lec-next')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => {
+      const frame = document.querySelector('.lec-neighbour.lec-next iframe') as HTMLIFrameElement | null;
+      return frame?.contentDocument?.querySelectorAll('link[rel="stylesheet"]').length ?? -1;
+    })).toBeGreaterThanOrEqual(3); // reset.css, reveal.css, theme.css
+  });
+
   test('only one of them at the ends of the deck, and none of them overlaps the slide', async ({ page }) => {
     await openDeck(page);
     await page.evaluate(() => window.lectern.setQuiet(true));

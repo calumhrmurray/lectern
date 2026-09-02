@@ -1,6 +1,6 @@
 {
   "name": "lectern-editor",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Visual drag-and-drop editor for AI-generated slide decks. Ask Claude, ChatGPT or any coding agent for a presentation, then fix the layout yourself \u2014 the reveal.js HTML file is the document. Offline, no account, no telemetry.",
   "keywords": [
     "reveal.js",

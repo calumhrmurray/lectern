@@ -23,8 +23,10 @@ export class ThumbnailRenderer {
     const parts: string[] = stage.iframe.src ? [`<base href="${escapeAttr(stage.iframe.src)}">`] : [];
     for (const node of Array.from(doc.querySelectorAll('link[rel~="stylesheet"], style'))) {
       if (node.id === 'lec-editing-styles') continue;
-      if (node instanceof HTMLLinkElement) {
-        parts.push(`<link rel="stylesheet" href="${escapeAttr(node.href)}">`);
+      // The deck's elements live in the iframe's realm, so `instanceof HTMLLinkElement`
+      // is false for them here: duck-type on the tag instead.
+      if (node.tagName === 'LINK') {
+        parts.push(`<link rel="stylesheet" href="${escapeAttr((node as HTMLLinkElement).href)}">`);
       } else {
         parts.push(`<style>${node.textContent ?? ''}</style>`);
       }
