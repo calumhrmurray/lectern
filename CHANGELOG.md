@@ -2,6 +2,19 @@
 
 All notable changes to Lectern are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.2.1] — 2026-09-09
+
+### Fixed
+- **Double-click edits the text under the pointer again.** It had been changed to always
+  leave a note for AI, because a slide full of text has no empty space to aim at and placing
+  a note must not depend on finding a gap. That cured the right problem with the wrong
+  instrument: it took away the most obvious text-editing gesture there is, so correcting a
+  word meant selecting the object and pressing `⏎`, and every reflex double-click left a note
+  to dismiss. Empty canvas still leaves a note, and notes keep the routes that need no gap —
+  right-click anywhere on the slide, and `N` at the pointer. The shortcuts dialog had been
+  claiming both behaviours at once and now says right-click for a note, double-click for text.
+  ([#4](https://github.com/calumhrmurray/lectern/issues/4))
+
 ## [2.2.0] — 2026-09-09
 
 ### Added
