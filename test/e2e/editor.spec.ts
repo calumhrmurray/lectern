@@ -166,6 +166,42 @@ test.describe('slides', () => {
     await expect(page.locator('.lec-slide-card')).toHaveCount(7);
   });
 
+  test('right-click between two slides inserts there, shaped like the slide above', async ({ page }) => {
+    await openDeck(page);
+    await goToSlide(page, 0); // current is slide 1; the gap we click is far from it
+    const cards = page.locator('.lec-slide-card');
+    const b = await cards.nth(4).boundingBox();
+    // the seam above the 5th card is the gap between slides 4 and 5
+    await page.mouse.click(b!.x + b!.width / 2, b!.y + 3, { button: 'right' });
+    await expect(page.locator('.lec-menu')).toBeVisible();
+    await page.locator('.lec-menu [role="menuitem"]', { hasText: 'New slide between 4 and 5' }).click();
+    await expect(cards).toHaveCount(8);
+    // it landed in the gap, not after the current slide
+    expect(await currentSlide(page)).toEqual({ top: 4, sub: null });
+    const out = await serialized(page);
+    const sections = out.split('<section').length;
+    expect(sections).toBeGreaterThan(1);
+    await page.keyboard.press(`${mod}+z`);
+    await expect(cards).toHaveCount(7);
+  });
+
+  test('a new slide in the gap copies the neighbour\'s shape, not its content', async ({ page }) => {
+    await openDeck(page);
+    // give slide 4 a distinctive frame and some cargo
+    await page.evaluate(() => window.lectern.editor.doc.slides[3].el.setAttribute('class', 'lec-test-frame'));
+    const cards = page.locator('.lec-slide-card');
+    const b = await cards.nth(4).boundingBox();
+    await page.mouse.click(b!.x + b!.width / 2, b!.y + 3, { button: 'right' });
+    await page.locator('.lec-menu [role="menuitem"]', { hasText: 'New slide between 4 and 5' }).click();
+    const made = await page.evaluate(() => {
+      const el = window.lectern.editor.doc.slides[4].el;
+      return { cls: el.getAttribute('class'), imgs: el.querySelectorAll('img').length, html: el.outerHTML };
+    });
+    expect(made.cls).toBe('lec-test-frame');
+    expect(made.imgs).toBe(0);
+    expect(made.html).not.toContain('data-ai-note');
+  });
+
   test('slide attributes and notes round-trip', async ({ page }) => {
     await openDeck(page);
     await goToSlide(page, 1);

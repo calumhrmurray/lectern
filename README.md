@@ -71,6 +71,8 @@ class vocabulary, the notes protocol and the editing rules:
   (rectangle, ellipse, outline, line, arrow, callout), tables, code, equations, web embeds.
 - **Slides** — thumbnails rendered with the deck's own stylesheet, drag to reorder, add from
   layouts, duplicate, delete, copy/paste, vertical stacks, `data-visibility` (backup slides).
+  Right-click on the seam between two thumbnails to insert *there*, shaped like the slide
+  above it: same section classes and skeleton, placeholder text, none of its content.
 - **Inspector** — position/size, typography, fill/border/shadow, the deck's own CSS classes
   as one-click toggles (`.kicker`, `.tide`, `.fig` …), reveal fragments (effect + order),
   slide backgrounds and transitions, speaker notes, raw HTML of a slide.

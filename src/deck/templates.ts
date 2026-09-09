@@ -20,6 +20,41 @@ export interface SlideLayout {
 /** 1×1 transparent SVG: a valid placeholder `src` until the person picks a file in the inspector. */
 export const BLANK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
 
+/**
+ * A new slide shaped like an existing one: the same `<section>` classes and structural
+ * skeleton, the same backdrop, placeholder text — and none of the neighbour's content.
+ *
+ * This is what "new slide here" means in a deck with its own chrome: duplicating a
+ * neighbour brings its pictures, its speaker notes and its notes-for-AI along, and the
+ * built-in layouts bring a shape the deck does not use. Keep the frame, drop the cargo.
+ *
+ * A stack is modelled on its last sub-slide, so the new top-level slide is a plain one.
+ */
+export function blankLike(section: Element): string {
+  let src = section;
+  const subs = Array.from(src.children).filter((c) => c.tagName.toLowerCase() === 'section');
+  if (subs.length) src = subs[subs.length - 1];
+
+  const el = src.cloneNode(true) as Element;
+  // Identity and placement belong to the slide it was copied from, not to the new one.
+  for (const a of ['id', 'data-section', 'data-visibility']) el.removeAttribute(a);
+  // Content, not chrome.
+  for (const n of Array.from(el.querySelectorAll('[data-ai-note], img, video, iframe, object, svg, table, pre'))) n.remove();
+  for (const a of Array.from(el.querySelectorAll('aside.notes'))) a.textContent = '';
+
+  for (const t of Array.from(el.querySelectorAll('h1, h2, h3, h4, p, li, .kicker'))) {
+    const tag = t.tagName.toLowerCase();
+    const cls = t.classList;
+    if (cls.contains('kicker')) t.textContent = 'Kicker';
+    else if (tag === 'h1') t.textContent = 'Title';
+    else if (tag === 'h2' || tag === 'h3' || tag === 'h4') t.textContent = 'Heading';
+    else if (tag === 'li') t.textContent = 'Point';
+    else if (cls.contains('cite') || cls.contains('caption') || cls.contains('more')) t.remove();
+    else t.textContent = 'Text';
+  }
+  return el.outerHTML;
+}
+
 export const SLIDE_LAYOUTS: SlideLayout[] = [
   {
     id: 'blank', name: 'Blank', hint: '',
