@@ -2,6 +2,17 @@
 
 All notable changes to Lectern are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.1.2] — 2026-09-09
+
+### Fixed
+- <kbd>Delete</kbd> / <kbd>Backspace</kbd> on the canvas with nothing selected deletes the
+  current slide, instead of doing nothing at all. The slide menu had always advertised `⌫`
+  as the shortcut for *Delete slide*, and `⌘D` already falls through from the selection to
+  the slide when nothing is selected; delete alone swallowed the key, so from the canvas the
+  only ways to remove a slide were the menu and the inspector. The shortcuts dialog said
+  `⌫ — Delete selection`; it now says what the key really does. Deletion was already
+  undoable. ([#2](https://github.com/calumhrmurray/lectern/issues/2))
+
 ## [2.1.1] — 2026-09-02
 
 ### Fixed
