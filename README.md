@@ -172,7 +172,7 @@ your own.
 
 ## Keyboard
 
-`⌘S` save · `⌘Z / ⌘⇧Z` undo/redo · double-click / right-click leave a note for AI · `⏎` edit selected text · `Esc` stop editing / deselect ·
+`⌘S` save · `⌘Z / ⌘⇧Z` undo/redo · right-click leaves a note for AI · `⏎` edit selected text · `Esc` stop editing / deselect ·
 `⌘C/X/V/D` copy/cut/paste/duplicate · `⌫` delete · arrows nudge (`⇧` 10 px) ·
 `⇧`-drag constrain / keep aspect · `⌥`-drag ignore snapping · `PgUp/PgDn` slides ·
 `⌘⇧N` new slide · `⌘]`/`⌘[` forward/backward · typing with a text object selected edits it ·

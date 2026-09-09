@@ -202,10 +202,10 @@ describe('Interactions', () => {
     expect(actions()).toEqual([]);
   });
 
-  it('double-click leaves a note everywhere except on a note, which handles it itself', () => {
+  it('double-click edits text, leaves a note on empty canvas, and lets a note handle itself', () => {
     const dbl = (x: number) => overlay.el.dispatchEvent(new MouseEvent('dblclick', { clientX: x, clientY: 5, bubbles: true }));
-    dbl(300); // on a text object: a note, not text editing (Enter / type-over edit text)
-    expect(actions()).toEqual(['dblEmpty:300,5']);
+    dbl(300); // on a text object: edit it, with the caret where you clicked
+    expect(actions()).toEqual(['select:replace:p', 'edit:p']);
     host.calls = [];
     dbl(50); // empty canvas
     expect(actions()).toEqual(['dblEmpty:50,5']);

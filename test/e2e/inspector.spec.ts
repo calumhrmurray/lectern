@@ -156,26 +156,35 @@ test('double-click on empty canvas creates a note there; an untouched note disap
   expect(out.match(/data-ai-note/g)?.length).toBe(1);
 });
 
+test('double-click on text edits the text, not a note over it', async ({ page }) => {
+  const frame = await openDeck(page);
+  await goToSlide(page, 1); // a heading and a list: no empty space to aim at
+  const onText = await centerOf(page, 'section.present li');
+  await page.mouse.dblclick(onText.x, onText.y);
+  // the text under the pointer is being edited, and no note was made over it
+  await expect(frame.locator('section.present ul[contenteditable="true"]')).toBeVisible();
+  await expect(frame.locator('section.present [data-ai-note]')).toHaveCount(0);
+  await page.keyboard.press(`${mod}+a`);
+  await page.keyboard.type('edited in place');
+  await page.keyboard.press('Escape');
+  const edited = await serialized(page);
+  expect(edited).toContain('edited in place');
+  expect(edited).not.toContain('data-ai-note');
+});
+
 test('a note lands where you point, even on a slide full of text', async ({ page }) => {
   const frame = await openDeck(page);
   await goToSlide(page, 1); // a heading and a list: no empty space to aim at
   const onText = await centerOf(page, 'section.present li');
 
-  // Double-click over text leaves a note rather than editing the text.
-  await page.mouse.dblclick(onText.x, onText.y);
-  await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
-  await page.keyboard.type('this line is wrong');
-  await page.keyboard.press('Escape');
-  expect(await serialized(page)).toContain('this line is wrong');
-
-  // So does right-click, somewhere else on the same text.
+  // Right-click over text leaves a note rather than editing the text.
   await page.mouse.click(onText.x + 60, onText.y + 24, { button: 'right' });
   await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
   await page.keyboard.type('and here');
   await page.keyboard.press('Escape');
   const out = await serialized(page);
   expect(out).toContain('and here');
-  expect(out.match(/data-ai-note/g)?.length).toBe(2);
+  expect(out.match(/data-ai-note/g)?.length).toBe(1);
 
   // Text is still editable: select it and press Enter.
   const heading = await centerOf(page, 'section.present h2');
