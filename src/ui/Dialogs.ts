@@ -340,7 +340,7 @@ export function shortcutsDialog(): Promise<string> {
       row(`${M} Z / ${M} ⇧ Z`, 'Undo / redo'), row(`${M} Y`, 'Redo'),
       row('Double-click', 'Edit text'), row('Esc', 'Stop editing / deselect'),
       row(`${M} C / X / V`, 'Copy / cut / paste objects'), row(`${M} D`, 'Duplicate'),
-      row('⌫', 'Delete selection'), row(`${M} A`, 'Select all objects on the slide'),
+      row('⌫', 'Delete selection, or the slide when nothing is selected'), row(`${M} A`, 'Select all objects on the slide'),
       row('Arrows', 'Nudge 1 px (⇧: 10 px)'), row('⇧ drag', 'Constrain / keep aspect'),
       row('⌥ drag', 'Ignore snapping'), row('Click again', 'Select the parent object'),
       row('PgUp / PgDn', 'Previous / next slide'), row('Home / End', 'First / last slide'),

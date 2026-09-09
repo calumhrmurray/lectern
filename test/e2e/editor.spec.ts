@@ -149,6 +149,23 @@ test.describe('slides', () => {
     expect(out.match(/<h2>Inserted<\/h2>/g)?.length).toBe(2);
   });
 
+  test('backspace on the canvas with nothing selected deletes the slide', async ({ page }) => {
+    await openDeck(page);
+    await goToSlide(page, 2);
+    await page.locator('.lec-overlay').focus();
+    await page.evaluate(() => window.lectern.editor.clearSelection());
+    await page.keyboard.press('Backspace');
+    await expect(page.locator('.lec-slide-card')).toHaveCount(6);
+    await page.keyboard.press(`${mod}+z`);
+    await expect(page.locator('.lec-slide-card')).toHaveCount(7);
+    // With an object selected it still deletes the object, not the slide.
+    await goToSlide(page, 1);
+    await page.locator('.lec-overlay').focus();
+    await page.keyboard.press(`${mod}+a`);
+    await page.keyboard.press('Backspace');
+    await expect(page.locator('.lec-slide-card')).toHaveCount(7);
+  });
+
   test('slide attributes and notes round-trip', async ({ page }) => {
     await openDeck(page);
     await goToSlide(page, 1);

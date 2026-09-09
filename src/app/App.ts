@@ -929,7 +929,9 @@ export class App {
     if (mod && lower === 'v') { if (ed.clipboard?.kind === 'elements') { stop(); ed.paste(); } return; }
     if (mod && lower === 'd') { stop(); if (hasSel) ed.duplicateSelection(); else ed.duplicateSlide(); return; }
     if (mod && (key === ']' || key === '[')) { stop(); const el = ed.primary; if (el) ed.reorder(el, key === ']' ? (ev.shiftKey ? 'front' : 'forward') : (ev.shiftKey ? 'back' : 'backward')); return; }
-    if ((key === 'Delete' || key === 'Backspace') && !mod) { stop(); if (hasSel) ed.deleteSelection(); return; }
+    // Mirrors ⌘D above: with objects selected the key acts on them, with nothing
+    // selected it acts on the slide. The slide menu advertises ⌫ for exactly this.
+    if ((key === 'Delete' || key === 'Backspace') && !mod) { stop(); if (hasSel) ed.deleteSelection(); else void this.deleteCurrentSlide(); return; }
     if (key === 'Enter' && hasSel && !mod) { stop(); const el = ed.primary; if (el && ed.isTextEditable(el)) ed.startTextEdit(el); return; }
     if (key.startsWith('Arrow') && !mod) {
       stop();
