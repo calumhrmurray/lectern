@@ -2,6 +2,25 @@
 
 All notable changes to Lectern are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.2.0] — 2026-09-09
+
+### Added
+- **A new slide shaped like its neighbour.** Right-click the seam between two thumbnails in
+  the navigator and the menu is about *that gap*: insert here, or paste here. The slide it
+  makes copies the one above it — the same `<section>` classes, the same structural skeleton
+  and backdrop — with placeholder text and none of the cargo, so no images, tables, speaker
+  notes or notes for AI come across. A stack is modelled on its last sub-slide, so what you
+  get is a plain top-level slide. The same thing is on the card's own menu as *New slide like
+  this one*; the built-in layout is still there as *New blank slide*.
+  ([#3](https://github.com/calumhrmurray/lectern/issues/3))
+
+### Fixed
+- Right-clicking anywhere in the navigator that was not a card passed `null` to the slide
+  menu, so *New slide* inserted after whichever slide happened to be current rather than
+  where you pointed. The cards sit flush against each other, so the seam had no pixels of its
+  own to click; a band at each card edge now reads as the seam, the way `dragover` already
+  reads the midpoint to choose before or after.
+
 ## [2.1.2] — 2026-09-09
 
 ### Fixed
