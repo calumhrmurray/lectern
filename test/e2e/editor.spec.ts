@@ -202,6 +202,24 @@ test.describe('slides', () => {
     expect(made.html).not.toContain('data-ai-note');
   });
 
+  test('N inserts a new slide after this one, shaped like it', async ({ page }) => {
+    await openDeck(page);
+    await goToSlide(page, 1);
+    await page.evaluate(() => window.lectern.editor.doc.slides[1].el.setAttribute('class', 'lec-n-frame'));
+    await page.locator('.lec-overlay').focus();
+    await page.keyboard.press('n');
+    await expect(page.locator('.lec-slide-card')).toHaveCount(8);
+    expect(await currentSlide(page)).toEqual({ top: 2, sub: null });
+    const made = await page.evaluate(() => {
+      const el = window.lectern.editor.doc.slides[2].el;
+      return { cls: el.getAttribute('class'), notes: el.querySelectorAll('[data-ai-note]').length };
+    });
+    expect(made.cls).toBe('lec-n-frame');   // shaped like the slide it came from
+    expect(made.notes).toBe(0);             // and it is a slide, not a note
+    await page.keyboard.press(`${mod}+z`);
+    await expect(page.locator('.lec-slide-card')).toHaveCount(7);
+  });
+
   test('slide attributes and notes round-trip', async ({ page }) => {
     await openDeck(page);
     await goToSlide(page, 1);

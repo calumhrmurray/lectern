@@ -17,7 +17,7 @@ import { discoverFontFamilies, discoverThemeClasses, type ThemeClass } from '../
 import { DeckDocument } from '../deck/DeckDocument';
 import { detectParts } from '../deck/scan';
 import { deckToMarkdown, treeFromDom } from '../deck/markdown';
-import { starterDeckHtml } from '../deck/templates';
+import { blankLike, starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
 import type { SlideRef } from '../stage/Stage';
 import { versionLabel } from '../version';
@@ -951,9 +951,13 @@ export class App {
       if (hasSel && key.length === 1 && ed.typeIntoSelection(key)) { stop(); return; }
       if (!hasSel) {
         if (lower === 'n') {
+          // The letter a slide editor should spend on a new slide. Notes keep
+          // right-click, double-click on empty canvas and the tools button.
           stop();
-          const p = ed.pointer;
-          if (!(p && ed.insertNoteAt(p.x, p.y))) ed.insertElement('ainote', { edit: true });
+          const cur = ed.current;
+          const section = ed.doc.length ? ed.stage.srcSection(cur) : null;
+          if (section) ed.addSlide(blankLike(section), cur.top);
+          else this.showNewSlideMenu({ x: window.innerWidth / 2, y: 80 });
           return;
         }
         if (lower === 'm') { stop(); this.map.toggle(); return; }

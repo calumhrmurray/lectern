@@ -17,7 +17,7 @@ the notes-for-AI protocol and the rules for editing a file the editor has open. 
 2. **Write the slides** into `<folder>/index.html`: one `<section>` per slide, a `<!-- n · title -->` comment before
    each, `kicker` + `h2` + at most ~6 lines or one figure, sources in `<aside class="notes">`. Inline `<svg>` for diagrams.
 3. **Open the editor for them:** `npx lectern-editor <folder>/index.html` (a local server; opens the browser).
-   Say: *double-click text to edit, drag to move, press `N` on a slide to leave me a note.*
+   Say: *double-click text to edit, drag to move, `N` for a new slide, right-click to leave me a note.*
 4. **Do their notes:** `npx lectern-editor notes <folder>/index.html` lists pending notes with slide, position and
    thread. Act on each in the file, then append `<p data-by="ai">what you did</p>` inside the note and set
    `data-ai-note="done"`. Never delete a note or its `hidden` attribute.

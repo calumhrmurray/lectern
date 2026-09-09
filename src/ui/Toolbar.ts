@@ -54,7 +54,7 @@ export class Toolbar {
         this.btn('text', 'text', 'Text', 'Insert a text box', () => ed().insertElement('text', { edit: true })),
         this.btn('title', 'title', null, 'Insert a heading', () => ed().insertElement('title', { edit: true })),
         this.btn('bullets', 'bullets', null, 'Insert a bullet list', () => ed().insertElement('bullets', { edit: true })),
-        this.btn('ainote', 'note', 'Note for AI', 'Leave an instruction on the slide for Claude or a colleague — hidden when presenting (N)', () => ed().insertElement('ainote', { edit: true })),
+        this.btn('ainote', 'note', 'Note for AI', 'Leave an instruction on the slide for Claude or a colleague — hidden when presenting (or right-click the slide)', () => ed().insertElement('ainote', { edit: true })),
         this.btn('image', 'image', 'Image', 'Insert an image', () => void app.insertImageViaDialog()),
         this.btn('shape', 'shape', 'Shape', 'Insert a shape', (e) => this.shapeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
         this.btn('more', 'more', null, 'More objects', (e) => this.insertMoreMenu(e.currentTarget as HTMLElement), { popup: 'menu' }),

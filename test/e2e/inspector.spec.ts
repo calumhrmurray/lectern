@@ -117,8 +117,7 @@ test.describe('inspector and arrange', () => {
 test('notes for AI: placed on the slide, saved hidden, listed with a prompt', async ({ page }) => {
   const frame = await openDeck(page);
   await goToSlide(page, 1);
-  await page.locator('.lec-overlay').focus();
-  await page.keyboard.press('n');
+  await page.locator('.lec-btn[data-action="ainote"]').click();
   await expect(frame.locator('section.present [data-ai-note] p[contenteditable="true"]')).toBeVisible();
   await page.keyboard.type('draw a whale here');
   await page.keyboard.press('Escape');
