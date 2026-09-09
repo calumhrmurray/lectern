@@ -2,7 +2,7 @@
 
 import type { App } from '../app/App';
 import { isStack, slideLabel } from '../deck/html';
-import { SLIDE_LAYOUTS } from '../deck/templates';
+import { blankLike, SLIDE_LAYOUTS } from '../deck/templates';
 import type { SlideRef } from '../stage/Stage';
 import { h, svgIcon, debounce, modKey } from './dom';
 import { icons } from './icons';
@@ -36,7 +36,9 @@ export class Navigator {
     container.addEventListener('contextmenu', (ev) => {
       if ((ev.target as HTMLElement).closest('.lec-slide-card')) return;
       ev.preventDefault();
-      this.showMenuFor(null, { x: ev.clientX, y: ev.clientY });
+      // Not on a card: the click is in a gap, so act on the gap rather than on
+      // whichever slide happens to be current.
+      this.showGapMenu(this.gapAt(ev.clientY), { x: ev.clientX, y: ev.clientY });
     });
   }
 
@@ -75,7 +77,21 @@ export class Navigator {
         vis ? h('span', { class: 'lec-slide-badge' }, vis) : null,
       );
       card.addEventListener('click', () => { ed.goTo(ref); this.container.focus(); });
-      card.addEventListener('contextmenu', (ev) => { ev.preventDefault(); ed.goTo(ref); this.showMenuFor(ref, { x: ev.clientX, y: ev.clientY }); });
+      card.addEventListener('contextmenu', (ev) => {
+      ev.preventDefault();
+      // The cards sit flush against each other, so "between two slides" has no pixels of
+      // its own. Treat a band at each edge as the seam, the same way dragging reads the
+      // midpoint to decide before or after.
+      const r = card.getBoundingClientRect();
+      const edge = Math.min(10, r.height * 0.18);
+      if (ev.clientY < r.top + edge || ev.clientY > r.bottom - edge) {
+        const after = ev.clientY > r.top + r.height / 2;
+        this.showGapMenu(ref.top + (after ? 1 : 0), { x: ev.clientX, y: ev.clientY });
+        return;
+      }
+      ed.goTo(ref);
+      this.showMenuFor(ref, { x: ev.clientX, y: ev.clientY });
+    });
       card.addEventListener('dblclick', () => this.app.panels.show('html'));
       this.wireDrag(card, ref);
       this.container.appendChild(card);
@@ -217,6 +233,38 @@ export class Navigator {
     else if (ev.key === 'Enter') { ev.preventDefault(); this.app.editor.overlay.el.focus(); }
   }
 
+  /**
+   * Which top-level boundary a point in the rail falls on: 0 above the first slide,
+   * `doc.length` below the last. Sub-slides resolve to their stack's boundary, the same
+   * way dragging one out of its stack does.
+   */
+  private gapAt(y: number): number {
+    const ed = this.app.editor;
+    let index = 0;
+    for (const c of this.cards) {
+      const r = c.el.getBoundingClientRect();
+      if (y > r.top + r.height / 2) index = c.ref.top + 1;
+    }
+    return Math.min(index, ed.doc.length);
+  }
+
+  /** The menu for a gap between two slides: what to put *here*. */
+  showGapMenu(index: number, at: { x: number; y: number }): void {
+    const ed = this.app.editor;
+    const above = index > 0 ? ed.doc.slides[index - 1]?.el : ed.doc.slides[0]?.el;
+    const where = index === 0 ? 'at the top'
+      : index >= ed.doc.length ? 'at the end'
+      : `between ${index} and ${index + 1}`;
+    void showMenu([
+      { label: `New slide ${where}`, icon: 'plus', disabled: !above,
+        onSelect: () => { if (above) ed.addSlide(blankLike(above), index - 1); } },
+      { label: 'New slide from layout…', onSelect: () => { ed.goTo({ top: Math.max(0, index - 1), sub: null }); this.app.showNewSlideMenu(at); } },
+      { separator: true },
+      { label: 'Paste slide here', shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'slides',
+        onSelect: () => ed.pasteSlides(index - 1) },
+    ], at);
+  }
+
   showMenuFor(ref: SlideRef | null, at: { x: number; y: number }): void {
     const ed = this.app.editor;
     const cur = ref ?? ed.current;
@@ -224,7 +272,8 @@ export class Navigator {
     const vis = section?.getAttribute('data-visibility') ?? '';
     const stack = section ? isStack(ed.doc.slides[cur.top].el) : false;
     void showMenu([
-      { label: 'New slide', icon: 'plus', shortcut: `${modKey()}⇧N`, onSelect: () => ed.addSlide(SLIDE_LAYOUTS[2].html(ed.stage.slideSize), cur.top) },
+      { label: 'New slide like this one', icon: 'plus', disabled: !section, onSelect: () => { if (section) ed.addSlide(blankLike(section), cur.top); } },
+      { label: 'New blank slide', shortcut: `${modKey()}⇧N`, onSelect: () => ed.addSlide(SLIDE_LAYOUTS[2].html(ed.stage.slideSize), cur.top) },
       { label: 'New slide from layout…', onSelect: () => this.app.showNewSlideMenu(at) },
       { label: 'Duplicate', icon: 'duplicate', shortcut: `${modKey()}D`, disabled: !section, onSelect: () => ed.duplicateSlide(cur) },
       { separator: true },
