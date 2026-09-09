@@ -2,6 +2,17 @@
 
 All notable changes to Lectern are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.0] — 2026-09-09
+
+### Changed
+- **`N` makes a new slide.** It is the letter people reach for when they want one, and it was
+  spent on a note for AI while new slides sat behind `⌘⇧N`. `N` now inserts a slide after the
+  current one, shaped like it — the same skeleton *New slide like this one* and the seam menu
+  use, so all three agree. `⌘⇧N` still opens the layout picker for a slide of a different
+  shape. Notes lose only the key: right-click anywhere on the slide, double-click an empty
+  spot, or the *Note for AI* button all still place one where you point.
+  ([#5](https://github.com/calumhrmurray/lectern/issues/5))
+
 ## [2.2.1] — 2026-09-09
 
 ### Fixed
