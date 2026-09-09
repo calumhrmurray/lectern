@@ -38,8 +38,7 @@ test('autosave writes edits to disk without pressing save', async ({ page }) => 
   try {
     await page.evaluate(() => (window as unknown as { lectern: { setAutosave: (on: boolean) => void } }).lectern.setAutosave(true));
     await goToSlide(page, 1);
-    await page.locator('.lec-overlay').focus();
-    await page.keyboard.press('n');
+    await page.locator('.lec-btn[data-action="ainote"]').click();
     await page.keyboard.type('autosaved note');
     await page.keyboard.press('Escape');
     await expect(page.locator('.lec-status')).toContainText('autosave');

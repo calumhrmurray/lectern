@@ -29,7 +29,7 @@ PowerPoint- or Keynote-shaped canvas over plain HTML, with the assistant still i
 ## Slides with an AI
 
 Ask your assistant for a deck; it writes an HTML file. Open that file in Lectern and fix the layout by hand while
-the assistant keeps working on the content. Where you want something changed, press **`N`** on the slide and write
+the assistant keeps working on the content. Where you want something changed, right-click the slide and write
 it there — *"draw a whale here"*, *"this is too dense, split it"*. The note is saved in the HTML; the assistant
 lists the notes, does them, and marks each one done (it turns green). Both of you edit the same file, and each sees
 the other's changes within a second.
@@ -76,7 +76,7 @@ class vocabulary, the notes protocol and the editing rules:
 - **Inspector** — position/size, typography, fill/border/shadow, the deck's own CSS classes
   as one-click toggles (`.kicker`, `.tide`, `.fig` …), reveal fragments (effect + order),
   slide backgrounds and transitions, speaker notes, raw HTML of a slide.
-- **Notes for an AI** — press `N` (or *Note for AI*) and write on the slide what you want done there:
+- **Notes for an AI** — right-click the slide (or *Note for AI* in the tools) and write on it what you want done there:
   "draw a whale here", "explain the 1905 law here". Notes are saved in the HTML as
   `<div hidden data-ai-note style="position:absolute;left:…;top:…">…</div>` — invisible when presenting,
   visible as sticky notes while editing, positioned in slide coordinates. The *Notes for AI* panel lists
@@ -176,7 +176,7 @@ your own.
 `⌘C/X/V/D` copy/cut/paste/duplicate · `⌫` delete · arrows nudge (`⇧` 10 px) ·
 `⇧`-drag constrain / keep aspect · `⌥`-drag ignore snapping · `PgUp/PgDn` slides ·
 `⌘⇧N` new slide · `⌘]`/`⌘[` forward/backward · typing with a text object selected edits it ·
-`N` note for AI at the pointer · `M` map · `Q` quiet mode · `Space` (hold) show the chrome · `+ − 0` zoom · `?` full list.
+`N` new slide, shaped like this one · `M` map · `Q` quiet mode · `Space` (hold) show the chrome · `+ − 0` zoom · `?` full list.
 
 ## Development
 
