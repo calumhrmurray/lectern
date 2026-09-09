@@ -194,9 +194,16 @@ export class Interactions {
     const target = this.host.hitTest(ev.clientX, ev.clientY);
     // A note handles its own double-click (comment, or dismiss when it is done).
     if (target && this.host.dblClickTarget?.(target)) return;
-    // Everything else: a note here. It used to edit whatever text was under the
-    // pointer, which meant a full slide had nowhere left to put a note. Text is
-    // edited by selecting it and pressing Enter, or by typing over it.
+    // Text under the pointer: edit it, with the caret where you clicked. This is the
+    // gesture people arrive with, and taking it away made a wordy slide tiring to work
+    // on — every attempt to fix a word left a note to dismiss.
+    if (target && this.host.isTextEditable(target)) {
+      this.host.select([target], 'replace');
+      this.host.startTextEdit(target, { clientX: ev.clientX, clientY: ev.clientY });
+      return;
+    }
+    // Empty canvas: a note here. A dense slide may have no gap left to double-click, so
+    // notes keep their other routes — right-click anywhere on the slide, or `N`.
     this.host.dblClickEmpty?.(ev.clientX, ev.clientY);
   };
 
