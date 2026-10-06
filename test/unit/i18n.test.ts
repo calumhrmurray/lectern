@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import en from '../../src/i18n/locales/en.json';
-import { t } from '../../src/i18n';
+import { LOCALE_KEY, resolveLocale, t } from '../../src/i18n';
 import { ELEMENT_TEMPLATES, SLIDE_LAYOUTS } from '../../src/deck/templates';
 
 const KEY = /^[a-z][a-zA-Z0-9]*(\.[a-zA-Z0-9-]+)+$/;
@@ -55,6 +55,33 @@ describe('i18n catalog', () => {
     for (const f of files) for (const m of readFileSync(f, 'utf8').matchAll(re)) found.push(m[1]);
     expect(found.length).toBeGreaterThan(0);
     expect(found.filter((k) => !has(k))).toEqual([]);
+  });
+
+  it('every locale keeps the same {placeholders} as en', () => {
+    const holes = (s: string): string[] => (s.match(/\{[a-zA-Z]+\}/g) ?? []).sort();
+    const zh = JSON.parse(readFileSync(join(process.cwd(), 'src', 'i18n', 'locales', 'zh-CN.json'), 'utf8')) as Record<string, string>;
+    for (const [k, v] of Object.entries(CATALOG as Record<string, string>)) expect(holes(zh[k] ?? ''), k).toEqual(holes(v));
+  });
+
+  it('resolveLocale prefers a stored choice, then Simplified Chinese, else en', () => {
+    const m = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      get length() { return m.size; },
+      clear: () => m.clear(),
+      getItem: (k: string) => (m.has(k) ? (m.get(k) as string) : null),
+      key: (i: number) => [...m.keys()][i] ?? null,
+      removeItem: (k: string) => { m.delete(k); },
+      setItem: (k: string, v: string) => { m.set(k, String(v)); },
+    });
+    const about = (lang: string): void => { Object.defineProperty(navigator, 'language', { value: lang, configurable: true }); m.clear(); };
+    about('zh-CN'); expect(resolveLocale()).toBe('zh-CN');
+    about('zh-Hans-CN'); expect(resolveLocale()).toBe('zh-CN');
+    about('en-GB'); expect(resolveLocale()).toBe('en');
+    about('zh-TW'); expect(resolveLocale()).toBe('en'); // Traditional falls back to English
+    about('zh-Hant'); expect(resolveLocale()).toBe('en');
+    about('zh-TW'); localStorage.setItem(LOCALE_KEY, 'zh-CN'); expect(resolveLocale()).toBe('zh-CN');
+    about('zh-CN'); localStorage.setItem(LOCALE_KEY, 'en'); expect(resolveLocale()).toBe('en');
+    vi.unstubAllGlobals();
   });
 
   it('t() fills {placeholders} and resolves a plain key', () => {
