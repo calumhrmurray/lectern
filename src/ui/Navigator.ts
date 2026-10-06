@@ -7,6 +7,7 @@ import type { SlideRef } from '../stage/Stage';
 import { h, svgIcon, debounce, modKey } from './dom';
 import { icons } from './icons';
 import { showMenu } from './Menu';
+import { t } from '../i18n';
 
 interface Card { ref: SlideRef; el: HTMLElement; iframe: HTMLIFrameElement; dirty: boolean; visible: boolean }
 
@@ -51,7 +52,7 @@ export class Navigator {
     if (!ed.ready) return;
     const refs = ed.slideRefs();
     if (!refs.length) {
-      this.container.appendChild(h('div', { class: 'lec-nav-empty' }, 'No slides yet.'));
+      this.container.appendChild(h('div', { class: 'lec-nav-empty' }, t('nav.empty')));
     }
     const { width, height } = ed.stage.slideSize;
     const ratio = height / width;
@@ -62,7 +63,7 @@ export class Navigator {
       if (!isSub) n++;
       // sandbox without allow-scripts: a deck's <script>/onerror must not run inside the editor's origin;
       // allow-same-origin keeps service-worker-served images loading. Thumbnails are pure HTML/CSS.
-      const iframe = h('iframe', { title: `Slide ${numLabel}`, loading: 'lazy', tabindex: -1, sandbox: 'allow-same-origin', 'aria-hidden': 'true' });
+      const iframe = h('iframe', { title: t('nav.slide', { n: numLabel }), loading: 'lazy', tabindex: -1, sandbox: 'allow-same-origin', 'aria-hidden': 'true' });
       iframe.width = String(width); iframe.height = String(height);
       const wrap = h('div', { class: 'lec-thumb-wrap', style: `padding-bottom:${(ratio * 100).toFixed(3)}%` }, iframe);
       const section = ed.stage.srcSection(ref);
@@ -70,7 +71,8 @@ export class Navigator {
       const vis = section.getAttribute('data-visibility');
       const card = h('div', {
         class: `lec-slide-card${isSub ? ' lec-sub' : ''}`, draggable: true, dataset: { top: String(ref.top), sub: ref.sub === null ? '' : String(ref.sub) },
-        title: label, role: 'option', id: cardId(ref), 'aria-selected': 'false', 'aria-label': `Slide ${numLabel}${label ? ': ' + label : ''}${vis ? ` (${vis})` : ''}`,
+        title: label, role: 'option', id: cardId(ref), 'aria-selected': 'false',
+        'aria-label': t('nav.slide', { n: numLabel }) + (label ? t('nav.slideLabelSuffix', { label }) : '') + (vis ? t('nav.slideVisSuffix', { vis }) : ''),
       },
         h('div', { class: 'lec-slide-num' }, numLabel),
         h('div', { class: 'lec-thumb' }, wrap, h('div', { class: 'lec-thumb-label' }, label || ' ')),
@@ -78,20 +80,20 @@ export class Navigator {
       );
       card.addEventListener('click', () => { ed.goTo(ref); this.container.focus(); });
       card.addEventListener('contextmenu', (ev) => {
-      ev.preventDefault();
-      // The cards sit flush against each other, so "between two slides" has no pixels of
-      // its own. Treat a band at each edge as the seam, the same way dragging reads the
-      // midpoint to decide before or after.
-      const r = card.getBoundingClientRect();
-      const edge = Math.min(10, r.height * 0.18);
-      if (ev.clientY < r.top + edge || ev.clientY > r.bottom - edge) {
-        const after = ev.clientY > r.top + r.height / 2;
-        this.showGapMenu(ref.top + (after ? 1 : 0), { x: ev.clientX, y: ev.clientY });
-        return;
-      }
-      ed.goTo(ref);
-      this.showMenuFor(ref, { x: ev.clientX, y: ev.clientY });
-    });
+        ev.preventDefault();
+        // The cards sit flush against each other, so "between two slides" has no pixels of
+        // its own. Treat a band at each edge as the seam, the same way dragging reads the
+        // midpoint to decide before or after.
+        const r = card.getBoundingClientRect();
+        const edge = Math.min(10, r.height * 0.18);
+        if (ev.clientY < r.top + edge || ev.clientY > r.bottom - edge) {
+          const after = ev.clientY > r.top + r.height / 2;
+          this.showGapMenu(ref.top + (after ? 1 : 0), { x: ev.clientX, y: ev.clientY });
+          return;
+        }
+        ed.goTo(ref);
+        this.showMenuFor(ref, { x: ev.clientX, y: ev.clientY });
+      });
       card.addEventListener('dblclick', () => this.app.panels.show('html'));
       this.wireDrag(card, ref);
       this.container.appendChild(card);
@@ -99,7 +101,7 @@ export class Navigator {
       this.cards.push(c);
       this.io.observe(card);
     }
-    const addBtn = h('button', { class: 'lec-btn lec-nav-add', type: 'button', title: `New slide (${modKey()}⇧N)`, onclick: (e: MouseEvent) => this.app.showNewSlideMenu(e.currentTarget as HTMLElement) }, svgIcon(icons.plus), 'New slide');
+    const addBtn = h('button', { class: 'lec-btn lec-nav-add', type: 'button', title: t('nav.newSlideTooltip', { key: modKey() }), onclick: (e: MouseEvent) => this.app.showNewSlideMenu(e.currentTarget as HTMLElement) }, svgIcon(icons.plus), t('nav.newSlide'));
     this.container.appendChild(addBtn);
     this.updateCurrent();
     this.fitThumbs();
@@ -213,7 +215,7 @@ export class Navigator {
       if (from.top < target) target--;
       ed.moveSlide(from.top, target);
     } else {
-      this.app.toast('Drag a stacked slide within its own stack, or use the HTML view to move it out.', 'info');
+      this.app.toast(t('nav.dragStacked'), 'info');
     }
   }
 
@@ -228,7 +230,7 @@ export class Navigator {
     else if (ev.key === 'End') { ev.preventDefault(); const r = ed.slideRefs().at(-1); if (r) ed.goTo(r); }
     else if (ev.key === 'Delete' || ev.key === 'Backspace') { ev.preventDefault(); this.app.deleteCurrentSlide(); }
     else if (mod && ev.key.toLowerCase() === 'd') { ev.preventDefault(); ed.duplicateSlide(); }
-    else if (mod && ev.key.toLowerCase() === 'c') { ev.preventDefault(); ed.copySlide(); this.app.toast('Slide copied'); }
+    else if (mod && ev.key.toLowerCase() === 'c') { ev.preventDefault(); ed.copySlide(); this.app.toast(t('nav.slideCopied')); }
     else if (mod && ev.key.toLowerCase() === 'v') { ev.preventDefault(); ed.pasteSlides(); }
     else if (ev.key === 'Enter') { ev.preventDefault(); this.app.editor.overlay.el.focus(); }
   }
@@ -252,16 +254,20 @@ export class Navigator {
   showGapMenu(index: number, at: { x: number; y: number }): void {
     const ed = this.app.editor;
     const above = index > 0 ? ed.doc.slides[index - 1]?.el : ed.doc.slides[0]?.el;
-    const where = index === 0 ? 'at the top'
-      : index >= ed.doc.length ? 'at the end'
-      : `between ${index} and ${index + 1}`;
+    const where = index === 0 ? t('nav.gapTop')
+      : index >= ed.doc.length ? t('nav.gapEnd')
+        : t('nav.gapBetween', { a: index, b: index + 1 });
     void showMenu([
-      { label: `New slide ${where}`, icon: 'plus', disabled: !above,
-        onSelect: () => { if (above) ed.addSlide(blankLike(above), index - 1); } },
-      { label: 'New slide from layout…', onSelect: () => { ed.goTo({ top: Math.max(0, index - 1), sub: null }); this.app.showNewSlideMenu(at); } },
+      {
+        id: `new-slide-gap-${index}`, label: t('nav.newSlideGap', { where }), icon: 'plus', disabled: !above,
+        onSelect: () => { if (above) ed.addSlide(blankLike(above), index - 1); }
+      },
+      { id: 'gap-new-layout', label: t('nav.newSlideLayout'), onSelect: () => { ed.goTo({ top: Math.max(0, index - 1), sub: null }); this.app.showNewSlideMenu(at); } },
       { separator: true },
-      { label: 'Paste slide here', shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'slides',
-        onSelect: () => ed.pasteSlides(index - 1) },
+      {
+        id: 'gap-paste', label: t('nav.pasteHere'), shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'slides',
+        onSelect: () => ed.pasteSlides(index - 1)
+      },
     ], at);
   }
 
@@ -272,21 +278,21 @@ export class Navigator {
     const vis = section?.getAttribute('data-visibility') ?? '';
     const stack = section ? isStack(ed.doc.slides[cur.top].el) : false;
     void showMenu([
-      { label: 'New slide like this one', icon: 'plus', disabled: !section, onSelect: () => { if (section) ed.addSlide(blankLike(section), cur.top); } },
-      { label: 'New blank slide', shortcut: `${modKey()}⇧N`, onSelect: () => ed.addSlide(SLIDE_LAYOUTS[2].html(ed.stage.slideSize), cur.top) },
-      { label: 'New slide from layout…', onSelect: () => this.app.showNewSlideMenu(at) },
-      { label: 'Duplicate', icon: 'duplicate', shortcut: `${modKey()}D`, disabled: !section, onSelect: () => ed.duplicateSlide(cur) },
+      { id: 'slide-new-like-this', label: t('nav.newLikeThis'), icon: 'plus', disabled: !section, onSelect: () => { if (section) ed.addSlide(blankLike(section), cur.top); } },
+      { id: 'slide-new-blank', label: t('nav.newBlank'), shortcut: `${modKey()}⇧N`, onSelect: () => ed.addSlide(SLIDE_LAYOUTS[2].html(ed.stage.slideSize), cur.top) },
+      { id: 'slide-new-layout', label: t('nav.newSlideLayout'), onSelect: () => this.app.showNewSlideMenu(at) },
+      { id: 'slide-duplicate', label: t('nav.duplicate'), icon: 'duplicate', shortcut: `${modKey()}D`, disabled: !section, onSelect: () => ed.duplicateSlide(cur) },
       { separator: true },
-      { label: 'Copy slide', shortcut: `${modKey()}C`, disabled: !section, onSelect: () => { ed.copySlide(cur); this.app.toast('Slide copied'); } },
-      { label: 'Paste slide after', shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'slides', onSelect: () => ed.pasteSlides(cur.top) },
+      { id: 'slide-copy', label: t('nav.copySlide'), shortcut: `${modKey()}C`, disabled: !section, onSelect: () => { ed.copySlide(cur); this.app.toast(t('nav.slideCopied')); } },
+      { id: 'slide-paste-after', label: t('nav.pasteAfter'), shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'slides', onSelect: () => ed.pasteSlides(cur.top) },
       { separator: true },
-      { label: 'Skip in presentation (uncounted)', checked: vis === 'uncounted', disabled: !section || stack, onSelect: () => ed.setSlideAttr(cur, 'data-visibility', vis === 'uncounted' ? null : 'uncounted') },
-      { label: 'Hidden', checked: vis === 'hidden', disabled: !section || stack, onSelect: () => ed.setSlideAttr(cur, 'data-visibility', vis === 'hidden' ? null : 'hidden') },
+      { id: 'slide-skip', label: t('nav.skip'), checked: vis === 'uncounted', disabled: !section || stack, onSelect: () => ed.setSlideAttr(cur, 'data-visibility', vis === 'uncounted' ? null : 'uncounted') },
+      { id: 'slide-hide', label: t('nav.hidden'), checked: vis === 'hidden', disabled: !section || stack, onSelect: () => ed.setSlideAttr(cur, 'data-visibility', vis === 'hidden' ? null : 'hidden') },
       { separator: true },
-      { label: 'Edit HTML', icon: 'code', disabled: !section, onSelect: () => this.app.panels.show('html') },
-      { label: 'Speaker notes', icon: 'notes', disabled: !section, onSelect: () => this.app.panels.show('notes') },
+      { label: t('nav.editHtml'), icon: 'code', disabled: !section, onSelect: () => this.app.panels.show('html') },
+      { label: t('nav.speakerNotes'), icon: 'notes', disabled: !section, onSelect: () => this.app.panels.show('notes') },
       { separator: true },
-      { label: 'Delete slide', icon: 'trash', shortcut: '⌫', disabled: !section, onSelect: () => this.app.deleteCurrentSlide(cur) },
+      { label: t('nav.deleteSlide'), icon: 'trash', shortcut: '⌫', disabled: !section, onSelect: () => this.app.deleteCurrentSlide(cur) },
     ], at);
   }
 }

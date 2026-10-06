@@ -8,12 +8,15 @@
 
 import { escapeHtml } from './html';
 import { themeById, type DeckTheme } from './themes';
+// Key type only: erased at compile time, so this module stays DOM-free and
+// dependency-free for the CLI bundle (scripts/build-cli-lib.mjs).
+import type { MessageKey } from '../i18n';
 
 export interface SlideLayout {
   id: string;
-  name: string;
-  /** Simple textual preview for the menu. */
-  hint: string;
+  nameKey: MessageKey;
+  /** Simple textual preview for the menu; absent on a layout with no hint. */
+  hintKey?: MessageKey;
   html: (ctx: { width: number; height: number }) => string;
 }
 
@@ -57,38 +60,38 @@ export function blankLike(section: Element): string {
 
 export const SLIDE_LAYOUTS: SlideLayout[] = [
   {
-    id: 'blank', name: 'Blank', hint: '',
+    id: 'blank', nameKey: 'slideLayout.blank.name',
     html: () => `<section>\n</section>`,
   },
   {
-    id: 'title', name: 'Title', hint: 'Title + subtitle',
+    id: 'title', nameKey: 'slideLayout.title.name', hintKey: 'slideLayout.title.hint',
     html: () => `<section class="title-slide">\n  <h1>Title</h1>\n  <p class="sub">Subtitle</p>\n</section>`,
   },
   {
-    id: 'title-bullets', name: 'Title & bullets', hint: 'Heading + list',
+    id: 'title-bullets', nameKey: 'slideLayout.title-bullets.name', hintKey: 'slideLayout.title-bullets.hint',
     html: () => `<section>\n  <h2>Heading</h2>\n  <ul>\n    <li>First point</li>\n    <li>Second point</li>\n    <li>Third point</li>\n  </ul>\n</section>`,
   },
   {
-    id: 'title-text', name: 'Title & text', hint: 'Heading + paragraph',
+    id: 'title-text', nameKey: 'slideLayout.title-text.name', hintKey: 'slideLayout.title-text.hint',
     html: () => `<section>\n  <h2>Heading</h2>\n  <p>Text.</p>\n</section>`,
   },
   {
-    id: 'two-cols', name: 'Two columns', hint: 'Heading + two columns',
+    id: 'two-cols', nameKey: 'slideLayout.two-cols.name', hintKey: 'slideLayout.two-cols.hint',
     html: () => `<section>\n  <h2>Heading</h2>\n  <div class="cols" style="display:flex;gap:40px;align-items:flex-start;">\n    <div class="col" style="flex:1;min-width:0;">\n      <ul>\n        <li>Left</li>\n      </ul>\n    </div>\n    <div class="col" style="flex:1;min-width:0;">\n      <ul>\n        <li>Right</li>\n      </ul>\n    </div>\n  </div>\n</section>`,
   },
   {
-    id: 'section', name: 'Section break', hint: 'Big statement',
+    id: 'section', nameKey: 'slideLayout.break.name', hintKey: 'slideLayout.break.hint',
     html: () => `<section class="break">\n  <p class="big">A statement.</p>\n  <p class="sub">Supporting line.</p>\n</section>`,
   },
   {
-    id: 'image', name: 'Heading & image', hint: 'Heading + figure',
+    id: 'image', nameKey: 'slideLayout.image.name', hintKey: 'slideLayout.image.hint',
     html: () => `<section>\n  <h2>Heading</h2>\n  <img class="fig" src="${BLANK_IMAGE}" alt="" style="max-width:100%;max-height:70%;">\n</section>`,
   },
 ];
 
 export interface ElementTemplate {
   id: string;
-  name: string;
+  nameKey: MessageKey;
   html: (box: { x: number; y: number; w: number; h: number }) => string;
 }
 
@@ -99,67 +102,67 @@ function boxStyle(b: { x: number; y: number; w: number; h?: number }, extra = ''
 
 export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
   text: {
-    id: 'text', name: 'Text',
+    id: 'text', nameKey: 'element.text.name',
     html: (b) => `<p style="${boxStyle({ ...b, h: undefined }, 'margin:0;')}">Text</p>`,
   },
   title: {
-    id: 'title', name: 'Title',
+    id: 'title', nameKey: 'element.title.name',
     html: (b) => `<h2 style="${boxStyle({ ...b, h: undefined }, 'margin:0;')}">Title</h2>`,
   },
   bullets: {
-    id: 'bullets', name: 'Bullets',
+    id: 'bullets', nameKey: 'element.bullets.name',
     html: (b) => `<ul style="${boxStyle({ ...b, h: undefined }, 'margin:0;')}">\n  <li>First point</li>\n  <li>Second point</li>\n</ul>`,
   },
   image: {
-    id: 'image', name: 'Image',
+    id: 'image', nameKey: 'element.image.name',
     html: (b) => `<img src="${BLANK_IMAGE}" alt="" style="${boxStyle({ ...b, h: undefined })}">`,
   },
   rect: {
-    id: 'rect', name: 'Rectangle',
+    id: 'rect', nameKey: 'element.rect.name',
     html: (b) => `<div style="${boxStyle(b, 'background:#4a7bd0;border-radius:4px;')}"></div>`,
   },
   'rounded-rect': {
-    id: 'rounded-rect', name: 'Rounded rectangle',
+    id: 'rounded-rect', nameKey: 'element.rounded-rect.name',
     html: (b) => `<div style="${boxStyle(b, 'background:#4a7bd0;border-radius:24px;')}"></div>`,
   },
   ellipse: {
-    id: 'ellipse', name: 'Ellipse',
+    id: 'ellipse', nameKey: 'element.ellipse.name',
     html: (b) => `<div style="${boxStyle(b, 'background:#4a7bd0;border-radius:50%;')}"></div>`,
   },
   outline: {
-    id: 'outline', name: 'Outlined box',
+    id: 'outline', nameKey: 'element.outline.name',
     html: (b) => `<div style="${boxStyle(b, 'border:3px solid var(--ink,currentColor);border-radius:8px;')}"></div>`,
   },
   line: {
-    id: 'line', name: 'Line',
+    id: 'line', nameKey: 'element.line.name',
     html: (b) => lineSvg({ ...b, h: Math.max(b.h, 2) }, false),
   },
   arrow: {
-    id: 'arrow', name: 'Arrow',
+    id: 'arrow', nameKey: 'element.arrow.name',
     html: (b) => lineSvg({ ...b, h: Math.max(b.h, 2) }, true),
   },
   callout: {
-    id: 'callout', name: 'Callout',
+    id: 'callout', nameKey: 'element.callout.name',
     html: (b) => `<div style="${boxStyle(b, 'background:var(--paper-2,#fff3c4);color:var(--ink,#333);border:2px solid var(--accent-2,#e0b400);border-radius:8px;padding:12px 16px;font-size:0.6em;')}">Note</div>`,
   },
   table: {
-    id: 'table', name: 'Table',
+    id: 'table', nameKey: 'element.table.name',
     html: (b) => `<table style="${boxStyle({ ...b, h: undefined })}">\n  <thead>\n    <tr><th scope="col">Column</th><th scope="col">Column</th><th scope="col">Column</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Cell</td><td>Cell</td><td>Cell</td></tr>\n    <tr><td>Cell</td><td>Cell</td><td>Cell</td></tr>\n  </tbody>\n</table>`,
   },
   code: {
-    id: 'code', name: 'Code',
+    id: 'code', nameKey: 'element.code.name',
     html: (b) => `<pre style="${boxStyle({ ...b, h: undefined })}"><code>// code</code></pre>`,
   },
   equation: {
-    id: 'equation', name: 'Equation',
+    id: 'equation', nameKey: 'element.equation.name',
     html: (b) => `<p class="eq" style="${boxStyle({ ...b, h: undefined }, 'margin:0;text-align:center;')}">\\[ E = mc^2 \\]</p>`,
   },
   ainote: {
-    id: 'ainote', name: 'Note for AI',
+    id: 'ainote', nameKey: 'element.ainote.name',
     html: (b) => `<div hidden data-ai-note style="${boxStyle({ ...b, h: undefined })}"><p data-by="author"></p></div>`,
   },
   iframe: {
-    id: 'iframe', name: 'Web embed',
+    id: 'iframe', nameKey: 'element.iframe.name',
     html: (b) => `<iframe src="https://example.com" title="Web embed" style="${boxStyle(b, 'border:0;')}"></iframe>`,
   },
 };

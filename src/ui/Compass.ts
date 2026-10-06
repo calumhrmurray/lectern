@@ -15,6 +15,7 @@ import { slideLabel } from '../deck/html';
 import { sectionIndexAt, sectionsOf, type DeckSection } from '../deck/sections';
 import type { SlideRef } from '../stage/Stage';
 import { h } from './dom';
+import { t } from '../i18n';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -42,11 +43,11 @@ export class Compass {
     this.svg = document.createElementNS(NS, 'svg') as SVGSVGElement;
     this.svg.setAttribute('class', 'lec-compass-svg');
     this.labelEl = h('button', {
-      class: 'lec-compass-label', type: 'button', title: 'Open the map (M)',
+      class: 'lec-compass-label', type: 'button', title: t('compass.openMap'),
       onclick: () => this.app.map.toggle(),
     });
     this.numEl = h('button', {
-      class: 'lec-compass-num', type: 'button', title: 'Open the map (M)',
+      class: 'lec-compass-num', type: 'button', title: t('compass.openMap'),
       onclick: () => this.app.map.toggle(),
     });
     container.append(this.svg, this.labelEl);
@@ -70,7 +71,7 @@ export class Compass {
     const refs = ed.slideRefs();
     this.marks = tops.map((el, top) => ({
       top,
-      label: slideLabel(el, `Slide ${top + 1}`),
+      label: slideLabel(el, t('compass.slideFallback', { n: top + 1 })),
       hidden: el.getAttribute('data-visibility') === 'hidden',
       depth: refs.filter((r) => r.top === top && r.sub !== null).length,
       section: sectionIndexAt(this.sections, top),
@@ -170,7 +171,7 @@ export class Compass {
       hit.setAttribute('class', 'lec-compass-hit');
       const name = this.sections[m.section]?.name;
       const title = document.createElementNS(NS, 'title');
-      title.textContent = `${m.top + 1}. ${m.label}${name ? ` — ${name}` : ''}${m.hidden ? ' (hidden)' : ''}`;
+      title.textContent = `${m.top + 1}. ${m.label}${name ? t('compass.section', { name }) : ''}${m.hidden ? t('compass.hidden') : ''}`;
       hit.appendChild(title);
       hit.addEventListener('click', () => this.app.editor.goTo({ top: m.top, sub: m.depth ? 0 : null }));
       hit.addEventListener('pointerenter', () => { this.hover = m.top; this.setLabel(this.cur()); });
@@ -188,7 +189,7 @@ export class Compass {
     const num = cur ? (cur.sub === null ? `${cur.top + 1}` : `${cur.top + 1}.${cur.sub + 1}`) : '';
     this.labelEl.replaceChildren(name ? h('span', { class: 'lec-compass-section' }, name) : '');
     this.labelEl.hidden = !name;
-    this.labelEl.title = name ? `${name} — open the map (M)` : 'Open the map (M)';
+    this.labelEl.title = name ? t('compass.openMapFor', { name }) : t('compass.openMap');
     this.numEl.textContent = `${num}/${this.marks.length}`;
   }
 }

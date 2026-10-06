@@ -12,6 +12,7 @@
 
 import type { App } from '../app/App';
 import { collectAiNotes } from '../deck/aiNotes';
+import { t } from '../i18n';
 import { h, modKey, svgIcon } from './dom';
 import { icons, type IconName } from './icons';
 import { showMenu } from './Menu';
@@ -26,7 +27,7 @@ export class Tools {
     this.dot = h('span', { class: 'lec-tools-dot' });
     this.button = h('button', {
       class: 'lec-tools-btn', type: 'button', dataset: { action: 'tools' },
-      title: 'Tools', 'aria-expanded': 'false',
+      title: t('tools.button.title'), 'aria-expanded': 'false',
       onclick: () => this.toggle(),
     }, svgIcon(icons.more), this.dot) as HTMLButtonElement;
     this.palette = h('div', { class: 'lec-tools-palette', hidden: true });
@@ -51,9 +52,10 @@ export class Tools {
     const pending = ed.ready ? collectAiNotes(ed.doc).filter((n) => !n.done).length : 0;
     const unsaved = ed.ready && ed.doc.dirty;
     this.dot.classList.toggle('lec-on', pending > 0 || unsaved);
+    this.button.dataset.noteCount = String(pending);
     this.button.title = pending
-      ? `Tools — ${pending} note${pending === 1 ? '' : 's'} waiting`
-      : unsaved ? 'Tools — unsaved' : 'Tools';
+      ? t(pending === 1 ? 'tools.button.notesWaiting.one' : 'tools.button.notesWaiting.other', { count: pending })
+      : unsaved ? t('tools.button.unsaved') : t('tools.button.title');
   }
 
   private fill(): void {
@@ -62,14 +64,14 @@ export class Tools {
     const tool = (id: string, icon: IconName, title: string, run: () => void) =>
       h('button', { class: 'lec-tools-item', type: 'button', dataset: { action: `tool-${id}` }, title, onclick: () => { run(); this.setOpen(false); } }, svgIcon(icons[icon]));
     this.palette.replaceChildren(
-      tool('text', 'text', 'Text', () => ed.insertElement('text')),
-      tool('title', 'title', 'Heading', () => ed.insertElement('title')),
-      tool('bullets', 'bullets', 'Bullet list', () => ed.insertElement('bullets')),
-      tool('image', 'image', 'Image…', () => void app.insertImageViaDialog()),
-      tool('shape', 'shape', 'Rectangle', () => ed.insertElement('rect')),
-      tool('ainote', 'sparkle', 'Note for AI', () => ed.insertElement('ainote', { edit: true })),
+      tool('text', 'text', t('tools.text.title'), () => ed.insertElement('text')),
+      tool('title', 'title', t('tools.heading.title'), () => ed.insertElement('title')),
+      tool('bullets', 'bullets', t('tools.bullets.title'), () => ed.insertElement('bullets')),
+      tool('image', 'image', t('tools.image.title'), () => void app.insertImageViaDialog()),
+      tool('shape', 'shape', t('tools.rectangle.title'), () => ed.insertElement('rect')),
+      tool('ainote', 'sparkle', t('tools.aiNote.title'), () => ed.insertElement('ainote', { edit: true })),
       h('div', { class: 'lec-tools-rule' }),
-      tool('more', 'inspector', 'Everything else', () => this.menu()),
+      tool('more', 'inspector', t('tools.everythingElse.title'), () => this.menu()),
     );
   }
 
@@ -77,17 +79,17 @@ export class Tools {
     const app = this.app;
     const M = modKey();
     void showMenu([
-      { label: 'Show the panels', icon: 'inspector', shortcut: 'Q', onSelect: () => app.setQuiet(false) },
-      { label: 'Map', icon: 'map', shortcut: 'M', onSelect: () => app.map.toggle() },
+      { id: 'menu-show-panels', label: t('menu.showPanels'), icon: 'inspector', shortcut: 'Q', onSelect: () => app.setQuiet(false) },
+      { id: 'menu-map', label: t('menu.map'), icon: 'map', shortcut: 'M', onSelect: () => app.map.toggle() },
       { separator: true },
-      { label: 'Save', icon: 'save', shortcut: `${M}S`, onSelect: () => void app.save() },
-      { label: 'Notes for AI', icon: 'sparkle', onSelect: () => app.panels.show('ai') },
-      { label: 'Speaker notes', icon: 'notes', onSelect: () => app.panels.show('notes') },
-      { label: 'Slide HTML', icon: 'code', onSelect: () => app.panels.show('html') },
+      { id: 'menu-save', label: t('common.save'), icon: 'save', shortcut: `${M}S`, onSelect: () => void app.save() },
+      { id: 'menu-ai-notes', label: t('menu.aiNotes'), icon: 'sparkle', onSelect: () => app.panels.show('ai') },
+      { id: 'menu-speaker-notes', label: t('menu.speakerNotes'), icon: 'notes', onSelect: () => app.panels.show('notes') },
+      { id: 'menu-slide-html', label: t('menu.slideHtml'), icon: 'code', onSelect: () => app.panels.show('html') },
       { separator: true },
-      { label: 'Keyboard shortcuts', icon: 'help', shortcut: '?', onSelect: () => app.showShortcuts() },
-      { label: 'Show the tips again', icon: 'sparkle', onSelect: () => app.tips.reset() },
-      { label: 'Stop showing tips', disabled: !app.tips.enabled, onSelect: () => app.tips.setEnabled(false) },
+      { id: 'menu-shortcuts', label: t('menu.shortcuts'), icon: 'help', shortcut: '?', onSelect: () => app.showShortcuts() },
+      { id: 'menu-show-tips', label: t('menu.showTips'), icon: 'sparkle', onSelect: () => app.tips.reset() },
+      { id: 'menu-stop-tips', label: t('menu.stopTips'), disabled: !app.tips.enabled, onSelect: () => app.tips.setEnabled(false) },
     ], this.button);
   }
 }

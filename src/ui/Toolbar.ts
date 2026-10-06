@@ -1,6 +1,7 @@
 /** The top toolbar. */
 
 import type { App } from '../app/App';
+import { t } from '../i18n';
 import { h, svgIcon, modKey } from './dom';
 import { icons, type IconName } from './icons';
 import { showMenu, type MenuItem } from './Menu';
@@ -39,63 +40,63 @@ export class Toolbar {
     c.replaceChildren();
 
     c.append(
-      this.btn('menu', 'lectern', null, 'Lectern menu', (e) => this.appMenu(e.currentTarget as HTMLElement), { caret: true, cls: 'lec-brand', popup: 'menu' }),
+      this.btn('menu', 'lectern', null, t('toolbar.menu.title'), (e) => this.appMenu(e.currentTarget as HTMLElement), { caret: true, cls: 'lec-brand', popup: 'menu' }),
       sep(),
       group(
-        this.btn('undo', 'undo', null, `Undo (${M}Z)`, () => ed().undo()),
-        this.btn('redo', 'redo', null, `Redo (${M}⇧Z)`, () => ed().redo()),
+        this.btn('undo', 'undo', null, `${t('toolbar.undo.title')} (${M}Z)`, () => ed().undo()),
+        this.btn('redo', 'redo', null, `${t('toolbar.redo.title')} (${M}⇧Z)`, () => ed().redo()),
       ),
       sep(),
       group(
-        this.btn('newslide', 'plus', 'Slide', `New slide (${M}⇧N)`, (e) => app.showNewSlideMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'dialog' }),
+        this.btn('newslide', 'plus', t('toolbar.newSlide.label'), `${t('toolbar.newSlide.title')} (${M}⇧N)`, (e) => app.showNewSlideMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'dialog' }),
       ),
       (this.insertGroup = group(
         sep(),
-        this.btn('text', 'text', 'Text', 'Insert a text box', () => ed().insertElement('text', { edit: true })),
-        this.btn('title', 'title', null, 'Insert a heading', () => ed().insertElement('title', { edit: true })),
-        this.btn('bullets', 'bullets', null, 'Insert a bullet list', () => ed().insertElement('bullets', { edit: true })),
-        this.btn('ainote', 'note', 'Note for AI', 'Leave an instruction on the slide for Claude or a colleague — hidden when presenting (or right-click the slide)', () => ed().insertElement('ainote', { edit: true })),
-        this.btn('image', 'image', 'Image', 'Insert an image', () => void app.insertImageViaDialog()),
-        this.btn('shape', 'shape', 'Shape', 'Insert a shape', (e) => this.shapeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
-        this.btn('more', 'more', null, 'More objects', (e) => this.insertMoreMenu(e.currentTarget as HTMLElement), { popup: 'menu' }),
+        this.btn('text', 'text', t('toolbar.text.label'), t('toolbar.text.title'), () => ed().insertElement('text', { edit: true })),
+        this.btn('title', 'title', null, t('toolbar.heading.title'), () => ed().insertElement('title', { edit: true })),
+        this.btn('bullets', 'bullets', null, t('toolbar.bullets.title'), () => ed().insertElement('bullets', { edit: true })),
+        this.btn('ainote', 'note', t('toolbar.aiNote.label'), t('toolbar.aiNote.title'), () => ed().insertElement('ainote', { edit: true })),
+        this.btn('image', 'image', t('toolbar.image.label'), t('toolbar.image.title'), () => void app.insertImageViaDialog()),
+        this.btn('shape', 'shape', t('toolbar.shape.label'), t('toolbar.shape.title'), (e) => this.shapeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
+        this.btn('more', 'more', null, t('toolbar.more.title'), (e) => this.insertMoreMenu(e.currentTarget as HTMLElement), { popup: 'menu' }),
         sep(),
-        this.btn('arrange', 'objCenterH', 'Arrange', 'Align, distribute, order', (e) => this.arrangeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
+        this.btn('arrange', 'objCenterH', t('toolbar.arrange.label'), t('toolbar.arrange.title'), (e) => this.arrangeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
       )),
       (this.textGroup = group(
         sep(),
-        this.btn('bold', 'bold', null, `Bold (${M}B)`, () => ed().textSession?.exec('bold')),
-        this.btn('italic', 'italic', null, `Italic (${M}I)`, () => ed().textSession?.exec('italic')),
-        this.btn('underline', 'underline', null, `Underline (${M}U)`, () => ed().textSession?.exec('underline')),
-        this.btn('strike', 'strike', null, 'Strikethrough', () => ed().textSession?.exec('strike')),
-        this.btn('ul', 'ul', null, 'Bullet list', () => ed().textSession?.exec('ul')),
-        this.btn('ol', 'ol', null, 'Numbered list', () => ed().textSession?.exec('ol')),
-        this.btn('link', 'link', null, `Link (${M}K)`, () => ed().textSession?.exec('link')),
-        this.btn('done', 'check', 'Done', `Finish editing (Esc)`, () => ed().endTextEdit()),
+        this.btn('bold', 'bold', null, `${t('toolbar.bold.title')} (${M}B)`, () => ed().textSession?.exec('bold')),
+        this.btn('italic', 'italic', null, `${t('toolbar.italic.title')} (${M}I)`, () => ed().textSession?.exec('italic')),
+        this.btn('underline', 'underline', null, `${t('toolbar.underline.title')} (${M}U)`, () => ed().textSession?.exec('underline')),
+        this.btn('strike', 'strike', null, t('toolbar.strike.title'), () => ed().textSession?.exec('strike')),
+        this.btn('ul', 'ul', null, t('toolbar.ul.title'), () => ed().textSession?.exec('ul')),
+        this.btn('ol', 'ol', null, t('toolbar.ol.title'), () => ed().textSession?.exec('ol')),
+        this.btn('link', 'link', null, `${t('toolbar.link.title')} (${M}K)`, () => ed().textSession?.exec('link')),
+        this.btn('done', 'check', t('common.done'), `${t('toolbar.done.title')} (Esc)`, () => ed().endTextEdit()),
       )),
       h('div', { class: 'lec-spacer' }),
       group(
-        this.btn('snap', 'magnet', null, 'Snap to guides', () => { ed().snapping = !ed().snapping; this.update(); }),
+        this.btn('snap', 'magnet', null, t('toolbar.snap.title'), () => { ed().snapping = !ed().snapping; this.update(); }),
       ),
       sep(),
       h('div', { class: 'lec-zoom' },
-        this.btn('zoomout', 'zoomOut', null, 'Zoom out (−)', () => app.zoomBy(-1)),
-        (this.zoomVal = h('span', { class: 'lec-zoom-val', title: 'Zoom to fit', onclick: () => app.setZoom(1) }, 'fit')),
-        this.btn('zoomin', 'zoomIn', null, 'Zoom in (+)', () => app.zoomBy(1)),
+        this.btn('zoomout', 'zoomOut', null, `${t('toolbar.zoomOut.title')} (−)`, () => app.zoomBy(-1)),
+        (this.zoomVal = h('span', { class: 'lec-zoom-val', title: t('toolbar.zoom.fitTitle'), onclick: () => app.setZoom(1) }, t('toolbar.zoom.fit'))),
+        this.btn('zoomin', 'zoomIn', null, `${t('toolbar.zoomIn.title')} (+)`, () => app.zoomBy(1)),
       ),
       sep(),
       group(
-        this.btn('navigator', 'navigator', null, 'Show/hide slide navigator', () => app.toggle('navigator')),
-        this.btn('map', 'map', null, 'Map of the deck — sections across, stacks down (M)', () => app.map.toggle()),
-        this.btn('notes', 'notes', null, 'Speaker notes', () => app.panels.toggle('notes')),
-        this.btn('code', 'code', null, 'Slide HTML', () => app.panels.toggle('html')),
-        this.btn('ainotes', 'sparkle', null, 'All notes for AI in this deck', () => app.panels.toggle('ai')),
-        this.btn('inspector', 'inspector', null, 'Show/hide inspector', () => app.toggle('inspector')),
-        this.btn('quiet', 'quiet', null, 'Quiet mode — hide the panels, keep the compass (Q)', () => app.toggleQuiet()),
+        this.btn('navigator', 'navigator', null, t('toolbar.navigator.title'), () => app.toggle('navigator')),
+        this.btn('map', 'map', null, `${t('toolbar.map.title')} (M)`, () => app.map.toggle()),
+        this.btn('notes', 'notes', null, t('toolbar.speakerNotes.title'), () => app.panels.toggle('notes')),
+        this.btn('code', 'code', null, t('toolbar.slideHtml.title'), () => app.panels.toggle('html')),
+        this.btn('ainotes', 'sparkle', null, t('toolbar.allAiNotes.title'), () => app.panels.toggle('ai')),
+        this.btn('inspector', 'inspector', null, t('toolbar.inspector.title'), () => app.toggle('inspector')),
+        this.btn('quiet', 'quiet', null, `${t('toolbar.quiet.title')} (Q)`, () => app.toggleQuiet()),
       ),
       sep(),
       group(
-        this.btn('present', 'play', 'Present', 'Save and open the presentation in a new tab', () => app.present()),
-        this.btn('save', 'save', 'Save', `Save (${M}S)`, () => void app.save(), { cls: 'lec-warm' }),
+        this.btn('present', 'play', t('common.present'), t('toolbar.present.title'), () => app.present()),
+        this.btn('save', 'save', t('common.save'), `${t('common.save')} (${M}S)`, () => void app.save(), { cls: 'lec-warm' }),
       ),
     );
     this.update();
@@ -115,8 +116,8 @@ export class Toolbar {
     };
     set('undo', ed.history.canUndo);
     set('redo', ed.history.canRedo);
-    this.buttons.get('undo')!.title = `Undo${ed.history.undoLabel ? ' ' + ed.history.undoLabel : ''} (${modKey()}Z)`;
-    this.buttons.get('redo')!.title = `Redo${ed.history.redoLabel ? ' ' + ed.history.redoLabel : ''} (${modKey()}⇧Z)`;
+    this.buttons.get('undo')!.title = `${t('toolbar.undo.title')}${ed.history.undoLabel ? ' ' + ed.history.undoLabel : ''} (${modKey()}Z)`;
+    this.buttons.get('redo')!.title = `${t('toolbar.redo.title')}${ed.history.redoLabel ? ' ' + ed.history.redoLabel : ''} (${modKey()}⇧Z)`;
     for (const id of ['undo', 'redo']) { const b = this.buttons.get(id)!; b.setAttribute('aria-label', plainLabel(b.title)); }
     set('newslide', ed.ready);
     for (const id of ['text', 'title', 'bullets', 'ainote', 'image', 'shape', 'more']) set(id, has);
@@ -137,42 +138,42 @@ export class Toolbar {
     set('code', has, app.panels.visible && app.panels.tab === 'html');
     set('ainotes', has, app.panels.visible && app.panels.tab === 'ai');
     set('zoomin', has); set('zoomout', has);
-    this.zoomVal.textContent = app.zoom === 1 ? 'fit' : `${Math.round(app.zoom * 100)}%`;
+    this.zoomVal.textContent = app.zoom === 1 ? t('toolbar.zoom.fit') : `${Math.round(app.zoom * 100)}%`;
   }
 
   private appMenu(anchor: HTMLElement): void {
     const app = this.app;
     const M = modKey();
     this.openMenu(anchor, [
-      { label: 'Open folder…', icon: 'folder', shortcut: `${M}O`, onSelect: () => void app.openFolder() },
-      { label: 'Open another deck in this folder…', icon: 'file', disabled: !app.workspace, onSelect: () => void app.pickDeckInWorkspace() },
-      { label: 'New deck…', icon: 'plus', onSelect: () => void app.newDeck() },
-      { label: 'Try the demo deck', onSelect: () => void app.openDemo() },
+      { id: 'app-open-folder', label: t('menu.openFolder'), icon: 'folder', shortcut: `${M}O`, onSelect: () => void app.openFolder() },
+      { id: 'app-open-deck', label: t('menu.openDeck'), icon: 'file', disabled: !app.workspace, onSelect: () => void app.pickDeckInWorkspace() },
+      { id: 'app-new-deck', label: t('menu.newDeck'), icon: 'plus', onSelect: () => void app.newDeck() },
+      { id: 'app-demo', label: t('menu.demo'), onSelect: () => void app.openDemo() },
       { separator: true },
-      { label: 'Save', icon: 'save', shortcut: `${M}S`, disabled: !app.editor.ready, onSelect: () => void app.save() },
-      { label: 'Autosave', checked: app.autosave, onSelect: () => app.setAutosave(!app.autosave) },
-      { label: 'Download a copy…', icon: 'download', disabled: !app.editor.ready, onSelect: () => app.download() },
-      { label: 'Export Markdown (Quarto)…', disabled: !app.editor.ready, onSelect: () => app.exportMarkdown() },
-      { label: 'Reload from disk', disabled: !app.editor.ready, onSelect: () => void app.reload() },
+      { id: 'app-save', label: t('common.save'), icon: 'save', shortcut: `${M}S`, disabled: !app.editor.ready, onSelect: () => void app.save() },
+      { id: 'app-autosave', label: t('menu.autosave'), checked: app.autosave, onSelect: () => app.setAutosave(!app.autosave) },
+      { id: 'app-download', label: t('menu.download'), icon: 'download', disabled: !app.editor.ready, onSelect: () => app.download() },
+      { id: 'app-export-md', label: t('menu.exportMarkdown'), disabled: !app.editor.ready, onSelect: () => app.exportMarkdown() },
+      { id: 'app-reload', label: t('menu.reload'), disabled: !app.editor.ready, onSelect: () => void app.reload() },
       { separator: true },
-      { label: 'Present', icon: 'play', disabled: !app.editor.ready, onSelect: () => app.present() },
+      { id: 'app-present', label: t('common.present'), icon: 'play', disabled: !app.editor.ready, onSelect: () => app.present() },
       { separator: true },
-      { label: 'Tutorial', icon: 'help', onSelect: () => app.showTutorial() },
-      { label: 'Keyboard shortcuts', shortcut: '?', onSelect: () => app.showShortcuts() },
-      { label: 'About Lectern', onSelect: () => app.showAbout() },
+      { id: 'app-tutorial', label: t('menu.tutorial'), icon: 'help', onSelect: () => app.showTutorial() },
+      { id: 'app-shortcuts', label: t('menu.shortcuts'), shortcut: '?', onSelect: () => app.showShortcuts() },
+      { id: 'app-about', label: t('menu.about'), onSelect: () => app.showAbout() },
     ]);
   }
 
   private shapeMenu(anchor: HTMLElement): void {
     const ed = this.app.editor;
     const items: MenuItem[] = [
-      { label: 'Rectangle', icon: 'rect', onSelect: () => ed.insertElement('rect') },
-      { label: 'Rounded rectangle', icon: 'rounded', onSelect: () => ed.insertElement('rounded-rect') },
-      { label: 'Ellipse', icon: 'ellipse', onSelect: () => ed.insertElement('ellipse') },
-      { label: 'Outlined box', icon: 'outline', onSelect: () => ed.insertElement('outline') },
-      { label: 'Line', icon: 'line', onSelect: () => ed.insertElement('line') },
-      { label: 'Arrow', icon: 'arrow', onSelect: () => ed.insertElement('arrow') },
-      { label: 'Callout', icon: 'callout', onSelect: () => ed.insertElement('callout', { edit: true }) },
+      { id: 'shape-rect', label: t('menu.shape.rectangle'), icon: 'rect', onSelect: () => ed.insertElement('rect') },
+      { id: 'shape-rounded', label: t('menu.shape.rounded'), icon: 'rounded', onSelect: () => ed.insertElement('rounded-rect') },
+      { id: 'shape-ellipse', label: t('menu.shape.ellipse'), icon: 'ellipse', onSelect: () => ed.insertElement('ellipse') },
+      { id: 'shape-outline', label: t('menu.shape.outline'), icon: 'outline', onSelect: () => ed.insertElement('outline') },
+      { id: 'shape-line', label: t('menu.shape.line'), icon: 'line', onSelect: () => ed.insertElement('line') },
+      { id: 'shape-arrow', label: t('menu.shape.arrow'), icon: 'arrow', onSelect: () => ed.insertElement('arrow') },
+      { id: 'shape-callout', label: t('menu.shape.callout'), icon: 'callout', onSelect: () => ed.insertElement('callout', { edit: true }) },
     ];
     this.openMenu(anchor, items);
   }
@@ -180,12 +181,12 @@ export class Toolbar {
   private insertMoreMenu(anchor: HTMLElement): void {
     const ed = this.app.editor;
     this.openMenu(anchor, [
-      { label: 'Table', icon: 'table', onSelect: () => ed.insertElement('table') },
-      { label: 'Code block', icon: 'code', onSelect: () => ed.insertElement('code', { edit: true }) },
-      { label: 'Equation (LaTeX)', icon: 'equation', onSelect: () => ed.insertElement('equation', { edit: true }), hint: ed.stage.hasMath ? '' : 'no math plugin loaded' },
-      { label: 'Web embed (iframe)', icon: 'embed', onSelect: () => ed.insertElement('iframe') },
+      { id: 'insert-table', label: t('menu.insert.table'), icon: 'table', onSelect: () => ed.insertElement('table') },
+      { id: 'insert-code', label: t('menu.insert.code'), icon: 'code', onSelect: () => ed.insertElement('code', { edit: true }) },
+      { id: 'insert-equation', label: t('menu.insert.equation'), icon: 'equation', onSelect: () => ed.insertElement('equation', { edit: true }), hint: ed.stage.hasMath ? '' : t('menu.insert.noMath') },
+      { id: 'insert-iframe', label: t('menu.insert.iframe'), icon: 'embed', onSelect: () => ed.insertElement('iframe') },
       { separator: true },
-      { label: 'Paste', shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'elements', onSelect: () => ed.paste() },
+      { id: 'insert-paste', label: t('menu.insert.paste'), shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'elements', onSelect: () => ed.paste() },
     ]);
   }
 
@@ -195,23 +196,23 @@ export class Toolbar {
     const el = ed.primary;
     const M = modKey();
     this.openMenu(anchor, [
-      { label: sel.length > 1 ? 'Align objects' : 'Align to slide', title: true },
-      { label: 'Left', icon: 'objLeft', onSelect: () => ed.align('left') },
-      { label: 'Centre', icon: 'objCenterH', onSelect: () => ed.align('center') },
-      { label: 'Right', icon: 'objRight', onSelect: () => ed.align('right') },
-      { label: 'Top', icon: 'objTop', onSelect: () => ed.align('top') },
-      { label: 'Middle', icon: 'objMiddle', onSelect: () => ed.align('middle') },
-      { label: 'Bottom', icon: 'objBottom', onSelect: () => ed.align('bottom') },
+      { label: sel.length > 1 ? t('menu.align.objects') : t('menu.align.slide'), title: true },
+      { id: 'arrange-left', label: t('menu.align.left'), icon: 'objLeft', onSelect: () => ed.align('left') },
+      { id: 'arrange-center', label: t('menu.align.center'), icon: 'objCenterH', onSelect: () => ed.align('center') },
+      { id: 'arrange-right', label: t('menu.align.right'), icon: 'objRight', onSelect: () => ed.align('right') },
+      { id: 'arrange-top', label: t('menu.align.top'), icon: 'objTop', onSelect: () => ed.align('top') },
+      { id: 'arrange-middle', label: t('menu.align.middle'), icon: 'objMiddle', onSelect: () => ed.align('middle') },
+      { id: 'arrange-bottom', label: t('menu.align.bottom'), icon: 'objBottom', onSelect: () => ed.align('bottom') },
       { separator: true },
-      { label: 'Distribute horizontally', icon: 'distributeH', disabled: sel.length < 3, onSelect: () => ed.distribute('h') },
-      { label: 'Distribute vertically', icon: 'distributeV', disabled: sel.length < 3, onSelect: () => ed.distribute('v') },
+      { id: 'arrange-distribute-h', label: t('menu.distribute.h'), icon: 'distributeH', disabled: sel.length < 3, onSelect: () => ed.distribute('h') },
+      { id: 'arrange-distribute-v', label: t('menu.distribute.v'), icon: 'distributeV', disabled: sel.length < 3, onSelect: () => ed.distribute('v') },
       { separator: true },
-      { label: 'Bring to front', icon: 'front', shortcut: `${M}⇧]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'front') },
-      { label: 'Bring forward', icon: 'arrowUp', shortcut: `${M}]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'forward') },
-      { label: 'Send backward', icon: 'arrowDown', shortcut: `${M}[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'backward') },
-      { label: 'Send to back', icon: 'back', shortcut: `${M}⇧[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'back') },
+      { id: 'arrange-front', label: t('menu.order.front'), icon: 'front', shortcut: `${M}⇧]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'front') },
+      { id: 'arrange-forward', label: t('menu.order.forward'), icon: 'arrowUp', shortcut: `${M}]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'forward') },
+      { id: 'arrange-backward', label: t('menu.order.backward'), icon: 'arrowDown', shortcut: `${M}[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'backward') },
+      { id: 'arrange-back', label: t('menu.order.back'), icon: 'back', shortcut: `${M}⇧[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'back') },
       { separator: true },
-      { label: el && ed.isFree(el) ? 'Return to layout flow' : 'Detach from layout (free)', icon: el && ed.isFree(el) ? 'flow' : 'free', disabled: !el, onSelect: () => { for (const s of sel) ed.setFree(s, !ed.isFree(s)); } },
+      { id: 'arrange-free', label: el && ed.isFree(el) ? t('menu.free.return') : t('menu.free.detach'), icon: el && ed.isFree(el) ? 'flow' : 'free', disabled: !el, onSelect: () => { for (const s of sel) ed.setFree(s, !ed.isFree(s)); } },
     ]);
   }
 }

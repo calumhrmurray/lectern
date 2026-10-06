@@ -4,6 +4,8 @@ import { h, svgIcon } from './dom';
 import { icons, type IconName } from './icons';
 
 export interface MenuItem {
+  /** Stable, language-independent handle for tests; becomes `data-action`. */
+  id?: string;
   label?: string;
   icon?: IconName;
   shortcut?: string;
@@ -51,6 +53,7 @@ export function showMenu(items: MenuItem[], anchor: HTMLElement | { x: number; y
       if (it.title) { menu.appendChild(h('div', { class: 'lec-menu-title' }, it.label)); continue; }
       const btn = h('button', {
         class: 'lec-menu-item', type: 'button', disabled: !!it.disabled, role: 'menuitem',
+        dataset: it.id ? { action: it.id } : undefined,
         onclick: () => { close(); it.onSelect?.(); },
       },
         it.checked !== undefined ? h('span', { class: 'lec-check-mark' }, it.checked ? svgIcon(icons.check) : null) : null,

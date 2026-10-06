@@ -19,6 +19,7 @@ import { detectParts } from '../deck/scan';
 import { deckToMarkdown, treeFromDom } from '../deck/markdown';
 import { blankLike, starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
+import { t } from '../i18n';
 import type { SlideRef } from '../stage/Stage';
 import { versionLabel } from '../version';
 import { h, svgIcon } from '../ui/dom';
@@ -89,31 +90,31 @@ export class App {
 
   constructor(readonly root: HTMLElement) {
     const toolbarEl = h('div', { class: 'lec-toolbar', role: 'toolbar' });
-    const navigatorEl = h('div', { class: 'lec-navigator', 'aria-label': 'Slides' });
+    const navigatorEl = h('div', { class: 'lec-navigator', 'aria-label': t('app.slides') });
     const stage = h('div', { class: 'lec-stage lec-empty' });
-    const loading = h('div', { class: 'lec-loading', style: 'display:none' }, 'Loading deck…');
-    const dropzone = h('div', { class: 'lec-dropzone' }, 'Drop images to insert them');
+    const loading = h('div', { class: 'lec-loading', style: 'display:none' }, t('app.loadingDeck'));
+    const dropzone = h('div', { class: 'lec-dropzone' }, t('app.dropImages'));
     const stageWrap = h('div', { class: 'lec-stage-wrap' }, stage, loading, dropzone);
     const panelsEl = h('div', {});
-    const compassEl = h('div', { class: 'lec-compass', 'aria-label': 'Deck position' });
+    const compassEl = h('div', { class: 'lec-compass', 'aria-label': t('app.deckPosition') });
     const glyph = (action: string, icon: 'map' | 'play', title: string, onclick: () => void) =>
       h('button', { class: 'lec-glyph', type: 'button', dataset: { action }, title, onclick }, svgIcon(icons[icon]));
     // Bottom left: where you can go, and everything else. Bottom right: where you are.
     const toolsEl = h('div', { class: 'lec-tools' });
     const barEl = h('div', { class: 'lec-quietbar' },
-      glyph('glyph-map', 'map', 'Map of the deck (M)', () => this.map.toggle()),
-      glyph('glyph-present', 'play', 'Present', () => void this.present()),
+      glyph('glyph-map', 'map', t('app.mapGlyphTitle'), () => this.map.toggle()),
+      glyph('glyph-present', 'play', t('app.present'), () => void this.present()),
       toolsEl,
     );
     const counterEl = h('div', { class: 'lec-counter' });
     const center = h('div', { class: 'lec-center' }, stageWrap, panelsEl);
-    const inspectorEl = h('div', { class: 'lec-inspector', 'aria-label': 'Inspector' });
+    const inspectorEl = h('div', { class: 'lec-inspector', 'aria-label': t('app.inspector') });
     const msg = h('span', { class: 'lec-msg' });
     const pos = h('span', {});
     const path = h('span', { class: 'lec-path' });
     const status = h('div', { class: 'lec-status' }, path, h('span', { class: 'lec-spacer' }), msg, h('span', { class: 'lec-spacer' }), pos);
     const welcome = h('div', { class: 'lec-welcome' });
-    const mapEl = h('div', { class: 'lec-map lec-hidden', 'aria-label': 'Map of the deck' });
+    const mapEl = h('div', { class: 'lec-map lec-hidden', 'aria-label': t('app.map') });
     // The bar and the tools sit above the map overlay: they are the editor's
     // furniture, not the canvas's, and they stay put in every view.
     root.append(toolbarEl, h('div', { class: 'lec-main' }, navigatorEl, center, inspectorEl), status, mapEl, compassEl, barEl, counterEl, welcome);
@@ -196,7 +197,7 @@ export class App {
    */
   async saveExampleToFolder(id: string): Promise<void> {
     const files = EMBEDDED_EXAMPLES[id];
-    if (!files) { this.toast(`Unknown example ${id}`, 'error'); return; }
+    if (!files) { this.toast(t('toast.unknownExample', { id }), 'error'); return; }
     let ws: Workspace; let base = '';
     if (fsaSupported() && window.showDirectoryPicker) {
       let handle: FileSystemDirectoryHandle;
@@ -205,15 +206,15 @@ export class App {
       if (!(await w.ensurePermission('readwrite'))) return;
       await w.serve();
       if ((await w.list('')).some((e) => e.name === 'index.html')) {
-        if (!(await confirmDialog('Folder not empty', 'This folder already has an index.html. Overwrite it?', 'Overwrite'))) return;
+        if (!(await confirmDialog(t('app.folderNotEmpty.title'), t('app.folderNotEmpty.message'), t('common.overwrite')))) return;
       }
       ws = w;
     } else {
       const http = this.workspace?.kind === 'http' ? (this.workspace as HttpWorkspace) : await HttpWorkspace.detect();
-      if (!http) { this.toast('Saving needs the folder picker (Chrome/Edge) or the CLI.', 'error'); return; }
+      if (!http) { this.toast(t('toast.saveNeedsFolderPicker'), 'error'); return; }
       ws = http; base = id;
     }
-    this.setLoading(true, 'Saving the example…');
+    this.setLoading(true, t('app.loadingExample'));
     try {
       await this.installReveal(ws, base);
       for (const [f, text] of Object.entries(files)) {
@@ -226,7 +227,7 @@ export class App {
   /** Opens a bundled example deck in an in-memory workspace (preview only). */
   async openExample(id: string): Promise<void> {
     const files = EMBEDDED_EXAMPLES[id];
-    if (!files) { this.toast(`Unknown example ${id}`, 'error'); return; }
+    if (!files) { this.toast(t('toast.unknownExample', { id }), 'error'); return; }
     const ws = new MemoryWorkspace(id);
     for (const [f, text] of Object.entries(REVEAL_EMBEDDED)) ws.addText(`reveal/${f}`, text);
     for (const [f, text] of Object.entries(files)) {
@@ -234,7 +235,7 @@ export class App {
     }
     await ws.serve();
     await this.openDeck(ws, 'index.html');
-    this.toast('Preview only: this copy lives in memory. Use “Save to a folder” on the welcome screen to keep and edit it.', 'info');
+    this.toast(t('toast.previewOnly'), 'info');
   }
 
   private hideWelcome(): void { this.els.welcome.classList.add('lec-hidden'); }
@@ -242,12 +243,12 @@ export class App {
   // ---------------------------------------------------------------- opening
 
   async openFolder(): Promise<void> {
-    if (!fsaSupported() || !window.showDirectoryPicker) { this.toast('Folder access needs Chrome or Edge. Use the CLI in other browsers.', 'error'); return; }
+    if (!fsaSupported() || !window.showDirectoryPicker) { this.toast(t('toast.folderAccessNeedsChrome'), 'error'); return; }
     let handle: FileSystemDirectoryHandle;
     try { handle = await window.showDirectoryPicker({ mode: 'readwrite', id: 'lectern-deck' }); }
     catch { return; }
     const ws = new FsaWorkspace(handle);
-    if (!(await ws.ensurePermission('readwrite'))) { this.toast('Write permission was not granted.', 'error'); return; }
+    if (!(await ws.ensurePermission('readwrite'))) { this.toast(t('toast.writePermissionDenied'), 'error'); return; }
     await ws.serve();
     const deck = await pickDeckFile(ws);
     if (!deck) return;
@@ -256,11 +257,11 @@ export class App {
 
   async openRecent(r: RecentEntry): Promise<void> {
     const ws = new FsaWorkspace(r.handle, r.id);
-    if (!(await ws.ensurePermission('readwrite'))) { this.toast('Permission to the folder was not granted.', 'error'); return; }
+    if (!(await ws.ensurePermission('readwrite'))) { this.toast(t('toast.folderPermissionDenied'), 'error'); return; }
     await ws.serve();
     if (!(await ws.exists(r.deckPath))) {
       await forgetRecent(r.id);
-      this.toast(`${r.deckPath} no longer exists in ${r.name}.`, 'error');
+      this.toast(t('toast.deckMissing', { path: r.deckPath, name: r.name }), 'error');
       void this.showWelcome();
       return;
     }
@@ -302,15 +303,15 @@ export class App {
       await w.serve();
       const existing = await w.list('');
       if (existing.some((e) => e.name === 'index.html')) {
-        if (!(await confirmDialog('Folder not empty', 'This folder already has an index.html. Overwrite it?', 'Overwrite'))) return;
+        if (!(await confirmDialog(t('app.folderNotEmpty.title'), t('app.folderNotEmpty.message'), t('common.overwrite')))) return;
       }
       ws = w;
     } else {
       ws = new MemoryWorkspace(opts.folderName);
       await (ws as MemoryWorkspace).serve();
-      this.toast('No folder access in this browser — the new deck lives in memory. Use “Download a copy” to keep it.', 'info');
+      this.toast(t('toast.noFolderAccess'), 'info');
     }
-    this.setLoading(true, 'Creating deck…');
+    this.setLoading(true, t('app.loadingCreate'));
     try {
       await this.installReveal(ws, base);
       const theme = themeById(opts.theme);
@@ -318,7 +319,7 @@ export class App {
       await ws.writeText(joinPath(base, 'index.html'), starterDeckHtml({ title: opts.title, author: opts.author, width: opts.width, height: opts.height, revealPath: 'reveal', theme }));
       await this.openDeck(ws, joinPath(base, 'index.html'));
     } catch (err) {
-      this.toast(`Could not create the deck: ${(err as Error).message}`, 'error');
+      this.toast(t('toast.couldNotCreateDeck', { message: (err as Error).message }), 'error');
     } finally {
       this.setLoading(false);
     }
@@ -326,7 +327,7 @@ export class App {
 
   async openDeck(ws: Workspace, deckPath: string): Promise<void> {
     if (!deckPath) return;
-    this.setLoading(true, 'Loading deck…');
+    this.setLoading(true, t('app.loadingDeck'));
     try {
       const text = await ws.readText(deckPath);
       const partPaths = detectParts(text);
@@ -334,7 +335,7 @@ export class App {
       for (const rel of partPaths) {
         const path = resolveRelative(deckPath, rel);
         try { parts.push({ path, text: await ws.readText(path) }); }
-        catch { throw new Error(`This deck loads slides from ${rel}, which could not be read.`); }
+        catch { throw new Error(t('app.partUnreadable', { rel })); }
       }
       const doc = new DeckDocument(text, { path: deckPath, parts });
       this.workspace = ws;
@@ -348,7 +349,7 @@ export class App {
       if (this.inline) {
         this.blobCache = (ws as unknown as { blobs: BlobUrlCache }).blobs;
         this.removeBridge = installFetchBridge(ws, this.blobCache);
-        this.setLoading(true, 'Reading the folder…');
+        this.setLoading(true, t('app.loadingFolder'));
         await this.blobCache.preload();
         this.inlinedHtml = await inlineDeck(ws, deckPath, text, this.blobCache, REVEAL_EMBEDDED);
         const cache = this.blobCache;
@@ -361,7 +362,7 @@ export class App {
       this.themeClasses = discoverThemeClasses(this.editor.stage.doc);
       this.fonts = discoverFontFamilies(this.editor.stage.doc);
       this.thumbs.invalidate();
-      document.title = `${doc.info.title} — Lectern`;
+      document.title = t('app.windowTitle', { title: doc.info.title });
       this.els.path.textContent = `${ws.name} / ${deckPath}`;
       const savedSize = localStorage.getItem(`lectern:size:${ws.name}/${deckPath}`);
       if (savedSize && doc.info.kind === 'plain') { const [w, h] = savedSize.split('x').map(Number); if (w && h) this.editor.stage.setLogicalSize(w, h); }
@@ -381,14 +382,14 @@ export class App {
       this.focusCanvasQuietly();
       await this.recordBaseline();
       this.startWatching();
-      this.toast(`Opened ${basename(deckPath)} · ${this.editor.slideRefs().length} slides`);
+      this.toast(t('toast.opened', { name: basename(deckPath), n: this.editor.slideRefs().length }));
     } catch (err) {
       console.error(err);
       this.els.stage.classList.add('lec-empty');
       this.workspace = null; this.deckPath = '';
       this.hideConflict(); clearInterval(this.watchTimer);
       this.navigator.render(); this.inspector.render(); this.toolbar.update(); this.updateStatus();
-      await modal({ title: 'Could not open the deck', body: [h('p', {}, (err as Error).message), h('p', { class: 'lec-help' }, 'The deck must be a reveal.js page (a global Reveal) or a page of <section> slides. If it loads reveal.js from the internet, check your connection.')] });
+      await modal({ title: t('app.couldNotOpen.title'), body: [h('p', {}, (err as Error).message), h('p', { class: 'lec-help' }, t('app.couldNotOpen.help'))] });
       void this.showWelcome();
     } finally {
       this.setLoading(false);
@@ -447,7 +448,7 @@ export class App {
       if (!changed.length) return;
       if (!this.editor.doc.dirty && !this.editor.textSession && !this.editor.interactions.busy) {
         await this.reloadInPlace();
-        this.setMessage(`Reloaded — ${basename(changed[0])} changed on disk`, 'info');
+        this.setMessage(t('status.reloaded', { name: basename(changed[0]) }), 'info');
       } else {
         this.showConflict(changed);
       }
@@ -456,7 +457,7 @@ export class App {
       if (++this.watchFailures >= 3) {
         clearInterval(this.watchTimer);
         this.watchTimer = 0;
-        this.setMessage('Stopped watching the folder — reopen the deck to see changes made outside the editor', 'info');
+        this.setMessage(t('status.watchStopped'), 'info');
       }
     } finally {
       this.checking = false;
@@ -466,9 +467,9 @@ export class App {
   private showConflict(changed: string[]): void {
     if (this.conflictBanner) return;
     const banner = h('div', { class: 'lec-banner', role: 'alert' },
-      h('span', {}, `${basename(changed[0])} was changed on disk while you have unsaved edits.`),
-      h('button', { class: 'lec-btn', type: 'button', onclick: () => void this.reloadInPlace() }, 'Reload from disk (discard mine)'),
-      h('button', { class: 'lec-btn', type: 'button', onclick: async () => { await this.recordBaseline(); this.hideConflict(); } }, 'Keep mine (overwrite on save)'),
+      h('span', {}, t('banner.changedOnDisk', { name: basename(changed[0]) })),
+      h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'banner-reload' }, onclick: () => void this.reloadInPlace() }, t('banner.reload')),
+      h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'banner-keep-mine' }, onclick: async () => { await this.recordBaseline(); this.hideConflict(); } }, t('banner.keepMine')),
     );
     this.conflictBanner = banner;
     this.els.stageWrap.appendChild(banner);
@@ -481,7 +482,7 @@ export class App {
 
   private async confirmDiscard(): Promise<boolean> {
     if (!this.editor.ready || !this.editor.doc.dirty) return true;
-    return confirmDialog('Unsaved changes', 'Discard the unsaved changes in this deck?', 'Discard');
+    return confirmDialog(t('app.unsaved.title'), t('app.unsaved.message'), t('app.discard'));
   }
 
   // ---------------------------------------------------------------- saving
@@ -510,7 +511,7 @@ export class App {
     const changed = await this.changedOnDisk();
     if (changed.length) {
       if (opts.auto) { this.showConflict(changed); return false; }
-      if (!(await confirmDialog('Changed on disk', `${basename(changed[0])} was modified by another program since you opened it. Overwrite it with your version?`, 'Overwrite'))) {
+      if (!(await confirmDialog(t('app.changedOnDisk.title'), t('app.changedOnDisk.message', { name: basename(changed[0]) }), t('common.overwrite')))) {
         this.showConflict(changed);
         return false;
       }
@@ -530,10 +531,10 @@ export class App {
       this.hideConflict();
       this.toolbar.update();
       this.updateStatus();
-      this.setMessage(opts.auto ? `Autosaved ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : dirty.length > 1 ? `Saved ${dirty.length} files` : 'Saved', 'ok');
+      this.setMessage(opts.auto ? t('status.autosaved', { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }) : dirty.length > 1 ? t('status.savedFiles', { n: dirty.length }) : t('status.saved'), 'ok', opts.auto ? 'autosaved' : 'saved');
       return true;
     } catch (err) {
-      this.toast(`Save failed: ${(err as Error).message}`, 'error');
+      this.toast(t('toast.saveFailed', { message: (err as Error).message }), 'error');
       return false;
     } finally {
       this.saving = false;
@@ -577,7 +578,7 @@ export class App {
         void (async () => {
           const html = await inlineDeck(this.workspace!, this.deckPath, this.editor.doc.serialize(), this.blobCache!, REVEAL_EMBEDDED);
           const w = window.open('', '_blank');
-          if (!w) { this.toast('The browser blocked the presentation window.', 'error'); return; }
+          if (!w) { this.toast(t('toast.presentationBlocked'), 'error'); return; }
           w.document.open(); w.document.write(html); w.document.close();
           w.location.hash = hash;
         })();
@@ -645,7 +646,7 @@ export class App {
         const path = await this.storeImage(f);
         await this.editor.insertImage(relativeTo(this.deckPath, path), await this.assetUrl(path));
       } catch (err) {
-        this.toast(`Could not add ${f.name}: ${(err as Error).message}`, 'error');
+        this.toast(t('toast.couldNotAdd', { name: f.name, message: (err as Error).message }), 'error');
       }
     }
   }
@@ -748,7 +749,7 @@ export class App {
   showTutorial(): void { window.open(TUTORIAL_URL, '_blank', 'noopener'); }
   showAbout(): void { void aboutDialog(); }
 
-  private setLoading(on: boolean, text = 'Loading…'): void {
+  private setLoading(on: boolean, text = t('app.loading')): void {
     this.els.loading.style.display = on ? '' : 'none';
     this.els.loading.textContent = text;
   }
@@ -762,8 +763,9 @@ export class App {
     if (kind === 'error') console.warn(text);
   }
 
-  private setMessage(text: string, kind: 'ok' | 'error' | 'info' = 'info'): void {
+  private setMessage(text: string, kind: 'ok' | 'error' | 'info' = 'info', state = ''): void {
     this.els.msg.textContent = text;
+    this.els.msg.dataset.state = state;
     this.els.msg.className = `lec-msg${kind === 'ok' ? ' lec-ok' : kind === 'error' ? ' lec-error' : ''}`;
     clearTimeout((this.els.msg as HTMLElement & { _t?: number })._t);
     (this.els.msg as HTMLElement & { _t?: number })._t = window.setTimeout(() => { this.els.msg.textContent = ''; }, 3000);
@@ -776,7 +778,9 @@ export class App {
     const i = ed.currentIndexInList();
     const c = ed.current;
     const label = c.sub === null ? `${c.top + 1}` : `${c.top + 1}.${c.sub + 1}`;
-    this.els.pos.textContent = `Slide ${label} · ${i + 1} / ${refs.length}${ed.doc.dirty ? (this.autosave ? ' · saving…' : ' · unsaved') : ''}${this.autosave && this.workspace?.kind !== 'memory' ? ' · autosave' : ''}`;
+    this.els.status.dataset.slide = String(c.top + 1);
+    this.els.status.dataset.state = ed.doc.dirty ? (this.autosave ? 'saving' : 'unsaved') : 'saved';
+    this.els.pos.textContent = t('status.position', { label, i: i + 1, n: refs.length }) + (ed.doc.dirty ? ' · ' + t(this.autosave ? 'status.saving' : 'status.unsaved') : '') + (this.autosave && this.workspace?.kind !== 'memory' ? ' · ' + t('status.autosave') : '');
     this.tools.update();
     this.els.path.textContent = `${this.workspace?.name ?? ''} / ${this.deckPath}${ed.doc.dirty ? ' •' : ''}  ·  Lectern ${versionLabel()}`;
   }
@@ -923,7 +927,7 @@ export class App {
 
     const hasSel = ed.selection().length > 0;
     if (mod && lower === 'a') { stop(); ed.selectAll(); return; }
-    if (mod && lower === 'c') { stop(); if (hasSel) { ed.copy(); this.setMessage('Copied'); } return; }
+    if (mod && lower === 'c') { stop(); if (hasSel) { ed.copy(); this.setMessage(t('status.copied')); } return; }
     if (mod && lower === 'x') { stop(); if (hasSel) ed.cut(); return; }
     if (mod && lower === 'v') { if (ed.clipboard?.kind === 'elements') { stop(); ed.paste(); } return; }
     if (mod && lower === 'd') { stop(); if (hasSel) ed.duplicateSelection(); else ed.duplicateSlide(); return; }

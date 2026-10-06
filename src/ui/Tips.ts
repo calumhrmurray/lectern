@@ -16,11 +16,12 @@
 
 import type { App } from '../app/App';
 import { h } from './dom';
+import { t, type MessageKey } from '../i18n';
 
 export type TipId = 'note' | 'panels' | 'select' | 'stack' | 'autosave' | 'map' | 'room';
 
 interface Tip {
-  text: string;
+  text: MessageKey;
   /** Where to put it; the slide itself when there is nothing better. */
   anchor: (app: App) => DOMRect | null;
   /** Which side of the anchor to sit on. */
@@ -32,37 +33,37 @@ const OFF = 'lectern:tips';
 
 const TIPS: Record<TipId, Tip> = {
   note: {
-    text: 'Right-click anywhere on the slide to leave a note for your assistant — it lands where you point, and it reads them from the file. (Double-click an empty spot does the same.)',
+    text: 'tip.note',
     anchor: (app) => rectOf(app.editor.slideBoxOnPage()),
     place: 'below',
   },
   panels: {
-    text: 'The panels are hidden. Q brings them back, M opens the map, and holding space shows everything for a look.',
+    text: 'tip.panels',
     anchor: (app) => app.barRect(),
     place: 'above',
   },
   select: {
-    text: 'Drag to move it, the handles resize it, Esc lets go. Press Enter — or just start typing — to edit the words.',
+    text: 'tip.select',
     anchor: (app) => rectOf(app.editor.slideBoxOnPage()),
     place: 'below',
   },
   stack: {
-    text: 'This slide has slides below it: ↓ goes down the stack, → goes on to the next one along.',
+    text: 'tip.stack',
     anchor: (app) => app.compassRect(),
     place: 'below',
   },
   autosave: {
-    text: 'Saved as you go, straight into the .html file — no export step.',
+    text: 'tip.autosave',
     anchor: (app) => app.counterRect(),
     place: 'above',
   },
   map: {
-    text: 'Click a title to rename it, drag a card to reorder, or drop one under another to make it a sub-slide.',
+    text: 'tip.map',
     anchor: (app) => app.mapHeadRect(),
     place: 'below',
   },
   room: {
-    text: 'That was the background — click it again for the other room.',
+    text: 'tip.room',
     anchor: (app) => rectOf(app.editor.slideBoxOnPage()),
     place: 'above',
   },
@@ -78,7 +79,7 @@ export class Tips {
   private queue: TipId[] = [];
   private showing: TipId | null = null;
 
-  constructor(readonly app: App) {}
+  constructor(readonly app: App) { }
 
   get enabled(): boolean { return localStorage.getItem(OFF) !== 'off'; }
 
@@ -132,9 +133,9 @@ export class Tips {
     this.showing = id;
     this.remember(id);
 
-    const el = h('div', { class: 'lec-tip', role: 'status' },
-      h('span', {}, tip.text),
-      h('button', { class: 'lec-tip-x', type: 'button', title: 'Got it', onclick: () => this.dismiss() }, 'Got it'),
+    const el = h('div', { class: 'lec-tip', role: 'status', dataset: { tip: id } },
+      h('span', {}, t(tip.text)),
+      h('button', { class: 'lec-tip-x', type: 'button', title: t('tip.gotIt'), dataset: { action: 'tip-dismiss' }, onclick: () => this.dismiss() }, t('tip.gotIt')),
     );
     document.body.appendChild(el);
     this.el = el;
