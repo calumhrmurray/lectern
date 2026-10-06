@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import en from '../../src/i18n/locales/en.json';
 import { LOCALE_KEY, resolveLocale, t } from '../../src/i18n';
 import { ELEMENT_TEMPLATES, SLIDE_LAYOUTS } from '../../src/deck/templates';
+import { DECK_THEMES } from '../../src/deck/themes';
 
 const KEY = /^[a-z][a-zA-Z0-9]*(\.[a-zA-Z0-9-]+)+$/;
 const CATALOG = en as Record<string, unknown>;
@@ -36,6 +37,11 @@ describe('i18n catalog', () => {
       if (l.hintKey && !has(l.hintKey)) missing.push(l.hintKey);
     }
     for (const tpl of Object.values(ELEMENT_TEMPLATES)) if (!has(tpl.nameKey)) missing.push(tpl.nameKey);
+    expect(missing).toEqual([]);
+  });
+
+  it('theme descriptions exist in the catalog', () => {
+    const missing = DECK_THEMES.filter((th) => !has(th.descriptionKey)).map((th) => th.descriptionKey);
     expect(missing).toEqual([]);
   });
 
