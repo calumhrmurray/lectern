@@ -451,6 +451,11 @@
   "tip.room": "That was the background — click it again for the other room.",
   "tip.gotIt": "Got it",
 
+  "theme.paper.description": "Warm off-white, serif headings, amber and indigo accents.",
+  "theme.ink.description": "Dark slate background, bright text, teal accent — good for projectors in bright rooms.",
+  "theme.academic.description": "Plain white, tight typography, one blue accent — for lectures and papers.",
+  "theme.aquarelle.description": "Blue watercolour washes on textured paper, soft serif headings.",
+
   "slideLayout.blank.name": "Blank",
   "slideLayout.title.name": "Title",
   "slideLayout.title.hint": "Title + subtitle",

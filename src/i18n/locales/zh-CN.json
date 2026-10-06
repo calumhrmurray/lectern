@@ -446,6 +446,11 @@
   "tip.map": "点击标题可重命名，拖动卡片可重新排序，或把一张拖到另一张下方使其成为子幻灯片。",
   "tip.room": "那是背景 — 再次点击可切换到另一间房间。",
   "tip.gotIt": "知道了",
+  "theme.paper.description": "温暖的米白、衬线标题，琥珀色与靖蓝色点缀。",
+  "theme.ink.description": "深板岩色背景、明亮文字、青色点缀 — 适合明亮房间里的投影。",
+  "theme.academic.description": "纯白、紧凑排版、单一蓝色点缀 — 适合讲座与论文。",
+  "theme.aquarelle.description": "带纹理纸面上的蓝色水彩晕染，柔和的衬线标题。",
+
   "slideLayout.blank.name": "空白",
   "slideLayout.title.name": "标题",
   "slideLayout.title.hint": "标题 + 副标题",

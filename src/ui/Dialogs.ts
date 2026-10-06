@@ -270,10 +270,10 @@ export async function newDeckDialog(needsFolderName: boolean): Promise<NewDeckOp
   let themeId = DECK_THEMES[0].id;
   const themeGrid = h('div', { class: 'lec-theme-grid' });
   const cards = DECK_THEMES.map((theme) => {
-    const card = h('button', { class: `lec-theme-card${theme.id === themeId ? ' lec-active' : ''}`, type: 'button', dataset: { theme: theme.id }, title: theme.description },
+    const card = h('button', { class: `lec-theme-card${theme.id === themeId ? ' lec-active' : ''}`, type: 'button', dataset: { theme: theme.id }, title: t(theme.descriptionKey) },
       h('div', { class: 'lec-theme-pv', style: `background:${theme.swatch[0]};color:${theme.swatch[1]}` },
         h('i', { style: `background:${theme.swatch[2]}` }), h('b', {}, 'Aa'), h('span', {}, '— — —')),
-      h('b', {}, theme.name), h('span', {}, theme.description));
+      h('b', {}, theme.name), h('span', {}, t(theme.descriptionKey)));
     card.addEventListener('click', () => { themeId = theme.id; for (const c of cards) c.classList.toggle('lec-active', c === card); });
     return card;
   });
