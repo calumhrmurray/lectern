@@ -87,6 +87,12 @@ export class Panels {
     else this.show(tab);
   }
 
+  /** Rebuilds the tab labels (used when the locale changes). */
+  relabel(): void {
+    this.render();
+    if (this.visible) this.update(true);
+  }
+
   private render(): void {
     this.tabsEl.replaceChildren(
       ...PANEL_TABS.map((tab) => h('button', {

@@ -19,7 +19,7 @@ import { detectParts } from '../deck/scan';
 import { deckToMarkdown, treeFromDom } from '../deck/markdown';
 import { blankLike, starterDeckHtml } from '../deck/templates';
 import { themeById } from '../deck/themes';
-import { t } from '../i18n';
+import { rememberLocale, setLocale, t, type Locale } from '../i18n';
 import type { SlideRef } from '../stage/Stage';
 import { versionLabel } from '../version';
 import { h, svgIcon } from '../ui/dom';
@@ -163,6 +163,33 @@ export class App {
     const recents = fsaSupported() ? await listRecents() : [];
     renderWelcome(this, this.els.welcome, recents, fsaSupported(), await this.listExamples());
     this.els.welcome.classList.remove('lec-hidden');
+  }
+
+  /** Switches the editor's language and re-renders every label in place. */
+  setLocaleChoice(l: Locale): void {
+    setLocale(l);
+    rememberLocale(l);
+    document.documentElement.lang = l;
+    this.els.navigator.setAttribute('aria-label', t('common.slides'));
+    this.els.compass.setAttribute('aria-label', t('app.deckPosition'));
+    this.els.inspector.setAttribute('aria-label', t('common.inspector'));
+    this.els.map.setAttribute('aria-label', t('app.map'));
+    this.els.loading.textContent = t('app.loadingDeck');
+    this.els.dropzone.textContent = t('app.dropImages');
+    const glyph = (action: string, title: string) => this.els.bar.querySelector<HTMLElement>(`[data-action="${action}"]`)?.setAttribute('title', title);
+    glyph('glyph-map', t('app.mapGlyphTitle'));
+    glyph('glyph-present', t('common.present'));
+    this.toolbar.rebuild();
+    this.tools.update();
+    this.compass.render();
+    this.map.render();
+    this.navigator.render();
+    this.inspector.render();
+    this.panels.relabel();
+    this.updateStatus();
+    if (this.editor.ready) document.title = t('app.windowTitle', { title: this.editor.doc.info.title });
+    this.tips.dismiss();
+    if (!this.els.welcome.classList.contains('lec-hidden')) void this.showWelcome();
   }
 
   async listExamples(): Promise<ExampleInfo[]> {

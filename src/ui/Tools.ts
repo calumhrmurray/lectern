@@ -12,7 +12,7 @@
 
 import type { App } from '../app/App';
 import { collectAiNotes } from '../deck/aiNotes';
-import { t } from '../i18n';
+import { getLocale, t } from '../i18n';
 import { h, modKey, svgIcon } from './dom';
 import { icons, type IconName } from './icons';
 import { showMenu } from './Menu';
@@ -90,6 +90,9 @@ export class Tools {
       { id: 'menu-shortcuts', label: t('common.shortcuts'), icon: 'help', shortcut: '?', onSelect: () => app.showShortcuts() },
       { id: 'menu-show-tips', label: t('menu.showTips'), icon: 'sparkle', onSelect: () => app.tips.reset() },
       { id: 'menu-stop-tips', label: t('menu.stopTips'), disabled: !app.tips.enabled, onSelect: () => app.tips.setEnabled(false) },
+      { separator: true },
+      { id: 'menu-lang-en', label: 'English', checked: getLocale() === 'en', onSelect: () => app.setLocaleChoice('en') },
+      { id: 'menu-lang-zh', label: '中文', checked: getLocale() === 'zh-CN', onSelect: () => app.setLocaleChoice('zh-CN') },
     ], this.button);
   }
 }

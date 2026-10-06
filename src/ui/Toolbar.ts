@@ -16,6 +16,12 @@ export class Toolbar {
     this.build();
   }
 
+  /** Rebuilds every label (used when the locale changes). */
+  rebuild(): void {
+    this.buttons.clear();
+    this.build();
+  }
+
   private btn(id: string, icon: IconName | null, label: string | null, title: string, onClick: (ev: MouseEvent) => void, opts: { caret?: boolean; cls?: string; popup?: 'menu' | 'dialog' } = {}): HTMLButtonElement {
     const b = h('button', {
       class: `lec-btn${opts.cls ? ' ' + opts.cls : ''}`, type: 'button', title, 'aria-label': plainLabel(title), onclick: onClick, dataset: { action: id },
