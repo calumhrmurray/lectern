@@ -24,7 +24,7 @@ import type { SlideRef } from '../stage/Stage';
 import { versionLabel } from '../version';
 import { h, svgIcon } from '../ui/dom';
 import { icons } from '../ui/icons';
-import { TUTORIAL_URL, aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, renderWelcome, shortcutsDialog, type ExampleInfo } from '../ui/Dialogs';
+import { aboutDialog, confirmDialog, layoutPicker, modal, newDeckDialog, pickDeckFile, pickImage, renderWelcome, shortcutsDialog, tutorialUrl, type ExampleInfo } from '../ui/Dialogs';
 import { Compass } from '../ui/Compass';
 import { Inspector } from '../ui/Inspector';
 import { MapView } from '../ui/MapView';
@@ -773,7 +773,7 @@ export class App {
   }
 
   showShortcuts(): void { void shortcutsDialog(); }
-  showTutorial(): void { window.open(TUTORIAL_URL, '_blank', 'noopener'); }
+  showTutorial(): void { window.open(tutorialUrl(), '_blank', 'noopener'); }
   showAbout(): void { void aboutDialog(); }
 
   private setLoading(on: boolean, text = t('app.loading')): void {

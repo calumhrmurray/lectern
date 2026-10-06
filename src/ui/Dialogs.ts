@@ -8,7 +8,7 @@ import type { DirEntry, Workspace } from '../workspace/Workspace';
 import { h, svgIcon, modKey, isMac } from './dom';
 import { icons } from './icons';
 import { versionLabel } from '../version';
-import { t } from '../i18n';
+import { getLocale, t } from '../i18n';
 
 export interface ModalButton { label: string; primary?: boolean; value: string; disabled?: boolean }
 
@@ -105,7 +105,8 @@ export async function promptDialog(title: string, label: string, value = '', pla
 
 // ---------------------------------------------------------------- welcome
 
-export const TUTORIAL_URL = 'tutorial.html';
+// The tutorial is one static page per language; nothing is swapped at runtime.
+export function tutorialUrl(): string { return getLocale() === 'zh-CN' ? 'tutorial.zh-CN.html' : 'tutorial.html'; }
 export const AGENTS_URL = 'https://github.com/calumhrmurray/lectern/blob/main/AGENTS.md';
 
 export interface ExampleInfo { id: string; title: string; description: string; lang: string; files: string[] }
@@ -115,7 +116,7 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
     h('div', { class: 'lec-welcome-card' },
       h('h1', {}, svgIcon(icons.lectern), 'Lectern'),
       h('p', { class: 'lec-tagline' }, t('welcome.tagline'), h('span', { class: 'lec-sub', title: t('welcome.versionTitle') }, versionLabel())),
-      h('p', { class: 'lec-links' }, t('welcome.newHere'), h('a', { href: TUTORIAL_URL, target: '_blank', rel: 'noopener' }, t('welcome.tutorial')), ' · ', h('a', { href: AGENTS_URL, target: '_blank', rel: 'noopener' }, t('welcome.agents'))),
+      h('p', { class: 'lec-links' }, t('welcome.newHere'), h('a', { href: tutorialUrl(), dataset: { action: 'welcome-tutorial' }, target: '_blank', rel: 'noopener' }, t('welcome.tutorial')), ' · ', h('a', { href: AGENTS_URL, target: '_blank', rel: 'noopener' }, t('welcome.agents'))),
       h('p', { class: 'lec-links lec-lang' },
         h('button', { class: 'lec-lang-btn', type: 'button', dataset: { action: 'lang-en' }, onclick: () => app.setLocaleChoice('en') }, 'English'),
         ' · ',
