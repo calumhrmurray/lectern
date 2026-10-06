@@ -40,7 +40,7 @@ async function openFolderFromFile(page: import('@playwright/test').Page, folder:
     const dirHandle = (d: Extract<Entry, { kind: 'directory' }>): unknown => ({
       kind: 'directory', name: d.name,
       queryPermission: async () => 'granted', requestPermission: async () => 'granted',
-      values: async function* () { for (const c of d.children.values()) yield c.kind === 'file' ? fileHandle(c) : dirHandle(c); },
+      values: async function*() { for (const c of d.children.values()) yield c.kind === 'file' ? fileHandle(c) : dirHandle(c); },
       getDirectoryHandle: async (name: string, o?: { create?: boolean }) => { let c = d.children.get(name); if (!c) { if (!o?.create) throw new DOMException('nope', 'NotFoundError'); c = { kind: 'directory', name, children: new Map() }; d.children.set(name, c); } if (c.kind !== 'directory') throw new DOMException('nope', 'TypeMismatchError'); return dirHandle(c); },
       getFileHandle: async (name: string, o?: { create?: boolean }) => { let c = d.children.get(name); if (!c) { if (!o?.create) throw new DOMException('nope', 'NotFoundError'); c = { kind: 'file', name, data: new Uint8Array(), mtime: Date.now() }; d.children.set(name, c); } if (c.kind !== 'file') throw new DOMException('nope', 'TypeMismatchError'); return fileHandle(c); },
     });
@@ -57,7 +57,7 @@ async function openFolderFromFile(page: import('@playwright/test').Page, folder:
   for (let i = 0; i < files.length; i += 20) {
     await page.evaluate((chunk) => { for (const f of chunk) (window as unknown as { __addFile: (p: string, b64: string) => void }).__addFile(f.path, f.data); }, files.slice(i, i + 20));
   }
-  await page.locator('.lec-welcome-actions .lec-btn', { hasText: 'Open a folder' }).click();
+  await page.locator('[data-action="welcome-open-folder"]').click();
 }
 
 test('Lectern.html works from file:// with a folder handle and no server', async ({ page }) => {
@@ -77,7 +77,7 @@ test('Lectern.html works from file:// with a folder handle and no server', async
   // Edit and save straight to the folder handle.
   await page.evaluate(() => (window as unknown as { lectern: { editor: { addSlide: (h: string) => number } } }).lectern.editor.addSlide('<section><h2>Saved from file mode</h2></section>'));
   await page.keyboard.press(`${mod}+s`);
-  await expect(page.locator('.lec-msg')).toHaveText('Saved');
+  await expect(page.locator('.lec-msg')).toHaveAttribute('data-state', 'saved');
   const saved = await page.evaluate(() => {
     const root = (window as unknown as { __fsRoot: { children: Map<string, { kind: string; data?: Uint8Array }> } }).__fsRoot;
     return new TextDecoder().decode(root.children.get('index.html')!.data);
@@ -96,7 +96,7 @@ test('file:// mode also handles decks that fetch their slides from part files', 
   await page.evaluate(() => (window as unknown as { lectern: { editor: { goTo: (r: { top: number; sub: null }) => void; addSlide: (h: string) => number } } }).lectern.editor.goTo({ top: 2, sub: null }));
   await page.evaluate(() => (window as unknown as { lectern: { editor: { addSlide: (h: string) => number } } }).lectern.editor.addSlide('<section><h2>Added in part two</h2></section>'));
   await page.keyboard.press(`${mod}+s`);
-  await expect(page.locator('.lec-msg')).toHaveText('Saved');
+  await expect(page.locator('.lec-msg')).toHaveAttribute('data-state', 'saved');
   const saved = await page.evaluate(() => {
     const root = (window as unknown as { __fsRoot: { children: Map<string, { children?: Map<string, { data?: Uint8Array }> }> } }).__fsRoot;
     return new TextDecoder().decode(root.children.get('slides')!.children!.get('p1_more.html')!.data);

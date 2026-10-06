@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
 test('the welcome screen opens the in-memory demo through the service worker', async ({ page }) => {
   await page.goto('/?test=1');
   await expect(page.locator('.lec-welcome h1')).toContainText('Lectern');
-  await page.locator('.lec-welcome-actions .lec-btn', { hasText: 'Try the demo' }).click();
+  await page.locator('[data-action="welcome-demo"]').click();
   await page.waitForFunction(() => (window as unknown as { lectern: { editor: { ready: boolean } } }).lectern.editor.ready, null, { timeout: 30_000 });
   await expect(page.locator('.lec-welcome')).toBeHidden();
   await expect(page.locator('.lec-slide-card')).toHaveCount(7);
@@ -14,5 +14,5 @@ test('the welcome screen opens the in-memory demo through the service worker', a
   // Saving works against the in-memory workspace.
   await page.evaluate(() => (window as unknown as { lectern: { editor: { addSlide: (h: string) => number } } }).lectern.editor.addSlide('<section><h2>Demo edit</h2></section>'));
   await page.keyboard.press(process.platform === 'darwin' ? 'Meta+s' : 'Control+s');
-  await expect(page.locator('.lec-msg')).toHaveText('Saved');
+  await expect(page.locator('.lec-msg')).toHaveAttribute('data-state', 'saved');
 });

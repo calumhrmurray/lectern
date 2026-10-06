@@ -57,7 +57,7 @@ test('the welcome screen and a new deck need no network either', async ({ page }
   const escaped = cutTheNetwork(page);
   await page.goto('/?test=1');
   await expect(page.locator('.lec-welcome')).toBeVisible();
-  await page.locator('.lec-welcome-actions .lec-btn', { hasText: 'New deck' }).click();
+  await page.locator('[data-action="welcome-new-deck"]').click();
   await expect(page.locator('.lec-theme-card')).toHaveCount(4);
   await page.keyboard.press('Escape');
   expect(escaped, `these requests tried to leave the machine:\n${escaped.join('\n')}`).toEqual([]);

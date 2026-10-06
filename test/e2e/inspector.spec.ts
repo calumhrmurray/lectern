@@ -14,14 +14,14 @@ test.describe('inspector and arrange', () => {
     expect(await page.evaluate(() => (window as unknown as { lectern: { editor: { primary: Element } } }).lectern.editor.primary.className)).toBe('tide');
 
     // Fragment with an effect
-    await page.locator('.lec-section', { hasText: 'Build' }).locator('input[type=checkbox]').check();
-    await page.locator('.lec-section', { hasText: 'Build' }).locator('select').first().selectOption('fade-up');
+    await page.locator('.lec-section[data-i18n="inspector.build"]').locator('input[type=checkbox]').check();
+    await page.locator('.lec-section[data-i18n="inspector.build"]').locator('select').first().selectOption('fade-up');
     let out = await serialized(page);
     expect(out).toContain('<h2 class="tide fragment fade-up">');
 
     // Detach from layout: becomes absolutely positioned at the same place
     const before = await page.evaluate(() => (window as unknown as { lectern: { editor: { primary: Element; rectOfSrc: (e: Element) => { x: number; y: number; w: number } } } }).lectern.editor.rectOfSrc((window as unknown as { lectern: { editor: { primary: Element } } }).lectern.editor.primary));
-    await page.locator('.lec-seg button', { hasText: 'Free' }).click();
+    await page.locator('.lec-seg button[data-action="seg-free"]').click();
     [sel] = await selectionInfo(page);
     expect(sel.style).toMatch(/position:absolute/);
     const after = await page.evaluate(() => (window as unknown as { lectern: { editor: { primary: Element; rectOfSrc: (e: Element) => { x: number; y: number; w: number } } } }).lectern.editor.rectOfSrc((window as unknown as { lectern: { editor: { primary: Element } } }).lectern.editor.primary));
@@ -67,7 +67,7 @@ test.describe('inspector and arrange', () => {
     await page.evaluate(() => (window as unknown as { lectern: { editor: { align: (h: string) => void } } }).lectern.editor.align('center'));
     const r = await page.evaluate(() => { const ed = (window as unknown as { lectern: { editor: { primary: Element; rectOfSrc: (e: Element) => { x: number; w: number } } } }).lectern.editor; return ed.rectOfSrc(ed.primary); });
     expect(Math.abs(r.x + r.w / 2 - 640)).toBeLessThan(1.5);
-    const rot = page.locator('.lec-section', { hasText: 'Position & size' }).locator('input').nth(4);
+    const rot = page.locator('.lec-section[data-i18n="inspector.positionAndSize"]').locator('input').nth(4);
     await rot.fill('15');
     await rot.press('Enter');
     const [sel] = await selectionInfo(page);

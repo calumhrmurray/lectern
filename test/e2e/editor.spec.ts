@@ -42,7 +42,7 @@ test.describe('selection and moving', () => {
     const [sel] = await selectionInfo(page);
     expect(sel.style).toMatch(/position:\s?relative/);
     expect(sel.style).toMatch(/left:\s?\d+px/);
-    await expect(page.locator('.lec-status')).toContainText('unsaved');
+    await expect(page.locator('.lec-status')).toHaveAttribute('data-state', 'unsaved');
 
     // Undo restores the original inline style (none).
     await page.keyboard.press(`${mod}+z`);
@@ -56,7 +56,7 @@ test.describe('selection and moving', () => {
     const li = await centerOf(page, 'section.present li');
     await page.mouse.click(li.x, li.y);
     expect((await selectionInfo(page)).map((s) => s.tag)).toEqual(['ul']);
-    await page.locator('.lec-crumb', { hasText: 'slide' }).count(); // breadcrumb exists
+    await page.locator('.lec-crumbs [data-i18n="inspector.crumbRoot"]').count(); // breadcrumb exists
     await expect(page.locator('.lec-crumb.lec-active')).toHaveText('ul');
   });
 
@@ -174,7 +174,7 @@ test.describe('slides', () => {
     // the seam above the 5th card is the gap between slides 4 and 5
     await page.mouse.click(b!.x + b!.width / 2, b!.y + 3, { button: 'right' });
     await expect(page.locator('.lec-menu')).toBeVisible();
-    await page.locator('.lec-menu [role="menuitem"]', { hasText: 'New slide between 4 and 5' }).click();
+    await page.locator('.lec-menu [role="menuitem"][data-action="new-slide-gap-4"]').click();
     await expect(cards).toHaveCount(8);
     // it landed in the gap, not after the current slide
     expect(await currentSlide(page)).toEqual({ top: 4, sub: null });
@@ -192,7 +192,7 @@ test.describe('slides', () => {
     const cards = page.locator('.lec-slide-card');
     const b = await cards.nth(4).boundingBox();
     await page.mouse.click(b!.x + b!.width / 2, b!.y + 3, { button: 'right' });
-    await page.locator('.lec-menu [role="menuitem"]', { hasText: 'New slide between 4 and 5' }).click();
+    await page.locator('.lec-menu [role="menuitem"][data-action="new-slide-gap-4"]').click();
     const made = await page.evaluate(() => {
       const el = window.lectern.editor.doc.slides[4].el;
       return { cls: el.getAttribute('class'), imgs: el.querySelectorAll('img').length, html: el.outerHTML };
@@ -223,8 +223,8 @@ test.describe('slides', () => {
   test('slide attributes and notes round-trip', async ({ page }) => {
     await openDeck(page);
     await goToSlide(page, 1);
-    await page.locator('.lec-tabs .lec-tab', { hasText: /^Slide$/ }).click();
-    const color = page.locator('.lec-section', { hasText: 'Background' }).locator('.lec-color .lec-field').first();
+    await page.locator('#lec-insp-tab-slide').click();
+    const color = page.locator('.lec-section[data-i18n="inspector.background"]').locator('.lec-color .lec-field').first();
     await color.fill('#123456');
     await color.press('Enter');
     let out = await serialized(page);
@@ -246,7 +246,7 @@ test.describe('saving', () => {
     await page.mouse.click(div.x, div.y);
     await drag(page, div, { x: div.x + 50, y: div.y });
     await page.keyboard.press(`${mod}+s`);
-    await expect(page.locator('.lec-msg')).toHaveText('Saved');
+    await expect(page.locator('.lec-msg')).toHaveAttribute('data-state', 'saved');
     const after = readDeck();
     expect(after).not.toBe(before);
     // Everything before slide 4 is unchanged.
@@ -260,7 +260,7 @@ test.describe('saving', () => {
     expect(Number(m![1])).toBeGreaterThan(120);
     // untouched declarations keep the author's spelling
     expect(after).toContain('background:#4a7bd0');
-    await expect(page.locator('.lec-status')).not.toContainText('unsaved');
+    await expect(page.locator('.lec-status')).not.toHaveAttribute('data-state', 'unsaved');
     // Leave the fixture as we found it for the other tests.
     writeDeck(before);
   });

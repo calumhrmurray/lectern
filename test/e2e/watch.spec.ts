@@ -17,14 +17,14 @@ test('edits made on disk by another program are picked up automatically', async 
     utimesSync(FILE, future, future); // make sure the mtime moves even on coarse filesystems
     const frame = page.frameLocator('.lec-stage-frame');
     await expect(frame.locator('section.present h2')).toHaveText('Three things, rewritten elsewhere.', { timeout: 10_000 });
-    await expect(page.locator('.lec-status')).toContainText('Slide 2'); // stayed on the same slide
+    await expect(page.locator('.lec-status')).toHaveAttribute('data-slide', '2'); // stayed on the same slide
     // With unsaved local edits, a banner asks instead of clobbering.
     await page.evaluate(() => (window as unknown as { lectern: { editor: { addSlide: (h: string) => number } } }).lectern.editor.addSlide('<section><h2>Local</h2></section>'));
     writeFileSync(FILE, edited.replace('rewritten elsewhere', 'rewritten twice'));
     const later = new Date(Date.now() + 10000);
     utimesSync(FILE, later, later);
     await expect(page.locator('.lec-banner')).toBeVisible({ timeout: 10_000 });
-    await page.locator('.lec-banner .lec-btn', { hasText: 'Reload from disk' }).click();
+    await page.locator('.lec-banner [data-action="banner-reload"]').click();
     await expect(page.locator('.lec-banner')).toHaveCount(0);
     await expect(page.locator('.lec-slide-card')).toHaveCount(7);
   } finally {
