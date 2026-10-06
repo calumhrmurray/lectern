@@ -9,7 +9,7 @@ import { t, type MessageKey } from '../i18n';
 
 export type PanelTab = 'notes' | 'html' | 'ai';
 const PANEL_TABS: PanelTab[] = ['notes', 'html', 'ai'];
-const PANEL_LABELS: Record<PanelTab, MessageKey> = { notes: 'panel.notes', html: 'panel.html', ai: 'panel.ai' };
+const PANEL_LABELS: Record<PanelTab, MessageKey> = { notes: 'common.notes', html: 'common.slideHtml', ai: 'common.notesForAi' };
 
 export class Panels {
   tab: PanelTab = 'notes';

@@ -66,10 +66,10 @@ export class Tools {
     this.palette.replaceChildren(
       tool('text', 'text', t('tools.text.title'), () => ed.insertElement('text')),
       tool('title', 'title', t('tools.heading.title'), () => ed.insertElement('title')),
-      tool('bullets', 'bullets', t('tools.bullets.title'), () => ed.insertElement('bullets')),
+      tool('bullets', 'bullets', t('common.bulletList'), () => ed.insertElement('bullets')),
       tool('image', 'image', t('tools.image.title'), () => void app.insertImageViaDialog()),
-      tool('shape', 'shape', t('tools.rectangle.title'), () => ed.insertElement('rect')),
-      tool('ainote', 'sparkle', t('tools.aiNote.title'), () => ed.insertElement('ainote', { edit: true })),
+      tool('shape', 'shape', t('element.rect.name'), () => ed.insertElement('rect')),
+      tool('ainote', 'sparkle', t('common.noteForAi'), () => ed.insertElement('ainote', { edit: true })),
       h('div', { class: 'lec-tools-rule' }),
       tool('more', 'inspector', t('tools.everythingElse.title'), () => this.menu()),
     );
@@ -80,14 +80,14 @@ export class Tools {
     const M = modKey();
     void showMenu([
       { id: 'menu-show-panels', label: t('menu.showPanels'), icon: 'inspector', shortcut: 'Q', onSelect: () => app.setQuiet(false) },
-      { id: 'menu-map', label: t('menu.map'), icon: 'map', shortcut: 'M', onSelect: () => app.map.toggle() },
+      { id: 'menu-map', label: t('common.map'), icon: 'map', shortcut: 'M', onSelect: () => app.map.toggle() },
       { separator: true },
       { id: 'menu-save', label: t('common.save'), icon: 'save', shortcut: `${M}S`, onSelect: () => void app.save() },
-      { id: 'menu-ai-notes', label: t('menu.aiNotes'), icon: 'sparkle', onSelect: () => app.panels.show('ai') },
-      { id: 'menu-speaker-notes', label: t('menu.speakerNotes'), icon: 'notes', onSelect: () => app.panels.show('notes') },
-      { id: 'menu-slide-html', label: t('menu.slideHtml'), icon: 'code', onSelect: () => app.panels.show('html') },
+      { id: 'menu-ai-notes', label: t('common.notesForAi'), icon: 'sparkle', onSelect: () => app.panels.show('ai') },
+      { id: 'menu-speaker-notes', label: t('common.speakerNotes'), icon: 'notes', onSelect: () => app.panels.show('notes') },
+      { id: 'menu-slide-html', label: t('common.slideHtml'), icon: 'code', onSelect: () => app.panels.show('html') },
       { separator: true },
-      { id: 'menu-shortcuts', label: t('menu.shortcuts'), icon: 'help', shortcut: '?', onSelect: () => app.showShortcuts() },
+      { id: 'menu-shortcuts', label: t('common.shortcuts'), icon: 'help', shortcut: '?', onSelect: () => app.showShortcuts() },
       { id: 'menu-show-tips', label: t('menu.showTips'), icon: 'sparkle', onSelect: () => app.tips.reset() },
       { id: 'menu-stop-tips', label: t('menu.stopTips'), disabled: !app.tips.enabled, onSelect: () => app.tips.setEnabled(false) },
     ], this.button);

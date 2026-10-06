@@ -44,18 +44,18 @@ export class Toolbar {
       sep(),
       group(
         this.btn('undo', 'undo', null, `${t('toolbar.undo.title')} (${M}Z)`, () => ed().undo()),
-        this.btn('redo', 'redo', null, `${t('toolbar.redo.title')} (${M}⇧Z)`, () => ed().redo()),
+        this.btn('redo', 'redo', null, `${t('common.redo')} (${M}⇧Z)`, () => ed().redo()),
       ),
       sep(),
       group(
-        this.btn('newslide', 'plus', t('toolbar.newSlide.label'), `${t('toolbar.newSlide.title')} (${M}⇧N)`, (e) => app.showNewSlideMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'dialog' }),
+        this.btn('newslide', 'plus', t('toolbar.newSlide.label'), `${t('common.newSlide')} (${M}⇧N)`, (e) => app.showNewSlideMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'dialog' }),
       ),
       (this.insertGroup = group(
         sep(),
         this.btn('text', 'text', t('toolbar.text.label'), t('toolbar.text.title'), () => ed().insertElement('text', { edit: true })),
         this.btn('title', 'title', null, t('toolbar.heading.title'), () => ed().insertElement('title', { edit: true })),
         this.btn('bullets', 'bullets', null, t('toolbar.bullets.title'), () => ed().insertElement('bullets', { edit: true })),
-        this.btn('ainote', 'note', t('toolbar.aiNote.label'), t('toolbar.aiNote.title'), () => ed().insertElement('ainote', { edit: true })),
+        this.btn('ainote', 'note', t('common.noteForAi'), t('toolbar.aiNote.title'), () => ed().insertElement('ainote', { edit: true })),
         this.btn('image', 'image', t('toolbar.image.label'), t('toolbar.image.title'), () => void app.insertImageViaDialog()),
         this.btn('shape', 'shape', t('toolbar.shape.label'), t('toolbar.shape.title'), (e) => this.shapeMenu(e.currentTarget as HTMLElement), { caret: true, popup: 'menu' }),
         this.btn('more', 'more', null, t('toolbar.more.title'), (e) => this.insertMoreMenu(e.currentTarget as HTMLElement), { popup: 'menu' }),
@@ -68,7 +68,7 @@ export class Toolbar {
         this.btn('italic', 'italic', null, `${t('toolbar.italic.title')} (${M}I)`, () => ed().textSession?.exec('italic')),
         this.btn('underline', 'underline', null, `${t('toolbar.underline.title')} (${M}U)`, () => ed().textSession?.exec('underline')),
         this.btn('strike', 'strike', null, t('toolbar.strike.title'), () => ed().textSession?.exec('strike')),
-        this.btn('ul', 'ul', null, t('toolbar.ul.title'), () => ed().textSession?.exec('ul')),
+        this.btn('ul', 'ul', null, t('common.bulletList'), () => ed().textSession?.exec('ul')),
         this.btn('ol', 'ol', null, t('toolbar.ol.title'), () => ed().textSession?.exec('ol')),
         this.btn('link', 'link', null, `${t('toolbar.link.title')} (${M}K)`, () => ed().textSession?.exec('link')),
         this.btn('done', 'check', t('common.done'), `${t('toolbar.done.title')} (Esc)`, () => ed().endTextEdit()),
@@ -86,9 +86,9 @@ export class Toolbar {
       sep(),
       group(
         this.btn('navigator', 'navigator', null, t('toolbar.navigator.title'), () => app.toggle('navigator')),
-        this.btn('map', 'map', null, `${t('toolbar.map.title')} (M)`, () => app.map.toggle()),
-        this.btn('notes', 'notes', null, t('toolbar.speakerNotes.title'), () => app.panels.toggle('notes')),
-        this.btn('code', 'code', null, t('toolbar.slideHtml.title'), () => app.panels.toggle('html')),
+        this.btn('map', 'map', null, `${t('common.mapTooltip')} (M)`, () => app.map.toggle()),
+        this.btn('notes', 'notes', null, t('common.speakerNotes'), () => app.panels.toggle('notes')),
+        this.btn('code', 'code', null, t('common.slideHtml'), () => app.panels.toggle('html')),
         this.btn('ainotes', 'sparkle', null, t('toolbar.allAiNotes.title'), () => app.panels.toggle('ai')),
         this.btn('inspector', 'inspector', null, t('toolbar.inspector.title'), () => app.toggle('inspector')),
         this.btn('quiet', 'quiet', null, `${t('toolbar.quiet.title')} (Q)`, () => app.toggleQuiet()),
@@ -117,7 +117,7 @@ export class Toolbar {
     set('undo', ed.history.canUndo);
     set('redo', ed.history.canRedo);
     this.buttons.get('undo')!.title = `${t('toolbar.undo.title')}${ed.history.undoLabel ? ' ' + ed.history.undoLabel : ''} (${modKey()}Z)`;
-    this.buttons.get('redo')!.title = `${t('toolbar.redo.title')}${ed.history.redoLabel ? ' ' + ed.history.redoLabel : ''} (${modKey()}⇧Z)`;
+    this.buttons.get('redo')!.title = `${t('common.redo')}${ed.history.redoLabel ? ' ' + ed.history.redoLabel : ''} (${modKey()}⇧Z)`;
     for (const id of ['undo', 'redo']) { const b = this.buttons.get(id)!; b.setAttribute('aria-label', plainLabel(b.title)); }
     set('newslide', ed.ready);
     for (const id of ['text', 'title', 'bullets', 'ainote', 'image', 'shape', 'more']) set(id, has);
@@ -147,33 +147,33 @@ export class Toolbar {
     this.openMenu(anchor, [
       { id: 'app-open-folder', label: t('menu.openFolder'), icon: 'folder', shortcut: `${M}O`, onSelect: () => void app.openFolder() },
       { id: 'app-open-deck', label: t('menu.openDeck'), icon: 'file', disabled: !app.workspace, onSelect: () => void app.pickDeckInWorkspace() },
-      { id: 'app-new-deck', label: t('menu.newDeck'), icon: 'plus', onSelect: () => void app.newDeck() },
+      { id: 'app-new-deck', label: t('common.newDeck'), icon: 'plus', onSelect: () => void app.newDeck() },
       { id: 'app-demo', label: t('menu.demo'), onSelect: () => void app.openDemo() },
       { separator: true },
       { id: 'app-save', label: t('common.save'), icon: 'save', shortcut: `${M}S`, disabled: !app.editor.ready, onSelect: () => void app.save() },
       { id: 'app-autosave', label: t('menu.autosave'), checked: app.autosave, onSelect: () => app.setAutosave(!app.autosave) },
       { id: 'app-download', label: t('menu.download'), icon: 'download', disabled: !app.editor.ready, onSelect: () => app.download() },
       { id: 'app-export-md', label: t('menu.exportMarkdown'), disabled: !app.editor.ready, onSelect: () => app.exportMarkdown() },
-      { id: 'app-reload', label: t('menu.reload'), disabled: !app.editor.ready, onSelect: () => void app.reload() },
+      { id: 'app-reload', label: t('common.reload'), disabled: !app.editor.ready, onSelect: () => void app.reload() },
       { separator: true },
       { id: 'app-present', label: t('common.present'), icon: 'play', disabled: !app.editor.ready, onSelect: () => app.present() },
       { separator: true },
       { id: 'app-tutorial', label: t('menu.tutorial'), icon: 'help', onSelect: () => app.showTutorial() },
-      { id: 'app-shortcuts', label: t('menu.shortcuts'), shortcut: '?', onSelect: () => app.showShortcuts() },
-      { id: 'app-about', label: t('menu.about'), onSelect: () => app.showAbout() },
+      { id: 'app-shortcuts', label: t('common.shortcuts'), shortcut: '?', onSelect: () => app.showShortcuts() },
+      { id: 'app-about', label: t('common.about'), onSelect: () => app.showAbout() },
     ]);
   }
 
   private shapeMenu(anchor: HTMLElement): void {
     const ed = this.app.editor;
     const items: MenuItem[] = [
-      { id: 'shape-rect', label: t('menu.shape.rectangle'), icon: 'rect', onSelect: () => ed.insertElement('rect') },
-      { id: 'shape-rounded', label: t('menu.shape.rounded'), icon: 'rounded', onSelect: () => ed.insertElement('rounded-rect') },
-      { id: 'shape-ellipse', label: t('menu.shape.ellipse'), icon: 'ellipse', onSelect: () => ed.insertElement('ellipse') },
-      { id: 'shape-outline', label: t('menu.shape.outline'), icon: 'outline', onSelect: () => ed.insertElement('outline') },
-      { id: 'shape-line', label: t('menu.shape.line'), icon: 'line', onSelect: () => ed.insertElement('line') },
-      { id: 'shape-arrow', label: t('menu.shape.arrow'), icon: 'arrow', onSelect: () => ed.insertElement('arrow') },
-      { id: 'shape-callout', label: t('menu.shape.callout'), icon: 'callout', onSelect: () => ed.insertElement('callout', { edit: true }) },
+      { id: 'shape-rect', label: t('element.rect.name'), icon: 'rect', onSelect: () => ed.insertElement('rect') },
+      { id: 'shape-rounded', label: t('element.rounded-rect.name'), icon: 'rounded', onSelect: () => ed.insertElement('rounded-rect') },
+      { id: 'shape-ellipse', label: t('element.ellipse.name'), icon: 'ellipse', onSelect: () => ed.insertElement('ellipse') },
+      { id: 'shape-outline', label: t('element.outline.name'), icon: 'outline', onSelect: () => ed.insertElement('outline') },
+      { id: 'shape-line', label: t('element.line.name'), icon: 'line', onSelect: () => ed.insertElement('line') },
+      { id: 'shape-arrow', label: t('element.arrow.name'), icon: 'arrow', onSelect: () => ed.insertElement('arrow') },
+      { id: 'shape-callout', label: t('element.callout.name'), icon: 'callout', onSelect: () => ed.insertElement('callout', { edit: true }) },
     ];
     this.openMenu(anchor, items);
   }
@@ -181,7 +181,7 @@ export class Toolbar {
   private insertMoreMenu(anchor: HTMLElement): void {
     const ed = this.app.editor;
     this.openMenu(anchor, [
-      { id: 'insert-table', label: t('menu.insert.table'), icon: 'table', onSelect: () => ed.insertElement('table') },
+      { id: 'insert-table', label: t('element.table.name'), icon: 'table', onSelect: () => ed.insertElement('table') },
       { id: 'insert-code', label: t('menu.insert.code'), icon: 'code', onSelect: () => ed.insertElement('code', { edit: true }) },
       { id: 'insert-equation', label: t('menu.insert.equation'), icon: 'equation', onSelect: () => ed.insertElement('equation', { edit: true }), hint: ed.stage.hasMath ? '' : t('menu.insert.noMath') },
       { id: 'insert-iframe', label: t('menu.insert.iframe'), icon: 'embed', onSelect: () => ed.insertElement('iframe') },
@@ -204,13 +204,13 @@ export class Toolbar {
       { id: 'arrange-middle', label: t('menu.align.middle'), icon: 'objMiddle', onSelect: () => ed.align('middle') },
       { id: 'arrange-bottom', label: t('menu.align.bottom'), icon: 'objBottom', onSelect: () => ed.align('bottom') },
       { separator: true },
-      { id: 'arrange-distribute-h', label: t('menu.distribute.h'), icon: 'distributeH', disabled: sel.length < 3, onSelect: () => ed.distribute('h') },
-      { id: 'arrange-distribute-v', label: t('menu.distribute.v'), icon: 'distributeV', disabled: sel.length < 3, onSelect: () => ed.distribute('v') },
+      { id: 'arrange-distribute-h', label: t('common.distributeH'), icon: 'distributeH', disabled: sel.length < 3, onSelect: () => ed.distribute('h') },
+      { id: 'arrange-distribute-v', label: t('common.distributeV'), icon: 'distributeV', disabled: sel.length < 3, onSelect: () => ed.distribute('v') },
       { separator: true },
-      { id: 'arrange-front', label: t('menu.order.front'), icon: 'front', shortcut: `${M}⇧]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'front') },
-      { id: 'arrange-forward', label: t('menu.order.forward'), icon: 'arrowUp', shortcut: `${M}]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'forward') },
-      { id: 'arrange-backward', label: t('menu.order.backward'), icon: 'arrowDown', shortcut: `${M}[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'backward') },
-      { id: 'arrange-back', label: t('menu.order.back'), icon: 'back', shortcut: `${M}⇧[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'back') },
+      { id: 'arrange-front', label: t('common.bringToFront'), icon: 'front', shortcut: `${M}⇧]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'front') },
+      { id: 'arrange-forward', label: t('common.bringForward'), icon: 'arrowUp', shortcut: `${M}]`, disabled: !el, onSelect: () => el && ed.reorder(el, 'forward') },
+      { id: 'arrange-backward', label: t('common.sendBackward'), icon: 'arrowDown', shortcut: `${M}[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'backward') },
+      { id: 'arrange-back', label: t('common.sendToBack'), icon: 'back', shortcut: `${M}⇧[`, disabled: !el, onSelect: () => el && ed.reorder(el, 'back') },
       { separator: true },
       { id: 'arrange-free', label: el && ed.isFree(el) ? t('menu.free.return') : t('menu.free.detach'), icon: el && ed.isFree(el) ? 'flow' : 'free', disabled: !el, onSelect: () => { for (const s of sel) ed.setFree(s, !ed.isFree(s)); } },
     ]);

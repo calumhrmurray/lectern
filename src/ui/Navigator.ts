@@ -52,7 +52,7 @@ export class Navigator {
     if (!ed.ready) return;
     const refs = ed.slideRefs();
     if (!refs.length) {
-      this.container.appendChild(h('div', { class: 'lec-nav-empty' }, t('nav.empty')));
+      this.container.appendChild(h('div', { class: 'lec-nav-empty' }, t('common.noSlidesYet')));
     }
     const { width, height } = ed.stage.slideSize;
     const ratio = height / width;
@@ -101,7 +101,7 @@ export class Navigator {
       this.cards.push(c);
       this.io.observe(card);
     }
-    const addBtn = h('button', { class: 'lec-btn lec-nav-add', type: 'button', title: t('nav.newSlideTooltip', { key: modKey() }), onclick: (e: MouseEvent) => this.app.showNewSlideMenu(e.currentTarget as HTMLElement) }, svgIcon(icons.plus), t('nav.newSlide'));
+    const addBtn = h('button', { class: 'lec-btn lec-nav-add', type: 'button', title: t('nav.newSlideTooltip', { key: modKey() }), onclick: (e: MouseEvent) => this.app.showNewSlideMenu(e.currentTarget as HTMLElement) }, svgIcon(icons.plus), t('common.newSlide'));
     this.container.appendChild(addBtn);
     this.updateCurrent();
     this.fitThumbs();
@@ -281,7 +281,7 @@ export class Navigator {
       { id: 'slide-new-like-this', label: t('nav.newLikeThis'), icon: 'plus', disabled: !section, onSelect: () => { if (section) ed.addSlide(blankLike(section), cur.top); } },
       { id: 'slide-new-blank', label: t('nav.newBlank'), shortcut: `${modKey()}⇧N`, onSelect: () => ed.addSlide(SLIDE_LAYOUTS[2].html(ed.stage.slideSize), cur.top) },
       { id: 'slide-new-layout', label: t('nav.newSlideLayout'), onSelect: () => this.app.showNewSlideMenu(at) },
-      { id: 'slide-duplicate', label: t('nav.duplicate'), icon: 'duplicate', shortcut: `${modKey()}D`, disabled: !section, onSelect: () => ed.duplicateSlide(cur) },
+      { id: 'slide-duplicate', label: t('common.duplicate'), icon: 'duplicate', shortcut: `${modKey()}D`, disabled: !section, onSelect: () => ed.duplicateSlide(cur) },
       { separator: true },
       { id: 'slide-copy', label: t('nav.copySlide'), shortcut: `${modKey()}C`, disabled: !section, onSelect: () => { ed.copySlide(cur); this.app.toast(t('nav.slideCopied')); } },
       { id: 'slide-paste-after', label: t('nav.pasteAfter'), shortcut: `${modKey()}V`, disabled: ed.clipboard?.kind !== 'slides', onSelect: () => ed.pasteSlides(cur.top) },
@@ -289,10 +289,10 @@ export class Navigator {
       { id: 'slide-skip', label: t('nav.skip'), checked: vis === 'uncounted', disabled: !section || stack, onSelect: () => ed.setSlideAttr(cur, 'data-visibility', vis === 'uncounted' ? null : 'uncounted') },
       { id: 'slide-hide', label: t('nav.hidden'), checked: vis === 'hidden', disabled: !section || stack, onSelect: () => ed.setSlideAttr(cur, 'data-visibility', vis === 'hidden' ? null : 'hidden') },
       { separator: true },
-      { label: t('nav.editHtml'), icon: 'code', disabled: !section, onSelect: () => this.app.panels.show('html') },
-      { label: t('nav.speakerNotes'), icon: 'notes', disabled: !section, onSelect: () => this.app.panels.show('notes') },
+      { label: t('common.editHtml'), icon: 'code', disabled: !section, onSelect: () => this.app.panels.show('html') },
+      { label: t('common.speakerNotes'), icon: 'notes', disabled: !section, onSelect: () => this.app.panels.show('notes') },
       { separator: true },
-      { label: t('nav.deleteSlide'), icon: 'trash', shortcut: '⌫', disabled: !section, onSelect: () => this.app.deleteCurrentSlide(cur) },
+      { label: t('common.deleteSlide'), icon: 'trash', shortcut: '⌫', disabled: !section, onSelect: () => this.app.deleteCurrentSlide(cur) },
     ], at);
   }
 }

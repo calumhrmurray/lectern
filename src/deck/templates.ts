@@ -158,7 +158,7 @@ export const ELEMENT_TEMPLATES: Record<string, ElementTemplate> = {
     html: (b) => `<p class="eq" style="${boxStyle({ ...b, h: undefined }, 'margin:0;text-align:center;')}">\\[ E = mc^2 \\]</p>`,
   },
   ainote: {
-    id: 'ainote', nameKey: 'element.ainote.name',
+    id: 'ainote', nameKey: 'common.noteForAi',
     html: (b) => `<div hidden data-ai-note style="${boxStyle({ ...b, h: undefined })}"><p data-by="author"></p></div>`,
   },
   iframe: {

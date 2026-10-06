@@ -120,7 +120,7 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
         h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'welcome-open-folder' }, disabled: !fsaOk, onclick: () => void app.openFolder() },
           svgIcon(icons.folder), h('b', {}, t('welcome.openFolder.title')), h('span', {}, fsaOk ? t('welcome.openFolder.hint') : t('welcome.openFolder.unsupported'))),
         h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'welcome-new-deck' }, onclick: () => void app.newDeck() },
-          svgIcon(icons.plus), h('b', {}, t('welcome.newDeck.title')), h('span', {}, t('welcome.newDeck.hint'))),
+          svgIcon(icons.plus), h('b', {}, t('common.newDeck')), h('span', {}, t('welcome.newDeck.hint'))),
         h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'welcome-demo' }, onclick: () => void app.openDemo() },
           svgIcon(icons.play), h('b', {}, t('welcome.demo.title')), h('span', {}, t('welcome.demo.hint'))),
       ),
@@ -244,7 +244,7 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
       status, fileInput),
     images.length ? grid : h('p', { class: 'lec-help' }, t('pick.image.none')),
   ];
-  const v = await modal({ title: t('pick.image.title'), body, wide: true, buttons: [{ label: t('common.cancel'), value: 'cancel' }, { label: t('common.insert'), value: 'ok', primary: true }] });
+  const v = await modal({ title: t('common.chooseImage'), body, wide: true, buttons: [{ label: t('common.cancel'), value: 'cancel' }, { label: t('common.insert'), value: 'ok', primary: true }] });
   if (uploaded) return uploaded;
   return v === 'ok' ? chosen : null;
 }
@@ -279,7 +279,7 @@ export async function newDeckDialog(needsFolderName: boolean): Promise<NewDeckOp
     body: [
       h('div', { class: 'lec-row' }, h('label', {}, t('newDeck.field.title')), title),
       h('div', { class: 'lec-row' }, h('label', {}, t('newDeck.field.author')), author),
-      h('div', { class: 'lec-row' }, h('label', {}, t('newDeck.field.size')), size),
+      h('div', { class: 'lec-row' }, h('label', {}, t('common.slideSize')), size),
       h('div', { class: 'lec-row lec-row-wide' }, h('label', {}, t('newDeck.field.theme'))),
       themeGrid,
       needsFolderName ? h('div', { class: 'lec-row' }, h('label', {}, t('newDeck.field.folder')), folder) : h('p', { class: 'lec-help' }, t('newDeck.folderHelp')),
@@ -288,7 +288,7 @@ export async function newDeckDialog(needsFolderName: boolean): Promise<NewDeckOp
   });
   if (v !== 'ok') return null;
   const [w, hgt] = size.value.split('x').map(Number);
-  return { title: title.value.trim() || t('newDeck.untitled'), author: author.value.trim(), width: w, height: hgt, folderName: folder.value.trim() || 'deck', theme: themeId };
+  return { title: title.value.trim() || t('common.untitled'), author: author.value.trim(), width: w, height: hgt, folderName: folder.value.trim() || 'deck', theme: themeId };
 }
 
 function slug(s: string): string {
@@ -309,7 +309,7 @@ export function layoutPicker(app: App, at: HTMLElement | { x: number; y: number 
   void at;
   return new Promise((resolve) => {
     let closing = false;
-    const p = modal({ title: t('layout.title'), body: grid, wide: true, buttons: [{ label: t('common.cancel'), value: 'cancel' }] });
+    const p = modal({ title: t('common.newSlide'), body: grid, wide: true, buttons: [{ label: t('common.cancel'), value: 'cancel' }] });
     done = () => { if (!closing) { closing = true; (document.querySelector('.lec-modal-backdrop .lec-modal-head .lec-btn') as HTMLButtonElement | null)?.click(); } };
     void p.then(() => resolve());
   });
@@ -335,20 +335,20 @@ export function shortcutsDialog(): Promise<string> {
   const M = isMac() ? '⌘' : 'Ctrl';
   const row = (k: string, d: string) => h('div', {}, h('span', {}, d), h('span', { class: 'lec-kbd' }, k));
   return modal({
-    title: t('shortcuts.title'), wide: true,
+    title: t('common.shortcuts'), wide: true,
     body: h('div', { class: 'lec-shortcuts' },
-      row(`${M} S`, t('shortcuts.save')), row(`${M} O`, t('shortcuts.openFolder')),
-      row(`${M} Z / ${M} ⇧ Z`, t('shortcuts.undoRedo')), row(`${M} Y`, t('shortcuts.redo')),
+      row(`${M} S`, t('common.save')), row(`${M} O`, t('shortcuts.openFolder')),
+      row(`${M} Z / ${M} ⇧ Z`, t('shortcuts.undoRedo')), row(`${M} Y`, t('common.redo')),
       row('Double-click', t('shortcuts.editText')), row('Esc', t('shortcuts.stopEditing')),
-      row(`${M} C / X / V`, t('shortcuts.copyCutPaste')), row(`${M} D`, t('shortcuts.duplicate')),
+      row(`${M} C / X / V`, t('shortcuts.copyCutPaste')), row(`${M} D`, t('common.duplicate')),
       row('⌫', t('shortcuts.delete')), row(`${M} A`, t('shortcuts.selectAll')),
       row('Arrows', t('shortcuts.nudge')), row('⇧ drag', t('shortcuts.constrain')),
       row('⌥ drag', t('shortcuts.ignoreSnapping')), row('Click selected text', t('shortcuts.caret')),
       row('PgUp / PgDn', t('shortcuts.prevNext')), row('Home / End', t('shortcuts.firstLast')),
-      row(`${M} C / ${M} V`, t('shortcuts.copyPasteSlides')), row(`${M} ⇧ N`, t('shortcuts.newSlide')),
+      row(`${M} C / ${M} V`, t('shortcuts.copyPasteSlides')), row(`${M} ⇧ N`, t('common.newSlide')),
       row(`${M} ] / ${M} [`, t('shortcuts.bringForward')), row(`${M} ⇧ ] / [`, t('shortcuts.frontBack')),
       row('⏎', t('shortcuts.editSelected')), row('Type', t('shortcuts.typeText')), row('N', t('shortcuts.newSlideShaped')), row('right-click / double-click', t('shortcuts.noteForAi')), row('+ / − / 0', t('shortcuts.zoom')),
-      row('M', t('shortcuts.map')), row('Q', t('shortcuts.quietRoom')), row('Space (hold)', t('shortcuts.peek')),
+      row('M', t('common.mapTooltip')), row('Q', t('shortcuts.quietRoom')), row('Space (hold)', t('shortcuts.peek')),
       row('Drag · double / triple-click', t('shortcuts.selectText')), row(`${M} B / I / U / K`, t('shortcuts.textFormatting')), row('Tab / ⇧ Tab', t('shortcuts.indent')),
       row(`${M} ⏎`, t('shortcuts.finishEditing')), row('?', t('shortcuts.thisList')),
     ),
@@ -357,7 +357,7 @@ export function shortcutsDialog(): Promise<string> {
 
 export function aboutDialog(): Promise<string> {
   return modal({
-    title: t('about.title'),
+    title: t('common.about'),
     body: [
       h('p', {}, t('about.intro')),
       h('p', { class: 'lec-help' }, t('about.license')),

@@ -43,7 +43,7 @@ export class MapView {
     this.grid = h('div', { class: 'lec-map-grid', tabindex: 0 });
     container.append(
       h('div', { class: 'lec-map-head' },
-        h('span', { class: 'lec-map-title' }, t('map.title')),
+        h('span', { class: 'lec-map-title' }, t('common.map')),
         this.countEl,
         h('span', { class: 'lec-spacer', style: 'flex:1' }),
         h('span', { class: 'lec-map-hint' }, t('map.hint')),
@@ -100,7 +100,7 @@ export class MapView {
     this.cards = [];
     this.grid.replaceChildren();
     if (!ed.ready || !ed.doc.length) {
-      this.grid.appendChild(h('div', { class: 'lec-nav-empty' }, t('map.empty')));
+      this.grid.appendChild(h('div', { class: 'lec-nav-empty' }, t('common.noSlidesYet')));
       this.countEl.textContent = '';
       return;
     }
@@ -208,7 +208,7 @@ export class MapView {
       h('button', {
         class: 'lec-map-cardlabel', type: 'button', title: t('map.renameSlide'),
         onclick: (ev: MouseEvent) => { ev.stopPropagation(); void this.renameSlide(ref); },
-      }, label || t('map.untitled')),
+      }, label || t('common.untitled')),
       vis ? h('span', { class: 'lec-map-badge' }, vis) : null,
       notes ? h('span', { class: 'lec-map-note', title: notes === 1 ? t('map.notesWaitingOne', { count: notes }) : t('map.notesWaitingMany', { count: notes }) }) : null,
     );
@@ -313,8 +313,8 @@ export class MapView {
       },
       { separator: true },
       { label: t('map.hiddenWhenPresenting'), checked: vis === 'hidden', onSelect: () => ed.setSlideAttr(ref, 'data-visibility', vis === 'hidden' ? null : 'hidden') },
-      { label: t('map.duplicate'), onSelect: () => ed.duplicateSlide(ref) },
-      { label: t('map.deleteSlide'), onSelect: () => ed.deleteSlide(ref) },
+      { label: t('common.duplicate'), onSelect: () => ed.duplicateSlide(ref) },
+      { label: t('common.deleteSlide'), onSelect: () => ed.deleteSlide(ref) },
     ], at);
   }
 
@@ -324,9 +324,9 @@ export class MapView {
    */
   private async newSlide(after: number, opts: { below?: boolean } = {}): Promise<void> {
     const ed = this.app.editor;
-    const title = await promptDialog(opts.below ? t('map.newSlideBelowMenu') : t('map.newSlide'), t('map.fieldTitle'), '', t('map.titlePlaceholder'));
+    const title = await promptDialog(opts.below ? t('map.newSlideBelowMenu') : t('common.newSlide'), t('map.fieldTitle'), '', t('map.titlePlaceholder'));
     if (title === null) return;
-    const heading = escapeHtml(title.trim() || t('map.untitled'));
+    const heading = escapeHtml(title.trim() || t('common.untitled'));
     const at = ed.addSlide(`<section>\n  <h2>${heading}</h2>\n</section>`, after);
     if (opts.below) ed.nestSlide(at, after);
     this.render();

@@ -90,7 +90,7 @@ export class App {
 
   constructor(readonly root: HTMLElement) {
     const toolbarEl = h('div', { class: 'lec-toolbar', role: 'toolbar' });
-    const navigatorEl = h('div', { class: 'lec-navigator', 'aria-label': t('app.slides') });
+    const navigatorEl = h('div', { class: 'lec-navigator', 'aria-label': t('common.slides') });
     const stage = h('div', { class: 'lec-stage lec-empty' });
     const loading = h('div', { class: 'lec-loading', style: 'display:none' }, t('app.loadingDeck'));
     const dropzone = h('div', { class: 'lec-dropzone' }, t('app.dropImages'));
@@ -103,12 +103,12 @@ export class App {
     const toolsEl = h('div', { class: 'lec-tools' });
     const barEl = h('div', { class: 'lec-quietbar' },
       glyph('glyph-map', 'map', t('app.mapGlyphTitle'), () => this.map.toggle()),
-      glyph('glyph-present', 'play', t('app.present'), () => void this.present()),
+      glyph('glyph-present', 'play', t('common.present'), () => void this.present()),
       toolsEl,
     );
     const counterEl = h('div', { class: 'lec-counter' });
     const center = h('div', { class: 'lec-center' }, stageWrap, panelsEl);
-    const inspectorEl = h('div', { class: 'lec-inspector', 'aria-label': t('app.inspector') });
+    const inspectorEl = h('div', { class: 'lec-inspector', 'aria-label': t('common.inspector') });
     const msg = h('span', { class: 'lec-msg' });
     const pos = h('span', {});
     const path = h('span', { class: 'lec-path' });

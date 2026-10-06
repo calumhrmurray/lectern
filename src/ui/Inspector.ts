@@ -25,7 +25,7 @@ export class Inspector {
   private geometryInputs: Partial<Record<'x' | 'y' | 'w' | 'h' | 'r', HTMLInputElement>> = {};
 
   constructor(readonly app: App, readonly container: HTMLElement) {
-    this.tabsEl = h('div', { class: 'lec-tabs', role: 'tablist', 'aria-label': t('inspector.ariaLabel') });
+    this.tabsEl = h('div', { class: 'lec-tabs', role: 'tablist', 'aria-label': t('common.inspector') });
     this.body = h('div', { class: 'lec-insp-body', role: 'tabpanel', id: 'lec-insp-panel' });
     container.append(this.tabsEl, this.body);
     // Left/Right arrows move between tabs (roving focus: only the active tab is in the Tab order).
@@ -203,7 +203,7 @@ export class Inspector {
     if (tag === 'img') {
       const srcInput = textField(el.getAttribute('src') ?? '', (v) => ed.setAttr('src', v, 'Image source'));
       this.section('inspector.image', null,
-        h('div', { class: 'lec-row' }, h('label', {}, t('inspector.source')), srcInput, h('button', { class: 'lec-btn', type: 'button', title: t('inspector.chooseImage'), onclick: async () => { const pick = await this.app.chooseImage(); if (pick) ed.setAttr('src', pick.src, 'Image source'); } }, svgIcon(icons.folder))),
+        h('div', { class: 'lec-row' }, h('label', {}, t('inspector.source')), srcInput, h('button', { class: 'lec-btn', type: 'button', title: t('common.chooseImage'), onclick: async () => { const pick = await this.app.chooseImage(); if (pick) ed.setAttr('src', pick.src, 'Image source'); } }, svgIcon(icons.folder))),
         h('div', { class: 'lec-row' }, h('label', {}, t('inspector.altText')), textField(el.getAttribute('alt') ?? '', (v) => ed.setAttr('alt', v, 'Alt text'))),
         h('div', { class: 'lec-row' }, h('label', {}, t('inspector.fit')), selectField(['', 'contain', 'cover', 'fill'], (el as HTMLElement).style.objectFit || '', (v) => ed.setStyles({ 'object-fit': v || null }, 'Object fit'))),
       );
@@ -262,14 +262,14 @@ export class Inspector {
         ...(['left', 'center', 'right', 'top', 'middle', 'bottom'] as const).map((how) =>
           h('button', { class: 'lec-btn', type: 'button', title: t(multi ? 'inspector.alignTo' : 'inspector.alignToSlide', { how: t(ALIGN_LABELS[how]) }), 'aria-label': t(multi ? 'inspector.alignTo' : 'inspector.alignToSlide', { how: t(ALIGN_LABELS[how]) }), onclick: () => ed.align(how) },
             svgIcon(icons[({ left: 'objLeft', center: 'objCenterH', right: 'objRight', top: 'objTop', middle: 'objMiddle', bottom: 'objBottom' } as const)[how]]))),
-        h('button', { class: 'lec-btn', type: 'button', title: t('inspector.distributeH'), 'aria-label': t('inspector.distributeH'), disabled: ed.selection().length < 3, onclick: () => ed.distribute('h') }, svgIcon(icons.distributeH)),
-        h('button', { class: 'lec-btn', type: 'button', title: t('inspector.distributeV'), 'aria-label': t('inspector.distributeV'), disabled: ed.selection().length < 3, onclick: () => ed.distribute('v') }, svgIcon(icons.distributeV)),
+        h('button', { class: 'lec-btn', type: 'button', title: t('common.distributeH'), 'aria-label': t('common.distributeH'), disabled: ed.selection().length < 3, onclick: () => ed.distribute('h') }, svgIcon(icons.distributeH)),
+        h('button', { class: 'lec-btn', type: 'button', title: t('common.distributeV'), 'aria-label': t('common.distributeV'), disabled: ed.selection().length < 3, onclick: () => ed.distribute('v') }, svgIcon(icons.distributeV)),
       ),
       h('div', { class: 'lec-btn-row', style: 'margin-top:6px' },
-        h('button', { class: 'lec-btn', type: 'button', title: t('inspector.bringToFront'), 'aria-label': t('inspector.bringToFront'), onclick: () => ed.reorder(el, 'front') }, svgIcon(icons.front), t('inspector.front')),
-        h('button', { class: 'lec-btn', type: 'button', title: t('inspector.bringForward'), 'aria-label': t('inspector.bringForward'), onclick: () => ed.reorder(el, 'forward') }, svgIcon(icons.arrowUp)),
-        h('button', { class: 'lec-btn', type: 'button', title: t('inspector.sendBackward'), 'aria-label': t('inspector.sendBackward'), onclick: () => ed.reorder(el, 'backward') }, svgIcon(icons.arrowDown)),
-        h('button', { class: 'lec-btn', type: 'button', title: t('inspector.sendToBack'), 'aria-label': t('inspector.sendToBack'), onclick: () => ed.reorder(el, 'back') }, svgIcon(icons.back), t('inspector.back')),
+        h('button', { class: 'lec-btn', type: 'button', title: t('common.bringToFront'), 'aria-label': t('common.bringToFront'), onclick: () => ed.reorder(el, 'front') }, svgIcon(icons.front), t('inspector.front')),
+        h('button', { class: 'lec-btn', type: 'button', title: t('common.bringForward'), 'aria-label': t('common.bringForward'), onclick: () => ed.reorder(el, 'forward') }, svgIcon(icons.arrowUp)),
+        h('button', { class: 'lec-btn', type: 'button', title: t('common.sendBackward'), 'aria-label': t('common.sendBackward'), onclick: () => ed.reorder(el, 'backward') }, svgIcon(icons.arrowDown)),
+        h('button', { class: 'lec-btn', type: 'button', title: t('common.sendToBack'), 'aria-label': t('common.sendToBack'), onclick: () => ed.reorder(el, 'back') }, svgIcon(icons.back), t('inspector.back')),
       ),
       h('div', { class: 'lec-help' }, t('inspector.arrangeHelp')),
     );
@@ -300,7 +300,7 @@ export class Inspector {
     if (isReveal) this.section('inspector.background', null,
       h('div', { class: 'lec-row' }, h('label', {}, t('inspector.colour')), colorField(attr('data-background-color') || null, (v) => set('data-background-color')(v), true)),
       h('div', { class: 'lec-row' }, h('label', {}, t('inspector.image')), imgInput,
-        h('button', { class: 'lec-btn', type: 'button', title: t('inspector.chooseImage'), onclick: async () => { const pick = await this.app.chooseImage(); if (pick) set('data-background-image')(pick.src); } }, svgIcon(icons.folder))),
+        h('button', { class: 'lec-btn', type: 'button', title: t('common.chooseImage'), onclick: async () => { const pick = await this.app.chooseImage(); if (pick) set('data-background-image')(pick.src); } }, svgIcon(icons.folder))),
       h('div', { class: 'lec-row' }, h('label', {}, t('inspector.size')), selectField(['', 'cover', 'contain', 'auto', '100% 100%'], attr('data-background-size'), (v) => set('data-background-size')(v), (v) => v || t('inspector.backgroundSizeDefault'))),
       h('div', { class: 'lec-row' }, h('label', {}, t('inspector.position')), selectField(['', 'center', 'top', 'bottom', 'left', 'right', 'top left', 'top right', 'bottom left', 'bottom right'], attr('data-background-position'), (v) => set('data-background-position')(v), (v) => v || t('inspector.backgroundPositionDefault'))),
       h('div', { class: 'lec-row' }, h('label', {}, t('inspector.opacity')), numberField(attr('data-background-opacity') ? Math.round(parseFloat(attr('data-background-opacity')) * 100) : 100, (n) => set('data-background-opacity')(n >= 100 ? null : String(n / 100)), 5, 0, 100), h('span', { class: 'lec-unit' }, '%'), h('span', { class: 'lec-fill' })),
@@ -339,8 +339,8 @@ export class Inspector {
     this.section('inspector.advanced', null,
       h('div', { class: 'lec-row' }, h('label', {}, t('inspector.id')), textField(section.id, (v) => set('id')(v))),
       h('div', { class: 'lec-btn-row', style: 'margin-top:6px' },
-        h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.panels.show('html') }, svgIcon(icons.code), t('inspector.editHtml')),
-        h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.panels.show('notes') }, svgIcon(icons.notes), t('inspector.notes')),
+        h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.panels.show('html') }, svgIcon(icons.code), t('common.editHtml')),
+        h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.panels.show('notes') }, svgIcon(icons.notes), t('common.notes')),
         h('button', { class: 'lec-btn', type: 'button', onclick: () => ed.duplicateSlide(ref) }, svgIcon(icons.duplicate), t('common.duplicate')),
         h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.deleteCurrentSlide(ref) }, svgIcon(icons.trash), t('inspector.delete')),
       ),
@@ -364,10 +364,10 @@ export class Inspector {
         h('dt', {}, t('inspector.title')), h('dd', {}, info.title),
         h('dt', {}, ed.doc.isMultiFile ? t('inspector.files') : t('inspector.file')), h('dd', {}, ed.doc.isMultiFile ? ed.doc.sources.map((s) => s.path).join(', ') : this.app.deckPath),
         h('dt', {}, t('inspector.folder')), h('dd', {}, this.app.workspace?.name ?? '—'),
-        h('dt', {}, t('inspector.slideSize')), h('dd', {}, plain
+        h('dt', {}, t('common.slideSize')), h('dd', {}, plain
           ? selectField(['1280x720', '1920x1080', '1600x900', '1024x768', '1440x900'], `${logical.width}x${logical.height}`, (v) => { const [w, hh] = v.split('x').map(Number); ed.stage.setLogicalSize(w, hh); localStorage.setItem(sizeKey, v); this.app.navigator.render(); this.app.navigator.invalidate(null); }, (v) => v.replace('x', ' × '))
           : `${size.width} × ${size.height}`),
-        h('dt', {}, t('inspector.slides')), h('dd', {}, `${refs.length}${refs.length !== ed.doc.length ? t('inspector.topLevelCount', { n: ed.doc.length }) : ''}`),
+        h('dt', {}, t('common.slides')), h('dd', {}, `${refs.length}${refs.length !== ed.doc.length ? t('inspector.topLevelCount', { n: ed.doc.length }) : ''}`),
         plain ? null : h('dt', {}, t('inspector.centred')), plain ? null : h('dd', {}, cfg.center ? t('inspector.yes') : t('inspector.no')),
         h('dt', {}, t('inspector.math')), h('dd', {}, ed.stage.hasMath ? t('inspector.mathLoaded') : t('inspector.noTypesetter')),
         h('dt', {}, t('inspector.themeClasses')), h('dd', {}, String(this.app.themeClasses.length)),
@@ -381,7 +381,7 @@ export class Inspector {
         h('button', { class: 'lec-btn', type: 'button', onclick: () => void this.app.save() }, svgIcon(icons.save), t('common.save')),
         h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.present() }, svgIcon(icons.play), t('common.present')),
         h('button', { class: 'lec-btn', type: 'button', onclick: () => this.app.download() }, svgIcon(icons.download), t('inspector.downloadHtml')),
-        h('button', { class: 'lec-btn', type: 'button', onclick: () => void this.app.reload() }, t('inspector.reload')),
+        h('button', { class: 'lec-btn', type: 'button', onclick: () => void this.app.reload() }, t('common.reload')),
       ),
     );
   }
