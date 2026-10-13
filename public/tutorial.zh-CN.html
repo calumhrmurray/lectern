@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>五分钟上手 Lectern</title>
-  <meta name="description" content="一份关于 Lectern 的简短教程 —— 面向 HTML / reveal.js 幻灯片演示文稿的可视化编辑器：打开演示文稿、移动与编辑内容、添加幻灯片、保存，以及为 AI 助手留下备注。">
+  <meta name="description" content="一份关于 Lectern 的简短教程 —— 面向 HTML / reveal.js 幻灯片演示文稿的可视化编辑器：打开演示文稿、移动与编辑内容、添加幻灯片、保存，以及为 AI 智能体留下备注。">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23e0894a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 5h10l-1.5 4h-7z'/%3E%3Cpath d='M8 9v5M5 14h6'/%3E%3C/svg%3E">
   <style>
     :root { --bg: #1b1d21; --panel: #24272d; --line: #3a3d44; --text: #e6e7ea; --soft: #a9adb6; --dim: #8f949f; --accent: #6ea2ff; --warm: #e0894a; --yellow: #fff3a8; --green: #bfe8c0; }
@@ -39,19 +39,19 @@
 <body>
 <main>
   <h1><svg viewBox="0 0 16 16" fill="none" stroke="#e0894a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h10l-1.5 4h-7z"/><path d="M8 9v5M5 14h6"/></svg>五分钟上手 Lectern</h1>
-  <p class="lead">Lectern 像桌面演示软件那样编辑 HTML 幻灯片 —— 点击、拖动、输入 —— 并把结果直接写回 <code>.html</code> 文件。如果你用过 Keynote 或 PowerPoint，大部分操作都会很熟悉。本页讲剩下的部分，以及如何与 AI 助手一起处理一份演示文稿。<a href="./">在另一个标签页打开编辑器</a>，边看边做。</p>
+  <p class="lead">Lectern 像桌面演示软件那样编辑 HTML 幻灯片 —— 点击、拖动、输入 —— 并把结果直接写回 <code>.html</code> 文件。如果你用过 Keynote 或 PowerPoint，大部分操作都会很熟悉。本页讲剩下的部分，以及如何与 AI 智能体一起处理一份演示文稿。<a href="./">在另一个标签页打开编辑器</a>，边看边做。</p>
   <ul class="toc">
     <li><a href="#open">1 打开演示文稿</a></li><li><a href="#screen">2 界面</a></li><li><a href="#move">3 选择与移动</a></li><li><a href="#text">4 编辑文本</a></li>
     <li><a href="#add">5 添加幻灯片与对象</a></li><li><a href="#save">6 保存与演示</a></li><li><a href="#ai">7 给 AI 的备注</a></li><li><a href="#more">8 其他</a></li>
   </ul>
 
   <h2 id="open"><span class="n">1</span> 打开演示文稿</h2>
-  <p>从欢迎页有三种进入方式。<b>打开文件夹…</b> 选择存放演示文稿的文件夹（Chrome 或 Edge；不会上传任何东西 —— 浏览器直接读写你磁盘上的文件）。<b>新建演示文稿…</b> 创建一个包含标题幻灯片、主题和 reveal.js 副本的文件夹。示例上的 <b>预览</b> 会打开一个临时副本，是快速试用最快的方式；<b>保存到文件夹</b> 则会保留它。</p>
+  <p>从欢迎页有三种进入方式。<b>打开文件夹…</b> 在Chrome或者Edge中选择存放演示文稿的文件夹（浏览器直接读写你磁盘上的文件，不会上传任何东西到互联网）。<b>新建演示文稿…</b> 创建一个包含标题幻灯片、主题和 reveal.js 副本的文件夹。示例上的 <b>预览</b> 会打开一个示例演示文稿的临时副本，这是是快速试用最快的方式；<b>保存到文件夹</b> 可以保存对示例的编辑。</p>
   <figure><img src="tutorial/welcome.jpg" alt="欢迎页：打开文件夹、新建演示文稿、试试示例，以及示例演示文稿"><figcaption>欢迎页。最近打开过的演示文稿也会显示在这里。</figcaption></figure>
   <p class="tip">在终端里，<code>npx lectern-editor path/to/deck.html</code> 可为任意浏览器（包括 Firefox 和 Safari）在本地提供编辑器。</p>
 
   <h2 id="screen"><span class="n">2</span> 界面</h2>
-  <p>左侧是幻灯片列表，中间是当前幻灯片，右侧是检查器。幻灯片由演示文稿自带的 reveal.js 和样式表渲染，所以所见即观众所见。状态栏显示你正在编辑的文件；工具栏的 <b>演示</b> 会打开真正的演示。</p>
+  <p>左侧是幻灯片列表，中间是当前幻灯片，右侧是检查器。幻灯片由演示文稿自带的 reveal.js 和样式表渲染，编辑时所见即观众所见。状态栏显示你正在编辑的文件；工具栏的 <b>演示</b> 会打开真正的演示。</p>
   <figure><img src="tutorial/editor.jpg" alt="带有导航器、画布和检查器的编辑器"><figcaption>导航器、画布、检查器。拖动缩略图可重新排序幻灯片。</figcaption></figure>
 
   <h2 id="move"><span class="n">3</span> 选择与移动</h2>
@@ -68,15 +68,15 @@
   <figure><img src="tutorial/layouts.jpg" alt="新建幻灯片布局选择器"><figcaption>新建幻灯片布局。“复制当前幻灯片”往往是最快的起点。</figcaption></figure>
 
   <h2 id="save"><span class="n">6</span> 保存与演示</h2>
-  <p><kbd>⌘S</kbd> 把改动过的幻灯片写回 HTML 文件 —— 只写改动过的，所以文件其余部分逐字节保持不变。自动保存默认开启（菜单 ▸ <b>自动保存</b>），所以通常你无需按下它。<kbd>⌘Z</kbd> 可撤销任何操作，跨保存也有效。<b>演示</b> 会以观众看到的样子打开演示文稿；如果需要讲义，可在那里用 reveal 的 <code>?print-pdf</code> 打印为 PDF。</p>
-  <p class="tip">因为文件本身就是文档，其他工具也能编辑它：文本编辑器、git，或 AI 助手。如果在磁盘上的文件发生变化而你当时没有未保存的改动，画布会自动重新加载并停留在同一张幻灯片。</p>
+  <p><kbd>⌘S</kbd> 把改动过的幻灯片写回 HTML 文件，这个过程只会写改动过的部分，文件其余部分逐字节保持不变。自动保存默认开启（菜单 ▸ <b>自动保存</b>），所以通常你无需按下它。<kbd>⌘Z</kbd> 可撤销任何操作，跨保存也有效。<b>演示</b> 会以观众看到的样子打开演示文稿；如果需要讲义，可在那里用 reveal 的 <code>?print-pdf</code> 打印为 PDF。</p>
+  <p class="tip">因为文件本身就是文档，其他工具也能编辑它：文本编辑器、git，或 AI 智能体。如果在磁盘上的文件发生变化而你当时没有未保存的改动，画布会自动重新加载并停留在同一张幻灯片。</p>
 
   <h2 id="ai"><span class="n">7</span> 给 AI 的备注</h2>
   <p>这是新增的部分。在幻灯片上相关的位置右键（或双击空白画布），就地写下你想在那里完成的事：<i>“在这里画一头鲸鱼，朝左”</i>、<i>“太密了 —— 拆成两页”</i>、<i>“把 1905 年的法律加在这里”</i>。备注在画布上是一张 <span class="note-y">黄色便签</span>，会连同它在幻灯片上的位置一起保存在 HTML 里（演示时隐藏）。</p>
   <figure><img src="tutorial/note.jpg" alt="幻灯片上一条给 AI 的黄色备注"><figcaption>一条备注，正好放在鲸鱼该出现的位置。</figcaption></figure>
-  <p>然后请你的助手 <b>处理这些备注</b>。它会从文件中读取它们 —— <code>npx lectern-editor notes deck.html</code> 会列出它们，工具栏里的 <b>AI 备注</b> 面板会复制一段现成的提示词 —— 完成每条请求并标记为已完成。备注会变<span class="note-g">绿色</span>，在你这句下方附上助手的回复。单击绿色备注可回复它（它会重新变为待处理，并带上整个对话串）；满意后双击即可关闭。</p>
-  <figure><img src="tutorial/done.jpg" alt="一条绿色备注，显示作者与 AI 之间的对话"><figcaption>一条完成的备注：作者的请求与助手的回复，按顺序排列。</figcaption></figure>
-  <p>要让助手熟悉这套东西 —— 文件格式、演示文稿的类、备注协议 —— 把 <a href="AGENTS.md">AGENTS.md</a> 给它。在 Claude Code 中安装技能：<code>/plugin marketplace add calumhrmurray/lectern</code>，然后 <code>/plugin install lectern@lectern</code>。其他助手则粘贴：</p>
+  <p>然后请你的智能体 <b>处理这些备注</b>。它会从文件中读取它们 —— <code>npx lectern-editor notes deck.html</code> 会列出它们，工具栏里的 <b>AI 备注</b> 面板会复制一段现成的提示词 —— 完成每条请求并标记为已完成。备注会变<span class="note-g">绿色</span>，在你这句下方附上智能体的回复。单击绿色备注可回复它（它会重新变为待处理，并带上整个对话串）；满意后双击即可关闭。</p>
+  <figure><img src="tutorial/done.jpg" alt="一条绿色备注，显示作者与 AI 之间的对话"><figcaption>一条完成的备注：作者的请求与智能体的回复，按顺序排列。</figcaption></figure>
+  <p>要让智能体熟悉这套东西 —— 文件格式、演示文稿的类、备注协议 —— 把 <a href="AGENTS.md">AGENTS.md</a> 给它。在 Claude Code 中安装技能：<code>/plugin marketplace add calumhrmurray/lectern</code>，然后 <code>/plugin install lectern@lectern</code>。其他智能体则粘贴：</p>
   <pre>Read https://calumhrmurray.github.io/lectern/AGENTS.md and make me a slide deck about … in a folder called talk.</pre>
   <p>然后让 Lectern 一直打开着那个文件夹。它的改动会即时出现；你的改动会在你操作后一秒内写入文件。</p>
 
@@ -91,7 +91,7 @@
     <li><kbd>?</kbd> 显示完整的快捷键列表。</li>
   </ul>
 
-  <footer>Lectern 是开源软件（MIT）：<a href="https://github.com/calumhrmurray/lectern">github.com/calumhrmurray/lectern</a> · <a href="README.md">README</a> · <a href="AGENTS.md">给助手的说明</a> · <a href="tutorial.html">English</a></footer>
+  <footer>Lectern 是开源软件（MIT）：<a href="https://github.com/calumhrmurray/lectern">github.com/calumhrmurray/lectern</a> · <a href="README.md">README</a> · <a href="AGENTS.md">给智能体的说明</a> · <a href="tutorial.html">English</a></footer>
 </main>
 </body>
 </html>
