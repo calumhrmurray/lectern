@@ -43,7 +43,7 @@ test.describe('plain HTML decks (custom slide driver)', () => {
     await page.keyboard.press('Escape');
     const before = readFileSync(FILE, 'utf8');
     await page.keyboard.press(`${mod}+s`);
-    await expect(page.locator('.lec-msg')).toHaveText('Saved');
+    await expect(page.locator('.lec-msg')).toHaveAttribute('data-state', 'saved');
     const after = readFileSync(FILE, 'utf8');
     expect(after).toContain('(edited)'); // Enter puts the caret at the end of the list
     expect(after).toMatch(/<h2 style="position:relative;left:\d+px;top:\d+px;">The driver is twenty lines of script\.<\/h2>/);

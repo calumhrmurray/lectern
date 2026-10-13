@@ -1,8 +1,12 @@
 import './styles/editor.css';
 import { App } from './app/App';
+import { getLocale, resolveLocale, setLocale } from './i18n';
 
 const root = document.getElementById('app');
 if (!root) throw new Error('#app missing');
+// Pick the language before the App builds any of its chrome.
+setLocale(resolveLocale());
+document.documentElement.lang = getLocale();
 const app = new App(root);
 // The App is exposed for the dev console and the end-to-end tests only: a deck's own scripts run
 // same-origin and could otherwise drive the editor through it (see README, "Security model").

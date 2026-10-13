@@ -4,7 +4,7 @@ test.describe('bundled example decks', () => {
   for (const [id, count] of [['whale-evolution', 20], ['naturalisation-fr', 22]] as const) {
     test(`${id} opens from the welcome screen`, async ({ page }) => {
       await page.goto('/?test=1');
-      await page.locator('.lec-list-item', { hasText: id === 'whale-evolution' ? 'From land to sea' : 'naturalisation' }).locator('.lec-btn', { hasText: 'Preview' }).click();
+      await page.locator(`[data-example="${id}"] [data-action="example-preview"]`).click();
       await page.waitForFunction(() => (window as unknown as { lectern: { editor: { ready: boolean } } }).lectern.editor.ready, null, { timeout: 30_000 });
       await expect(page.locator('.lec-slide-card')).toHaveCount(count);
       const frame = page.frameLocator('.lec-stage-frame');
@@ -17,9 +17,9 @@ test.describe('bundled example decks', () => {
 
   test('new deck offers the built-in themes', async ({ page }) => {
     await page.goto('/?test=1');
-    await page.locator('.lec-welcome-actions .lec-btn', { hasText: 'New deck' }).click();
+    await page.locator('[data-action="welcome-new-deck"]').click();
     await expect(page.locator('.lec-theme-card')).toHaveCount(4);
-    await expect(page.locator('.lec-theme-card', { hasText: 'Aquarelle' })).toBeVisible();
+    await expect(page.locator('.lec-theme-card[data-theme="aquarelle"]')).toBeVisible();
     await page.keyboard.press('Escape');
   });
 });

@@ -8,10 +8,12 @@
  * at equal specificity always wins over the shared vocabulary.
  */
 
+import type { MessageKey } from '../i18n';
+
 export interface DeckTheme {
   id: string;
   name: string;
-  description: string;
+  descriptionKey: MessageKey;
   /** Swatches for the picker: background, ink, accent. */
   swatch: [string, string, string];
   css: string;
@@ -58,7 +60,7 @@ export const DECK_THEMES: DeckTheme[] = [
   {
     id: 'paper',
     name: 'Paper',
-    description: 'Warm off-white, serif headings, amber and indigo accents.',
+    descriptionKey: 'theme.paper.description',
     swatch: ['#f5f2ea', '#1d1f24', '#a34823'],
     css: `/* Paper — warm paper, serif headings. Edit freely; the editor exposes these classes as toggles. */
 :root {
@@ -91,7 +93,7 @@ ${SHARED}
   {
     id: 'ink',
     name: 'Ink',
-    description: 'Dark slate background, bright text, teal accent — good for projectors in bright rooms.',
+    descriptionKey: 'theme.ink.description',
     swatch: ['#14181f', '#e9edf2', '#3dd6c4'],
     css: `/* Ink — dark deck. */
 :root {
@@ -124,7 +126,7 @@ ${SHARED}
   {
     id: 'academic',
     name: 'Academic',
-    description: 'Plain white, tight typography, one blue accent — for lectures and papers.',
+    descriptionKey: 'theme.academic.description',
     swatch: ['#ffffff', '#111318', '#1f5fbf'],
     css: `/* Academic — clean white. */
 :root {
@@ -159,7 +161,7 @@ ${SHARED}
   {
     id: 'aquarelle',
     name: 'Aquarelle',
-    description: 'Blue watercolour washes on textured paper, soft serif headings.',
+    descriptionKey: 'theme.aquarelle.description',
     swatch: ['#eef4f8', '#17303f', '#2f6f9f'],
     bodyPrefix: `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <filter id="wc-edge"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="3" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/></filter>

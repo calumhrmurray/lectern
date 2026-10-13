@@ -22,6 +22,7 @@ export async function openDeck(page: Page): Promise<FrameLocator> {
       localStorage.setItem('lectern:autosave', 'off');
       localStorage.setItem('lectern:quiet', 'off');
       localStorage.setItem('lectern:tips', 'off'); // the tips spec opts back in
+      localStorage.setItem('lectern:locale', 'en'); // deterministic, whatever the browser reports
     } catch { /* ignore */ }
   });
   await page.goto('/?ws=local&deck=index.html&test=1');

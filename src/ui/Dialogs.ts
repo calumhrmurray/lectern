@@ -8,6 +8,7 @@ import type { DirEntry, Workspace } from '../workspace/Workspace';
 import { h, svgIcon, modKey, isMac } from './dom';
 import { icons } from './icons';
 import { versionLabel } from '../version';
+import { getLocale, t } from '../i18n';
 
 export interface ModalButton { label: string; primary?: boolean; value: string; disabled?: boolean }
 
@@ -33,7 +34,7 @@ function focusableIn(root: HTMLElement): HTMLElement[] {
 /** Shows a modal and resolves with the chosen button value ('cancel' on escape/backdrop). */
 export function modal(opts: ModalOptions): Promise<string> {
   return new Promise((resolve) => {
-    const buttons = opts.buttons ?? [{ label: 'OK', primary: true, value: 'ok' }];
+    const buttons = opts.buttons ?? [{ label: t('common.ok'), primary: true, value: 'ok' }];
     const backdrop = h('div', { class: 'lec-modal-backdrop' });
     const titleId = `lec-modal-title-${++modalSeq}`;
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -75,7 +76,7 @@ export function modal(opts: ModalOptions): Promise<string> {
       if (!(ev.target instanceof Node && box.contains(ev.target))) ev.stopPropagation();
     };
     const box = h('div', { class: `lec-modal${opts.wide ? ' lec-wide' : ''}`, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId },
-      h('div', { class: 'lec-modal-head' }, h('span', { id: titleId }, opts.title), h('span', { class: 'lec-spacer' }), h('button', { class: 'lec-btn', type: 'button', title: 'Close', 'aria-label': 'Close dialog', onclick: () => finish('cancel') }, svgIcon(icons.close))),
+      h('div', { class: 'lec-modal-head' }, h('span', { id: titleId }, opts.title), h('span', { class: 'lec-spacer' }), h('button', { class: 'lec-btn', type: 'button', title: t('common.close'), 'aria-label': t('common.closeDialog'), onclick: () => finish('cancel') }, svgIcon(icons.close))),
       h('div', { class: 'lec-modal-body' }, ...(Array.isArray(opts.body) ? opts.body : [opts.body])),
       h('div', { class: 'lec-modal-foot' }, ...buttons.map((b) => h('button', { class: `lec-btn${b.primary ? ' lec-primary' : ''}`, type: 'button', disabled: !!b.disabled, onclick: () => finish(b.value) }, b.label))),
     );
@@ -91,20 +92,21 @@ export function modal(opts: ModalOptions): Promise<string> {
   });
 }
 
-export async function confirmDialog(title: string, message: string, okLabel = 'OK'): Promise<boolean> {
-  const v = await modal({ title, body: h('p', {}, message), buttons: [{ label: 'Cancel', value: 'cancel' }, { label: okLabel, value: 'ok', primary: true }] });
+export async function confirmDialog(title: string, message: string, okLabel = t('common.ok')): Promise<boolean> {
+  const v = await modal({ title, body: h('p', {}, message), buttons: [{ label: t('common.cancel'), value: 'cancel' }, { label: okLabel, value: 'ok', primary: true }] });
   return v === 'ok';
 }
 
 export async function promptDialog(title: string, label: string, value = '', placeholder = ''): Promise<string | null> {
   const input = h('input', { class: 'lec-field', type: 'text', value, placeholder }) as HTMLInputElement;
-  const v = await modal({ title, body: h('div', { class: 'lec-row' }, h('label', {}, label), input), buttons: [{ label: 'Cancel', value: 'cancel' }, { label: 'OK', value: 'ok', primary: true }] });
+  const v = await modal({ title, body: h('div', { class: 'lec-row' }, h('label', {}, label), input), buttons: [{ label: t('common.cancel'), value: 'cancel' }, { label: t('common.ok'), value: 'ok', primary: true }] });
   return v === 'ok' ? input.value : null;
 }
 
 // ---------------------------------------------------------------- welcome
 
-export const TUTORIAL_URL = 'tutorial.html';
+// The tutorial is one static page per language; nothing is swapped at runtime.
+export function tutorialUrl(): string { return getLocale() === 'zh-CN' ? 'tutorial.zh-CN.html' : 'tutorial.html'; }
 export const AGENTS_URL = 'https://github.com/calumhrmurray/lectern/blob/main/AGENTS.md';
 
 export interface ExampleInfo { id: string; title: string; description: string; lang: string; files: string[] }
@@ -113,30 +115,34 @@ export function renderWelcome(app: App, container: HTMLElement, recents: RecentE
   container.replaceChildren(
     h('div', { class: 'lec-welcome-card' },
       h('h1', {}, svgIcon(icons.lectern), 'Lectern'),
-      h('p', { class: 'lec-tagline' }, 'A visual editor for HTML presentations. The HTML file is the document. ', h('span', { class: 'lec-sub', title: 'Version and build' }, versionLabel())),
-      h('p', { class: 'lec-links' }, 'New here? ', h('a', { href: TUTORIAL_URL, target: '_blank', rel: 'noopener' }, 'Five-minute tutorial'), ' · ', h('a', { href: AGENTS_URL, target: '_blank', rel: 'noopener' }, 'Instructions for your AI assistant')),
+      h('p', { class: 'lec-tagline' }, t('welcome.tagline'), h('span', { class: 'lec-sub', title: t('welcome.versionTitle') }, versionLabel())),
+      h('p', { class: 'lec-links' }, t('welcome.newHere'), h('a', { href: tutorialUrl(), dataset: { action: 'welcome-tutorial' }, target: '_blank', rel: 'noopener' }, t('welcome.tutorial')), ' · ', h('a', { href: AGENTS_URL, target: '_blank', rel: 'noopener' }, t('welcome.agents'))),
+      h('p', { class: 'lec-links lec-lang' },
+        h('button', { class: 'lec-lang-btn', type: 'button', dataset: { action: 'lang-en' }, onclick: () => app.setLocaleChoice('en') }, 'English'),
+        ' · ',
+        h('button', { class: 'lec-lang-btn', type: 'button', dataset: { action: 'lang-zh' }, onclick: () => app.setLocaleChoice('zh-CN') }, '中文')),
       h('div', { class: 'lec-welcome-actions' },
-        h('button', { class: 'lec-btn', type: 'button', disabled: !fsaOk, onclick: () => void app.openFolder() },
-          svgIcon(icons.folder), h('b', {}, 'Open a folder…'), h('span', {}, fsaOk ? 'Pick the folder that contains your deck. Saves go straight back to the file.' : 'Needs Chrome or Edge. In other browsers, run the CLI (see below).')),
-        h('button', { class: 'lec-btn', type: 'button', onclick: () => void app.newDeck() },
-          svgIcon(icons.plus), h('b', {}, 'New deck…'), h('span', {}, 'Creates a folder with reveal.js, a clean theme and a title slide.')),
-        h('button', { class: 'lec-btn', type: 'button', onclick: () => void app.openDemo() },
-          svgIcon(icons.play), h('b', {}, 'Try the demo'), h('span', {}, 'A sample deck kept in memory. Play with it; download the result if you like.')),
+        h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'welcome-open-folder' }, disabled: !fsaOk, onclick: () => void app.openFolder() },
+          svgIcon(icons.folder), h('b', {}, t('welcome.openFolder.title')), h('span', {}, fsaOk ? t('welcome.openFolder.hint') : t('welcome.openFolder.unsupported'))),
+        h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'welcome-new-deck' }, onclick: () => void app.newDeck() },
+          svgIcon(icons.plus), h('b', {}, t('common.newDeck')), h('span', {}, t('welcome.newDeck.hint'))),
+        h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'welcome-demo' }, onclick: () => void app.openDemo() },
+          svgIcon(icons.play), h('b', {}, t('welcome.demo.title')), h('span', {}, t('welcome.demo.hint'))),
       ),
-      recents.length ? h('h3', {}, 'Your decks') : null,
+      recents.length ? h('h3', {}, t('welcome.yourDecks')) : null,
       recents.length ? h('div', { class: 'lec-list' }, ...recents.map((r) =>
         h('button', { class: 'lec-list-item', type: 'button', onclick: () => void app.openRecent(r) },
           svgIcon(icons.folder), h('span', {}, h('b', {}, r.name), ' ', h('span', { class: 'lec-sub' }, `/ ${r.deckPath}`)), h('span', { class: 'lec-spacer' }),
           h('span', { class: 'lec-sub' }, new Date(r.openedAt).toLocaleDateString())))) : null,
-      examples.length ? h('h3', {}, 'Example decks') : null,
+      examples.length ? h('h3', {}, t('welcome.exampleDecks')) : null,
       examples.length ? h('div', { class: 'lec-list' }, ...examples.map((e) =>
-        h('div', { class: 'lec-list-item lec-static' },
+        h('div', { class: 'lec-list-item lec-static', dataset: { example: e.id } },
           svgIcon(icons.file), h('span', {}, e.title, h('div', { class: 'lec-sub' }, e.description)), h('span', { class: 'lec-spacer' }),
-          h('button', { class: 'lec-btn lec-primary', type: 'button', title: 'Copy the deck (with reveal.js) into a folder you choose and open it from there', onclick: () => void app.saveExampleToFolder(e.id) }, 'Save to a folder…'),
-          h('button', { class: 'lec-btn', type: 'button', title: 'Open a temporary copy in memory', onclick: () => void app.openExample(e.id) }, 'Preview')))) : null,
+          h('button', { class: 'lec-btn lec-primary', type: 'button', dataset: { action: 'example-save-folder' }, title: t('welcome.example.saveTitle'), onclick: () => void app.saveExampleToFolder(e.id) }, t('welcome.example.save')),
+          h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'example-preview' }, title: t('welcome.example.previewTitle'), onclick: () => void app.openExample(e.id) }, t('common.preview'))))) : null,
       h('p', { class: 'lec-note' },
-        'From a terminal: ', h('code', {}, 'npx lectern-editor path/to/deck.html'), ' serves the editor locally for any browser — handy when a coding assistant is editing the same file. ',
-        'Works with reveal.js decks (a global ', h('code', {}, 'Reveal'), ') and with any page whose slides are ', h('code', {}, '<section>'), ' elements.'),
+        t('welcome.note.fromTerminal'), h('code', {}, 'npx lectern-editor path/to/deck.html'), t('welcome.note.serves'),
+        t('welcome.note.withReveal'), h('code', {}, 'Reveal'), t('welcome.note.andSlides'), h('code', {}, '<section>'), t('welcome.note.elements')),
     ),
   );
 }
@@ -171,7 +177,7 @@ export async function pickDeckFile(ws: Workspace): Promise<string | null> {
     } catch { /* skip */ }
   }
   if (!decks.length) {
-    await modal({ title: 'No deck found', body: h('p', {}, `No HTML file with <section> slides was found in “${ws.name}”.`) });
+    await modal({ title: t('pick.deck.none.title'), body: h('p', {}, t('pick.deck.none.body', { name: ws.name })) });
     return null;
   }
   if (decks.length === 1) return decks[0].path;
@@ -179,13 +185,13 @@ export async function pickDeckFile(ws: Workspace): Promise<string | null> {
   const list = h('div', { class: 'lec-list' });
   const items = decks.map((d) => {
     const b = h('button', { class: `lec-list-item${d.path === chosen ? ' lec-active' : ''}`, type: 'button' },
-      svgIcon(icons.file), h('span', {}, d.path, d.title ? h('div', { class: 'lec-sub' }, d.title) : null), h('span', { class: 'lec-spacer' }), h('span', { class: 'lec-sub' }, `${d.slides} sections`));
+      svgIcon(icons.file), h('span', {}, d.path, d.title ? h('div', { class: 'lec-sub' }, d.title) : null), h('span', { class: 'lec-spacer' }), h('span', { class: 'lec-sub' }, t('pick.deck.sections', { count: d.slides })));
     b.addEventListener('click', () => { chosen = d.path; for (const it of items) it.classList.toggle('lec-active', it === b); });
     b.addEventListener('dblclick', () => { chosen = d.path; (document.querySelector('.lec-modal .lec-primary') as HTMLButtonElement | null)?.click(); });
     return b;
   });
   list.append(...items);
-  const v = await modal({ title: 'Which deck?', body: list, buttons: [{ label: 'Cancel', value: 'cancel' }, { label: 'Open', value: 'ok', primary: true }] });
+  const v = await modal({ title: t('pick.deck.which'), body: list, buttons: [{ label: t('common.cancel'), value: 'cancel' }, { label: t('common.open'), value: 'ok', primary: true }] });
   return v === 'ok' ? chosen : null;
 }
 
@@ -206,7 +212,7 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
   images.sort();
   let chosen: string | null = null;
   let uploaded: string | null = null;
-  const grid = h('div', { class: 'lec-img-grid', role: 'listbox', 'aria-label': 'Images in this folder' });
+  const grid = h('div', { class: 'lec-img-grid', role: 'listbox', 'aria-label': t('pick.image.grid') });
   const choose = (cell: HTMLElement, p: string) => {
     chosen = p;
     for (const c of cells) { const on = c === cell; c.classList.toggle('lec-active', on); c.setAttribute('aria-selected', String(on)); }
@@ -231,7 +237,7 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
   fileInput.addEventListener('change', async () => {
     const f = fileInput.files?.[0];
     if (!f) return;
-    status.textContent = `Adding ${f.name}…`;
+    status.textContent = t('pick.image.adding', { name: f.name });
     try {
       uploaded = await opts.onUpload(f);
       (document.querySelector('.lec-modal .lec-primary') as HTMLButtonElement | null)?.click();
@@ -239,11 +245,11 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
   });
   const body = [
     h('div', { class: 'lec-row', style: 'margin-bottom:8px' },
-      h('button', { class: 'lec-btn', type: 'button', style: 'border:1px solid var(--line)', onclick: () => fileInput.click() }, svgIcon(icons.upload), 'Add image file…'),
+      h('button', { class: 'lec-btn', type: 'button', style: 'border:1px solid var(--line)', onclick: () => fileInput.click() }, svgIcon(icons.upload), t('pick.image.add')),
       status, fileInput),
-    images.length ? grid : h('p', { class: 'lec-help' }, 'No images in this folder yet. Add one with the button above (it is copied into the deck folder).'),
+    images.length ? grid : h('p', { class: 'lec-help' }, t('pick.image.none')),
   ];
-  const v = await modal({ title: 'Choose an image', body, wide: true, buttons: [{ label: 'Cancel', value: 'cancel' }, { label: 'Insert', value: 'ok', primary: true }] });
+  const v = await modal({ title: t('common.chooseImage'), body, wide: true, buttons: [{ label: t('common.cancel'), value: 'cancel' }, { label: t('common.insert'), value: 'ok', primary: true }] });
   if (uploaded) return uploaded;
   return v === 'ok' ? chosen : null;
 }
@@ -251,43 +257,43 @@ export async function pickImage(ws: Workspace, opts: { onUpload: (file: File) =>
 export interface NewDeckOptions { title: string; author: string; width: number; height: number; folderName: string; theme: string }
 
 export async function newDeckDialog(needsFolderName: boolean): Promise<NewDeckOptions | null> {
-  const title = h('input', { class: 'lec-field', type: 'text', value: 'My talk' }) as HTMLInputElement;
-  const author = h('input', { class: 'lec-field', type: 'text', value: '' , placeholder: 'Your name' }) as HTMLInputElement;
+  const title = h('input', { class: 'lec-field', type: 'text', value: t('newDeck.titleDefault') }) as HTMLInputElement;
+  const author = h('input', { class: 'lec-field', type: 'text', value: '', placeholder: t('newDeck.authorPlaceholder') }) as HTMLInputElement;
   const folder = h('input', { class: 'lec-field', type: 'text', value: 'my-talk' }) as HTMLInputElement;
   const size = h('select', { class: 'lec-field' },
-    h('option', { value: '1280x720', selected: true }, '16:9 — 1280 × 720'),
-    h('option', { value: '1920x1080' }, '16:9 — 1920 × 1080'),
-    h('option', { value: '1024x768' }, '4:3 — 1024 × 768'),
-    h('option', { value: '960x700' }, 'reveal.js default — 960 × 700'),
+    h('option', { value: '1280x720', selected: true }, t('newDeck.size.1280x720')),
+    h('option', { value: '1920x1080' }, t('newDeck.size.1920x1080')),
+    h('option', { value: '1024x768' }, t('newDeck.size.1024x768')),
+    h('option', { value: '960x700' }, t('newDeck.size.960x700')),
   ) as HTMLSelectElement;
   title.addEventListener('input', () => { if (!folder.dataset.touched) folder.value = slug(title.value) || 'deck'; });
   folder.addEventListener('input', () => { folder.dataset.touched = '1'; });
   let themeId = DECK_THEMES[0].id;
   const themeGrid = h('div', { class: 'lec-theme-grid' });
-  const cards = DECK_THEMES.map((t) => {
-    const card = h('button', { class: `lec-theme-card${t.id === themeId ? ' lec-active' : ''}`, type: 'button', title: t.description },
-      h('div', { class: 'lec-theme-pv', style: `background:${t.swatch[0]};color:${t.swatch[1]}` },
-        h('i', { style: `background:${t.swatch[2]}` }), h('b', {}, 'Aa'), h('span', {}, '— — —')),
-      h('b', {}, t.name), h('span', {}, t.description));
-    card.addEventListener('click', () => { themeId = t.id; for (const c of cards) c.classList.toggle('lec-active', c === card); });
+  const cards = DECK_THEMES.map((theme) => {
+    const card = h('button', { class: `lec-theme-card${theme.id === themeId ? ' lec-active' : ''}`, type: 'button', dataset: { theme: theme.id }, title: t(theme.descriptionKey) },
+      h('div', { class: 'lec-theme-pv', style: `background:${theme.swatch[0]};color:${theme.swatch[1]}` },
+        h('i', { style: `background:${theme.swatch[2]}` }), h('b', {}, 'Aa'), h('span', {}, '— — —')),
+      h('b', {}, theme.name), h('span', {}, t(theme.descriptionKey)));
+    card.addEventListener('click', () => { themeId = theme.id; for (const c of cards) c.classList.toggle('lec-active', c === card); });
     return card;
   });
   themeGrid.append(...cards);
   const v = await modal({
-    title: 'New deck', wide: true,
+    title: t('newDeck.title'), wide: true,
     body: [
-      h('div', { class: 'lec-row' }, h('label', {}, 'Title'), title),
-      h('div', { class: 'lec-row' }, h('label', {}, 'Author'), author),
-      h('div', { class: 'lec-row' }, h('label', {}, 'Slide size'), size),
-      h('div', { class: 'lec-row lec-row-wide' }, h('label', {}, 'Theme')),
+      h('div', { class: 'lec-row' }, h('label', {}, t('newDeck.field.title')), title),
+      h('div', { class: 'lec-row' }, h('label', {}, t('newDeck.field.author')), author),
+      h('div', { class: 'lec-row' }, h('label', {}, t('common.slideSize')), size),
+      h('div', { class: 'lec-row lec-row-wide' }, h('label', {}, t('newDeck.field.theme'))),
       themeGrid,
-      needsFolderName ? h('div', { class: 'lec-row' }, h('label', {}, 'Folder name'), folder) : h('p', { class: 'lec-help' }, 'You will be asked to choose an empty folder next. reveal.js is copied into it so the deck works offline.'),
+      needsFolderName ? h('div', { class: 'lec-row' }, h('label', {}, t('newDeck.field.folder')), folder) : h('p', { class: 'lec-help' }, t('newDeck.folderHelp')),
     ],
-    buttons: [{ label: 'Cancel', value: 'cancel' }, { label: 'Create', value: 'ok', primary: true }],
+    buttons: [{ label: t('common.cancel'), value: 'cancel' }, { label: t('common.create'), value: 'ok', primary: true }],
   });
   if (v !== 'ok') return null;
   const [w, hgt] = size.value.split('x').map(Number);
-  return { title: title.value.trim() || 'Untitled', author: author.value.trim(), width: w, height: hgt, folderName: folder.value.trim() || 'deck', theme: themeId };
+  return { title: title.value.trim() || t('common.untitled'), author: author.value.trim(), width: w, height: hgt, folderName: folder.value.trim() || 'deck', theme: themeId };
 }
 
 function slug(s: string): string {
@@ -299,16 +305,16 @@ export function layoutPicker(app: App, at: HTMLElement | { x: number; y: number 
   const grid = h('div', { class: 'lec-layout-grid' });
   let done: (() => void) | null = null;
   for (const l of SLIDE_LAYOUTS) {
-    const card = h('button', { class: 'lec-layout-card', type: 'button', onclick: () => { ed.addSlide(l.html(ed.stage.slideSize)); done?.(); } },
-      h('div', { class: 'lec-layout-pv', html: layoutPreview(l.id) }), h('b', {}, l.name), h('span', {}, l.hint));
+    const card = h('button', { class: 'lec-layout-card', type: 'button', dataset: { action: `layout-${l.id}` }, onclick: () => { ed.addSlide(l.html(ed.stage.slideSize)); done?.(); } },
+      h('div', { class: 'lec-layout-pv', html: layoutPreview(l.id) }), h('b', {}, t(l.nameKey)), h('span', {}, l.hintKey ? t(l.hintKey) : ''));
     grid.appendChild(card);
   }
-  grid.appendChild(h('button', { class: 'lec-layout-card', type: 'button', disabled: !ed.doc.length, onclick: () => { ed.duplicateSlide(); done?.(); } },
-    h('div', { class: 'lec-layout-pv', html: layoutPreview('dup') }), h('b', {}, 'Duplicate current'), h('span', {}, 'Copy of this slide')));
+  grid.appendChild(h('button', { class: 'lec-layout-card', type: 'button', dataset: { action: 'layout-duplicate' }, disabled: !ed.doc.length, onclick: () => { ed.duplicateSlide(); done?.(); } },
+    h('div', { class: 'lec-layout-pv', html: layoutPreview('dup') }), h('b', {}, t('layout.duplicate.name')), h('span', {}, t('layout.duplicate.hint'))));
   void at;
   return new Promise((resolve) => {
     let closing = false;
-    const p = modal({ title: 'New slide', body: grid, wide: true, buttons: [{ label: 'Cancel', value: 'cancel' }] });
+    const p = modal({ title: t('common.newSlide'), body: grid, wide: true, buttons: [{ label: t('common.cancel'), value: 'cancel' }] });
     done = () => { if (!closing) { closing = true; (document.querySelector('.lec-modal-backdrop .lec-modal-head .lec-btn') as HTMLButtonElement | null)?.click(); } };
     void p.then(() => resolve());
   });
@@ -334,33 +340,33 @@ export function shortcutsDialog(): Promise<string> {
   const M = isMac() ? '⌘' : 'Ctrl';
   const row = (k: string, d: string) => h('div', {}, h('span', {}, d), h('span', { class: 'lec-kbd' }, k));
   return modal({
-    title: 'Keyboard shortcuts', wide: true,
+    title: t('common.shortcuts'), wide: true,
     body: h('div', { class: 'lec-shortcuts' },
-      row(`${M} S`, 'Save'), row(`${M} O`, 'Open a folder'),
-      row(`${M} Z / ${M} ⇧ Z`, 'Undo / redo'), row(`${M} Y`, 'Redo'),
-      row('Double-click', 'Edit text, all of it selected'), row('Esc', 'Stop editing / deselect'),
-      row(`${M} C / X / V`, 'Copy / cut / paste objects'), row(`${M} D`, 'Duplicate'),
-      row('⌫', 'Delete selection, or the slide when nothing is selected'), row(`${M} A`, 'Select all objects on the slide'),
-      row('Arrows', 'Nudge 1 px (⇧: 10 px)'), row('⇧ drag', 'Constrain / keep aspect'),
-      row('⌥ drag', 'Ignore snapping'), row('Click selected text', 'Put the caret there'),
-      row('PgUp / PgDn', 'Previous / next slide'), row('Home / End', 'First / last slide'),
-      row(`${M} C / ${M} V`, 'Copy / paste whole slides (in the slide list)'), row(`${M} ⇧ N`, 'New slide'),
-      row(`${M} ] / ${M} [`, 'Bring forward / send backward'), row(`${M} ⇧ ] / [`, 'Front / back'),
-      row('⏎', 'Edit the selected text'), row('Type', 'With a text object selected: start editing, replacing its text'), row('N', 'New slide after this one, shaped like it'), row('right-click / double-click', 'Note for AI, where you point'), row('+ / − / 0', 'Zoom in / out / fit (nothing selected)'),
-      row('M', 'Map of the deck — sections across, stacks down'), row('Q', 'Quiet room (the default) — show or hide the panels'), row('Space (hold)', 'Bring the hidden chrome back while held'),
-      row('Drag · double / triple-click', 'Select text, a word, a paragraph (while editing)'), row(`${M} B / I / U / K`, 'Bold / italic / underline / link (while editing text)'), row('Tab / ⇧ Tab', 'Indent / outdent list item (while editing)'),
-      row(`${M} ⏎`, 'Finish editing text / apply HTML'), row('?', 'This list'),
+      row(`${M} S`, t('common.save')), row(`${M} O`, t('shortcuts.openFolder')),
+      row(`${M} Z / ${M} ⇧ Z`, t('shortcuts.undoRedo')), row(`${M} Y`, t('common.redo')),
+      row('Double-click', t('shortcuts.editText')), row('Esc', t('shortcuts.stopEditing')),
+      row(`${M} C / X / V`, t('shortcuts.copyCutPaste')), row(`${M} D`, t('common.duplicate')),
+      row('⌫', t('shortcuts.delete')), row(`${M} A`, t('shortcuts.selectAll')),
+      row('Arrows', t('shortcuts.nudge')), row('⇧ drag', t('shortcuts.constrain')),
+      row('⌥ drag', t('shortcuts.ignoreSnapping')), row('Click selected text', t('shortcuts.caret')),
+      row('PgUp / PgDn', t('shortcuts.prevNext')), row('Home / End', t('shortcuts.firstLast')),
+      row(`${M} C / ${M} V`, t('shortcuts.copyPasteSlides')), row(`${M} ⇧ N`, t('common.newSlide')),
+      row(`${M} ] / ${M} [`, t('shortcuts.bringForward')), row(`${M} ⇧ ] / [`, t('shortcuts.frontBack')),
+      row('⏎', t('shortcuts.editSelected')), row('Type', t('shortcuts.typeText')), row('N', t('shortcuts.newSlideShaped')), row('right-click / double-click', t('shortcuts.noteForAi')), row('+ / − / 0', t('shortcuts.zoom')),
+      row('M', t('common.mapTooltip')), row('Q', t('shortcuts.quietRoom')), row('Space (hold)', t('shortcuts.peek')),
+      row('Drag · double / triple-click', t('shortcuts.selectText')), row(`${M} B / I / U / K`, t('shortcuts.textFormatting')), row('Tab / ⇧ Tab', t('shortcuts.indent')),
+      row(`${M} ⏎`, t('shortcuts.finishEditing')), row('?', t('shortcuts.thisList')),
     ),
   });
 }
 
 export function aboutDialog(): Promise<string> {
   return modal({
-    title: 'About Lectern',
+    title: t('common.about'),
     body: [
-      h('p', {}, 'Lectern edits reveal.js presentations visually. It loads your HTML file, renders it with the deck’s own reveal.js, and writes only the slides you changed back into the file — comments, indentation and untouched slides stay exactly as they were.'),
-      h('p', { class: 'lec-help' }, 'MIT licensed. reveal.js is © Hakim El Hattab and contributors, MIT licensed. Not affiliated with any presentation software vendor.'),
-      h('p', { class: 'lec-help' }, `${versionLabel()} · Mod key: ${modKey()} · Browser support for “Open folder”: Chrome, Edge and other Chromium browsers. Elsewhere, use the CLI.`),
+      h('p', {}, t('about.intro')),
+      h('p', { class: 'lec-help' }, t('about.license')),
+      h('p', { class: 'lec-help' }, t('about.meta', { version: versionLabel(), modKey: modKey() })),
     ],
   });
 }

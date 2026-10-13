@@ -10,6 +10,7 @@ import { History } from '../deck/history';
 import { escapeHtml, isSelectableDisplay, isStack, isTextEditable, pathOf, resolvePath, selectionTarget } from '../deck/html';
 import { SECTION_ATTR } from '../deck/sections';
 import { ELEMENT_TEMPLATES, updateLineSvg } from '../deck/templates';
+import { t } from '../i18n';
 import { isAiNote, isDoneNote } from '../deck/aiNotes';
 import { angleDeg, resizeRect, snapEdge, snapLines, snapMove, unionRect, rectsIntersect, type Guide, type HandleName } from '../stage/geometry';
 import { DBL_CLICK_MS, Interactions, type DragSession, type InteractionHost } from '../stage/Interactions';
@@ -1027,7 +1028,7 @@ export class Editor implements InteractionHost {
     const html = tpl ? tpl.html(box) : templateIdOrHtml;
     const section = this.currentSrcSection();
     let inserted: Element[] = [];
-    this.edit(`Insert ${tpl?.name ?? 'element'}`, () => {
+    this.edit(t('editor.undo.insert', { what: tpl ? t(tpl.nameKey) : t('editor.undo.element') }), () => {
       inserted = this.stage.insertHtml(section, this.insertionPoint(section), html);
     }, { top: this.current.top });
     const el = inserted[0] ?? null;

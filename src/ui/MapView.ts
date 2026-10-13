@@ -19,6 +19,7 @@ import { promptDialog } from './Dialogs';
 import { debounce, h, svgIcon } from './dom';
 import { icons } from './icons';
 import { showMenu } from './Menu';
+import { t } from '../i18n';
 
 interface MapCard {
   ref: SlideRef;
@@ -42,11 +43,11 @@ export class MapView {
     this.grid = h('div', { class: 'lec-map-grid', tabindex: 0 });
     container.append(
       h('div', { class: 'lec-map-head' },
-        h('span', { class: 'lec-map-title' }, 'Map'),
+        h('span', { class: 'lec-map-title' }, t('common.map')),
         this.countEl,
         h('span', { class: 'lec-spacer', style: 'flex:1' }),
-        h('span', { class: 'lec-map-hint' }, 'Drag to reorder · drop under a slide to nest it · click a title or a section to rename'),
-        h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'map-close' }, onclick: () => this.hide() }, 'Done'),
+        h('span', { class: 'lec-map-hint' }, t('map.hint')),
+        h('button', { class: 'lec-btn', type: 'button', dataset: { action: 'map-close' }, onclick: () => this.hide() }, t('common.done')),
       ),
       this.grid,
     );
@@ -99,7 +100,7 @@ export class MapView {
     this.cards = [];
     this.grid.replaceChildren();
     if (!ed.ready || !ed.doc.length) {
-      this.grid.appendChild(h('div', { class: 'lec-nav-empty' }, 'No slides yet.'));
+      this.grid.appendChild(h('div', { class: 'lec-nav-empty' }, t('common.noSlidesYet')));
       this.countEl.textContent = '';
       return;
     }
@@ -107,14 +108,19 @@ export class MapView {
     const sections = sectionsOf(tops);
     const named = sections.filter((s) => s.name).length;
     const hidden = tops.filter((el) => el.getAttribute('data-visibility') === 'hidden').length;
-    this.countEl.textContent = `${ed.slideRefs().length} slides · ${named || 'no'} named section${named === 1 ? '' : 's'}${hidden ? ` · ${hidden} hidden` : ''}`;
+    const refs = ed.slideRefs();
+    this.countEl.dataset.count = String(refs.length);
+    const namedText = named === 0 ? t('map.countNamedNone')
+      : named === 1 ? t('map.countNamedOne', { count: named })
+        : t('map.countNamedMany', { count: named });
+    this.countEl.textContent = t('map.countSlides', { count: refs.length }) + namedText + (hidden ? t('map.countHidden', { count: hidden }) : '');
 
     tops.forEach((el, top) => this.grid.appendChild(this.column(el, top, sections)));
     this.grid.appendChild(h('div', { class: 'lec-map-col lec-map-end' },
       h('button', {
         class: 'lec-map-add lec-map-add-end', type: 'button', dataset: { action: 'map-add-end' },
-        title: 'New slide at the end of the deck', onclick: () => void this.newSlide(tops.length - 1),
-      }, '+ slide'),
+        title: t('map.newSlideEnd'), onclick: () => void this.newSlide(tops.length - 1),
+      }, t('map.addSlide')),
     ));
     this.renderDirty();
     this.updateCurrent();
@@ -132,14 +138,14 @@ export class MapView {
     const subs = isStack(el) ? Array.from(el.children).filter((c) => c.tagName.toLowerCase() === 'section') : [];
     if (subs.length) {
       subs.forEach((_, sub) => {
-        if (sub) col.appendChild(h('div', { class: 'lec-map-down', title: 'Down arrow while presenting' }, svgIcon(icons.arrowDown)));
+        if (sub) col.appendChild(h('div', { class: 'lec-map-down', title: t('map.downArrow') }, svgIcon(icons.arrowDown)));
         col.appendChild(this.card({ top, sub }));
       });
     } else {
       col.appendChild(this.card({ top, sub: null }));
     }
 
-    const nest = h('div', { class: 'lec-map-nest' }, 'make it a sub-slide');
+    const nest = h('div', { class: 'lec-map-nest' }, t('map.nest'));
     nest.addEventListener('dragover', (ev) => {
       if (!this.dragFrom || this.dragFrom.sub !== null || this.dragFrom.top === top) return;
       ev.preventDefault();
@@ -158,12 +164,12 @@ export class MapView {
     col.appendChild(h('div', { class: 'lec-map-adds' },
       h('button', {
         class: 'lec-map-add', type: 'button', dataset: { action: 'map-add-after' },
-        title: 'New slide after this one', onclick: () => void this.newSlide(top),
-      }, '+ slide'),
+        title: t('map.newSlideAfter'), onclick: () => void this.newSlide(top),
+      }, t('map.addSlide')),
       h('button', {
         class: 'lec-map-add', type: 'button', dataset: { action: 'map-add-sub' },
-        title: 'New slide below this one — reveal’s ↓', onclick: () => void this.newSlide(top, { below: true }),
-      }, '+ below'),
+        title: t('map.newSlideBelow'), onclick: () => void this.newSlide(top, { below: true }),
+      }, t('map.addBelow')),
     ));
     col.appendChild(h('div', { class: 'lec-map-num' }, subs.length ? `${top + 1}.1 – ${top + 1}.${subs.length}` : String(top + 1)));
     return col;
@@ -173,12 +179,12 @@ export class MapView {
     const name = section?.name ?? null;
     const cls = `lec-map-sec${section ? '' : ' lec-map-sec-none'}${section && !section.explicit ? ' lec-inferred' : ''}`;
     const title = section
-      ? (section.explicit ? 'Rename this section' : 'Guessed from the deck — click to write it down')
-      : 'Start a section here';
+      ? (section.explicit ? t('map.renameSection') : t('map.inferredSection'))
+      : t('map.startSection');
     return h('button', {
       class: cls, type: 'button', title,
       onclick: () => void this.nameSection(top, name),
-    }, name ?? (section ? '—' : '+ section'));
+    }, name ?? (section ? '—' : t('map.addSection')));
   }
 
   private card(ref: SlideRef): HTMLElement {
@@ -189,7 +195,7 @@ export class MapView {
     const vis = src.getAttribute('data-visibility');
     const notes = src.querySelectorAll('[data-ai-note]:not([data-ai-note="done"])').length;
 
-    const iframe = h('iframe', { title: label || 'Slide', loading: 'lazy', tabindex: -1 }) as HTMLIFrameElement;
+    const iframe = h('iframe', { title: label || t('map.slide'), loading: 'lazy', tabindex: -1 }) as HTMLIFrameElement;
     iframe.width = String(width);
     iframe.height = String(height);
     const wrap = h('div', { class: 'lec-thumb-wrap', style: `padding-bottom:${((height / width) * 100).toFixed(3)}%` }, iframe);
@@ -200,11 +206,11 @@ export class MapView {
     },
       h('div', { class: 'lec-thumb' }, wrap),
       h('button', {
-        class: 'lec-map-cardlabel', type: 'button', title: 'Rename this slide',
+        class: 'lec-map-cardlabel', type: 'button', title: t('map.renameSlide'),
         onclick: (ev: MouseEvent) => { ev.stopPropagation(); void this.renameSlide(ref); },
-      }, label || 'Untitled'),
+      }, label || t('common.untitled')),
       vis ? h('span', { class: 'lec-map-badge' }, vis) : null,
-      notes ? h('span', { class: 'lec-map-note', title: `${notes} note${notes === 1 ? '' : 's'} waiting` }) : null,
+      notes ? h('span', { class: 'lec-map-note', title: notes === 1 ? t('map.notesWaitingOne', { count: notes }) : t('map.notesWaitingMany', { count: notes }) }) : null,
     );
     el.addEventListener('click', () => { ed.goTo(ref); this.hide(); });
     el.addEventListener('contextmenu', (ev) => { ev.preventDefault(); ed.goTo(ref); void this.menuFor(ref, { x: ev.clientX, y: ev.clientY }); });
@@ -289,26 +295,26 @@ export class MapView {
     const vis = src.getAttribute('data-visibility') ?? '';
     const declared = top.getAttribute(SECTION_ATTR);
     await showMenu([
-      { label: 'Go to this slide', onSelect: () => { ed.goTo(ref); this.hide(); } },
-      { label: 'Rename this slide…', onSelect: () => void this.renameSlide(ref) },
-      { label: 'New slide after this one', onSelect: () => void this.newSlide(ref.top) },
-      { label: 'New slide below this one', hint: 'reveal’s ↓', onSelect: () => void this.newSlide(ref.top, { below: true }) },
+      { label: t('map.goTo'), onSelect: () => { ed.goTo(ref); this.hide(); } },
+      { label: t('map.renameSlideMenu'), onSelect: () => void this.renameSlide(ref) },
+      { label: t('map.newSlideAfter'), onSelect: () => void this.newSlide(ref.top) },
+      { label: t('map.newSlideBelowMenu'), hint: t('map.revealDown'), onSelect: () => void this.newSlide(ref.top, { below: true }) },
       { separator: true },
-      { label: declared === null ? 'Start a section here…' : 'Rename this section…', onSelect: () => void this.nameSection(ref.top, declared) },
-      { label: 'Remove the section break', disabled: declared === null, onSelect: () => ed.setSlideAttr({ top: ref.top, sub: null }, SECTION_ATTR, null) },
+      { label: declared === null ? t('map.startSectionMenu') : t('map.renameSectionMenu'), onSelect: () => void this.nameSection(ref.top, declared) },
+      { label: t('map.removeSection'), disabled: declared === null, onSelect: () => ed.setSlideAttr({ top: ref.top, sub: null }, SECTION_ATTR, null) },
       { separator: true },
       {
-        label: 'Nest under the slide before', disabled: ref.sub !== null || ref.top === 0,
-        hint: 'reveal’s ↓', onSelect: () => ed.nestSlide(ref.top, ref.top - 1),
+        label: t('map.nestUnder'), disabled: ref.sub !== null || ref.top === 0,
+        hint: t('map.revealDown'), onSelect: () => ed.nestSlide(ref.top, ref.top - 1),
       },
       {
-        label: 'Promote out of the stack', disabled: ref.sub === null,
+        label: t('map.promote'), disabled: ref.sub === null,
         onSelect: () => { if (ref.sub !== null) ed.unnestSlide(ref.top, ref.sub); },
       },
       { separator: true },
-      { label: 'Hidden when presenting', checked: vis === 'hidden', onSelect: () => ed.setSlideAttr(ref, 'data-visibility', vis === 'hidden' ? null : 'hidden') },
-      { label: 'Duplicate', onSelect: () => ed.duplicateSlide(ref) },
-      { label: 'Delete slide', onSelect: () => ed.deleteSlide(ref) },
+      { label: t('map.hiddenWhenPresenting'), checked: vis === 'hidden', onSelect: () => ed.setSlideAttr(ref, 'data-visibility', vis === 'hidden' ? null : 'hidden') },
+      { label: t('common.duplicate'), onSelect: () => ed.duplicateSlide(ref) },
+      { label: t('common.deleteSlide'), onSelect: () => ed.deleteSlide(ref) },
     ], at);
   }
 
@@ -318,9 +324,9 @@ export class MapView {
    */
   private async newSlide(after: number, opts: { below?: boolean } = {}): Promise<void> {
     const ed = this.app.editor;
-    const title = await promptDialog(opts.below ? 'New slide below this one' : 'New slide', 'Title', '', 'What this slide says');
+    const title = await promptDialog(opts.below ? t('map.newSlideBelowMenu') : t('common.newSlide'), t('map.fieldTitle'), '', t('map.titlePlaceholder'));
     if (title === null) return;
-    const heading = escapeHtml(title.trim() || 'Untitled');
+    const heading = escapeHtml(title.trim() || t('common.untitled'));
     const at = ed.addSlide(`<section>\n  <h2>${heading}</h2>\n</section>`, after);
     if (opts.below) ed.nestSlide(at, after);
     this.render();
@@ -332,7 +338,7 @@ export class MapView {
     const src = ed.stage.srcSection(ref);
     const head = src.querySelector('h1, h2, h3, .big');
     const current = (head?.textContent ?? '').replace(/\s+/g, ' ').trim();
-    const title = await promptDialog('Slide title', 'Title', current, 'What this slide says');
+    const title = await promptDialog(t('map.dialogSlideTitle'), t('map.fieldTitle'), current, t('map.titlePlaceholder'));
     if (title === null) return;
     const html = escapeHtml(title.trim());
     ed.edit('Rename slide', () => {
@@ -344,8 +350,8 @@ export class MapView {
 
   private async nameSection(top: number, current: string | null): Promise<void> {
     const name = await promptDialog(
-      current === null ? 'Start a section here' : 'Name this section',
-      'Section name', current ?? '', 'Anatomy',
+      current === null ? t('map.startSection') : t('map.nameSection'),
+      t('map.fieldSectionName'), current ?? '', 'Anatomy',
     );
     if (name === null) return;
     // An empty name still starts a section — a seam without a label.

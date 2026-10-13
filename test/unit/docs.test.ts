@@ -16,6 +16,10 @@ describe('docs for assistants', () => {
   it('llms.txt is the same at the repo root and in what gets served', () => {
     expect(readFileSync('public/llms.txt', 'utf8')).toBe(readFileSync('llms.txt', 'utf8'));
   });
+  it('the tutorial ships one static page per locale', () => {
+    expect(readFileSync('public/tutorial.html', 'utf8')).toContain('<html lang="en">');
+    expect(readFileSync('public/tutorial.zh-CN.html', 'utf8')).toContain('<html lang="zh-CN">');
+  });
   it('the docs point at nothing that needs a hosted Lectern', () => {
     // GitHub Pages was deliberately switched off: Lectern is a local tool.
     for (const f of ['README.md', 'AGENTS.md', 'llms.txt']) {

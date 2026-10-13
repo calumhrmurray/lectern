@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>五分钟上手 Lectern</title>
+  <meta name="description" content="一份关于 Lectern 的简短教程 —— 面向 HTML / reveal.js 幻灯片演示文稿的可视化编辑器：打开演示文稿、移动与编辑内容、添加幻灯片、保存，以及为 AI 智能体留下备注。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23e0894a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 5h10l-1.5 4h-7z'/%3E%3Cpath d='M8 9v5M5 14h6'/%3E%3C/svg%3E">
+  <style>
+    :root { --bg: #1b1d21; --panel: #24272d; --line: #3a3d44; --text: #e6e7ea; --soft: #a9adb6; --dim: #8f949f; --accent: #6ea2ff; --warm: #e0894a; --yellow: #fff3a8; --green: #bfe8c0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { font-size: 34px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.01em; }
+    h1 svg { width: 30px; height: 30px; vertical-align: -4px; margin-right: 6px; }
+    .lead { color: var(--soft); font-size: 17px; margin: 0 0 36px; }
+    .lead a, p a, li a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+    .lead a:hover, p a:hover, li a:hover { text-decoration-thickness: 2px; }
+    h2 { font-size: 21px; margin: 44px 0 10px; display: flex; align-items: baseline; gap: 12px; }
+    h2 .n { color: var(--warm); font-variant-numeric: tabular-nums; font-size: 15px; letter-spacing: .08em; }
+    p, li { color: var(--text); }
+    ul { padding-left: 20px; margin: 8px 0; }
+    li { margin: 4px 0; }
+    kbd { font: 12.5px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 3px 6px; color: var(--text); white-space: nowrap; }
+    code { font: 13.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel); padding: 1px 6px; border-radius: 4px; }
+    figure { margin: 14px 0 6px; }
+    figure img { display: block; width: 100%; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.4); }
+    figcaption { color: var(--dim); font-size: 13px; margin-top: 8px; }
+    .tip { border-left: 3px solid var(--warm); padding: 6px 14px; margin: 14px 0; color: var(--soft); background: var(--panel); border-radius: 0 6px 6px 0; }
+    .note-y, .note-g { display: inline-block; padding: 0 6px; border-radius: 4px; color: #222; font-weight: 600; }
+    .note-y { background: var(--yellow); } .note-g { background: var(--green); }
+    .toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 8px; padding: 0; list-style: none; font-size: 14px; }
+    .toc a { color: var(--soft); }
+    footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--dim); font-size: 13.5px; }
+    pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13.5px; line-height: 1.5; }
+    @media (prefers-color-scheme: light) { :root { --bg: #f6f5f1; --panel: #ffffff; --line: #ddd9cf; --text: #1d1f24; --soft: #4d525c; --dim: #686d77; --accent: #2b5bd7; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1><svg viewBox="0 0 16 16" fill="none" stroke="#e0894a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h10l-1.5 4h-7z"/><path d="M8 9v5M5 14h6"/></svg>五分钟上手 Lectern</h1>
+  <p class="lead">Lectern 像桌面演示软件那样编辑 HTML 幻灯片 —— 点击、拖动、输入 —— 并把结果直接写回 <code>.html</code> 文件。如果你用过 Keynote 或 PowerPoint，大部分操作都会很熟悉。本页讲剩下的部分，以及如何与 AI 智能体一起处理一份演示文稿。<a href="./">在另一个标签页打开编辑器</a>，边看边做。</p>
+  <ul class="toc">
+    <li><a href="#open">1 打开演示文稿</a></li><li><a href="#screen">2 界面</a></li><li><a href="#move">3 选择与移动</a></li><li><a href="#text">4 编辑文本</a></li>
+    <li><a href="#add">5 添加幻灯片与对象</a></li><li><a href="#save">6 保存与演示</a></li><li><a href="#ai">7 给 AI 的备注</a></li><li><a href="#more">8 其他</a></li>
+  </ul>
+
+  <h2 id="open"><span class="n">1</span> 打开演示文稿</h2>
+  <p>从欢迎页有三种进入方式。<b>打开文件夹…</b> 在Chrome或者Edge中选择存放演示文稿的文件夹（浏览器直接读写你磁盘上的文件，不会上传任何东西到互联网）。<b>新建演示文稿…</b> 创建一个包含标题幻灯片、主题和 reveal.js 副本的文件夹。示例上的 <b>预览</b> 会打开一个示例演示文稿的临时副本，这是是快速试用最快的方式；<b>保存到文件夹</b> 可以保存对示例的编辑。</p>
+  <figure><img src="tutorial/welcome.jpg" alt="欢迎页：打开文件夹、新建演示文稿、试试示例，以及示例演示文稿"><figcaption>欢迎页。最近打开过的演示文稿也会显示在这里。</figcaption></figure>
+  <p class="tip">在终端里，<code>npx lectern-editor path/to/deck.html</code> 可为任意浏览器（包括 Firefox 和 Safari）在本地提供编辑器。</p>
+
+  <h2 id="screen"><span class="n">2</span> 界面</h2>
+  <p>左侧是幻灯片列表，中间是当前幻灯片，右侧是检查器。幻灯片由演示文稿自带的 reveal.js 和样式表渲染，编辑时所见即观众所见。状态栏显示你正在编辑的文件；工具栏的 <b>演示</b> 会打开真正的演示。</p>
+  <figure><img src="tutorial/editor.jpg" alt="带有导航器、画布和检查器的编辑器"><figcaption>导航器、画布、检查器。拖动缩略图可重新排序幻灯片。</figcaption></figure>
+
+  <h2 id="move"><span class="n">3</span> 选择与移动</h2>
+  <p><b>单击</b> 任意对象即可选中它 —— 标题、列表、图片、图表。会出现控制柄，检查器显示它的位置、大小、文本和填充。<b>拖动</b> 可移动它；参考线会吸附到幻灯片边缘、中心线以及其他对象的边缘（按住 <kbd>⌥</kbd> 可忽略吸附）。拖动控制柄可调整大小（图片保持比例；<kbd>⇧</kbd> 可约束任意对象）。选区上方的小圆点用于旋转。方向键微移一个像素，<kbd>⇧</kbd>+方向键微移十个。</p>
+  <figure><img src="tutorial/drag.jpg" alt="正在拖动一个图表，显示吸附参考线和位置读数"><figcaption>拖动中：粉色参考线是吸附线，读数是幻灯片单位下的新位置。</figcaption></figure>
+  <p>对象在幻灯片上有两种存在方式，在检查器里显示为 <b>跟随布局</b> / <b>自由</b>。由演示文稿 CSS 排版的文本保持在<i>布局流</i>中：拖动它只做微调，不会打乱其他内容。手动放置的对象 —— 图片、形状、说明文字 —— 是<i>自由</i>的，位于精确位置。用按钮在两者间切换。在空白画布上拖动可选择多个对象；<kbd>⌘A</kbd> 选中幻灯片上的全部；再次单击已选中的对象可选中它的父级（栏、卡片）。</p>
+
+  <h2 id="text"><span class="n">4</span> 编辑文本</h2>
+  <p><b>双击</b> 文本即可原地编辑，并全选以便直接重打；单击已选中的文本可把光标放到点击处。编辑时，拖动可选择部分文本，双击选中一个词，三击选中一段，<kbd>⌫</kbd> 删除所选内容。工具栏会切换为加粗、斜体、下划线、列表和链接（<kbd>⌘B</kbd> <kbd>⌘I</kbd> <kbd>⌘U</kbd> <kbd>⌘K</kbd>）；<kbd>Tab</kbd> 缩进列表项。<kbd>Esc</kbd> 或点击别处即结束编辑。选中文本对象后，直接输入即可替换其文本。以 LaTeX 书写的数学公式仍保持 LaTeX 源码，并在你结束时重新排版。</p>
+  <figure><img src="tutorial/text.jpg" alt="用文本工具栏原地编辑一个项目符号列表"><figcaption>原地编辑列表。字体、大小、颜色和对齐在检查器里。</figcaption></figure>
+
+  <h2 id="add"><span class="n">5</span> 添加幻灯片与对象</h2>
+  <p>工具栏的 <b>幻灯片</b>（或 <kbd>⌘⇧N</kbd>）可从布局添加一张幻灯片 —— 标题、项目符号、双栏、章节分隔、图片 —— 由演示文稿自己的类构建，因此与其余部分风格一致。<b>文本</b>、<b>图片</b> 和 <b>形状</b> 会向当前幻灯片添加对象；图片会被复制到演示文稿文件夹。<b>…</b> 菜单里有表格、代码、公式和网页嵌入。<kbd>⌘D</kbd> 复制，<kbd>⌫</kbd> 删除，<kbd>⌘C</kbd>/<kbd>⌘V</kbd> 复制与粘贴 —— 对象和幻灯片都一样。</p>
+  <figure><img src="tutorial/layouts.jpg" alt="新建幻灯片布局选择器"><figcaption>新建幻灯片布局。“复制当前幻灯片”往往是最快的起点。</figcaption></figure>
+
+  <h2 id="save"><span class="n">6</span> 保存与演示</h2>
+  <p><kbd>⌘S</kbd> 把改动过的幻灯片写回 HTML 文件，这个过程只会写改动过的部分，文件其余部分逐字节保持不变。自动保存默认开启（菜单 ▸ <b>自动保存</b>），所以通常你无需按下它。<kbd>⌘Z</kbd> 可撤销任何操作，跨保存也有效。<b>演示</b> 会以观众看到的样子打开演示文稿；如果需要讲义，可在那里用 reveal 的 <code>?print-pdf</code> 打印为 PDF。</p>
+  <p class="tip">因为文件本身就是文档，其他工具也能编辑它：文本编辑器、git，或 AI 智能体。如果在磁盘上的文件发生变化而你当时没有未保存的改动，画布会自动重新加载并停留在同一张幻灯片。</p>
+
+  <h2 id="ai"><span class="n">7</span> 给 AI 的备注</h2>
+  <p>这是新增的部分。在幻灯片上相关的位置右键（或双击空白画布），就地写下你想在那里完成的事：<i>“在这里画一头鲸鱼，朝左”</i>、<i>“太密了 —— 拆成两页”</i>、<i>“把 1905 年的法律加在这里”</i>。备注在画布上是一张 <span class="note-y">黄色便签</span>，会连同它在幻灯片上的位置一起保存在 HTML 里（演示时隐藏）。</p>
+  <figure><img src="tutorial/note.jpg" alt="幻灯片上一条给 AI 的黄色备注"><figcaption>一条备注，正好放在鲸鱼该出现的位置。</figcaption></figure>
+  <p>然后请你的智能体 <b>处理这些备注</b>。它会从文件中读取它们 —— <code>npx lectern-editor notes deck.html</code> 会列出它们，工具栏里的 <b>AI 备注</b> 面板会复制一段现成的提示词 —— 完成每条请求并标记为已完成。备注会变<span class="note-g">绿色</span>，在你这句下方附上智能体的回复。单击绿色备注可回复它（它会重新变为待处理，并带上整个对话串）；满意后双击即可关闭。</p>
+  <figure><img src="tutorial/done.jpg" alt="一条绿色备注，显示作者与 AI 之间的对话"><figcaption>一条完成的备注：作者的请求与智能体的回复，按顺序排列。</figcaption></figure>
+  <p>要让智能体熟悉这套东西 —— 文件格式、演示文稿的类、备注协议 —— 把 <a href="AGENTS.md">AGENTS.md</a> 给它。在 Claude Code 中安装技能：<code>/plugin marketplace add calumhrmurray/lectern</code>，然后 <code>/plugin install lectern@lectern</code>。其他智能体则粘贴：</p>
+  <pre>Read https://calumhrmurray.github.io/lectern/AGENTS.md and make me a slide deck about … in a folder called talk.</pre>
+  <p>然后让 Lectern 一直打开着那个文件夹。它的改动会即时出现；你的改动会在你操作后一秒内写入文件。</p>
+
+  <h2 id="more"><span class="n">8</span> 其他</h2>
+  <ul>
+    <li><b>检查器页签。</b> <i>格式</i> 针对选中的对象；<i>幻灯片</i> 有背景、过渡、演讲者备注和幻灯片的原始 HTML；<i>演示文稿</i> 有幻灯片尺寸和演示文稿的类。</li>
+    <li><b>类。</b> 检查器底部的这些标签就是演示文稿自己的 CSS 类（<code>.kicker</code>、<code>.card</code>、<code>.soft</code> …）。单击即可切换 —— 让新内容看起来和旧内容一致最省事的办法。</li>
+    <li><b>片段。</b> <i>动画构建 ▸ 点击时出现</i> 会把对象变成 reveal.js 片段；效果和顺序也在那里设置。</li>
+    <li><b>排列。</b> 针对多选的对齐、分布和层级；<kbd>⌘]</kbd> / <kbd>⌘[</kbd> 上移一层 / 下移一层。</li>
+    <li><b>缩放。</b> <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd>，或用工具栏；<kbd>PgUp</kbd>/<kbd>PgDn</kbd> 切换幻灯片。</li>
+    <li><b>多文件演示文稿</b>（从分片文件拉入幻灯片）会作为一份演示文稿编辑，并存回各自正确的文件。</li>
+    <li><kbd>?</kbd> 显示完整的快捷键列表。</li>
+  </ul>
+
+  <footer>Lectern 是开源软件（MIT）：<a href="https://github.com/calumhrmurray/lectern">github.com/calumhrmurray/lectern</a> · <a href="README.md">README</a> · <a href="AGENTS.md">给智能体的说明</a> · <a href="tutorial.html">English</a></footer>
+</main>
+</body>
+</html>

@@ -144,7 +144,7 @@ server.listen(port, host, () => {
   if (!isLoopbackHost(host)) console.warn(`  warning: --host ${host} makes ${rootDir} readable and writable by anyone who can reach this machine on port ${port}\n`);
   if (open) {
     const cmd = process.platform === 'darwin' ? `open "${url}"` : process.platform === 'win32' ? `start "" "${url}"` : `xdg-open "${url}"`;
-    exec(cmd, () => {});
+    exec(cmd, () => { });
   }
 });
 
@@ -206,7 +206,7 @@ async function newDeck(argv) {
   }
   const title = opts.title || basename(dir).replace(/[-_]+/g, ' ').replace(/^\w/, (c) => c.toUpperCase()) || 'Untitled';
   writeFileSync(join(dir, 'theme.css'), theme.css.endsWith('\n') ? theme.css : theme.css + '\n');
-  created.unshift(`theme.css  (${theme.name} theme — ${theme.description})`);
+  created.unshift(`theme.css  (${theme.name} theme)`);
   writeFileSync(indexFile, starterDeckHtml({ title, author: opts.author, lang: opts.lang, width: opts.width, height: opts.height, revealPath, theme }));
   created.unshift(`index.html  (${opts.width}×${opts.height}, "${title}")`);
 

@@ -586,3 +586,8 @@ textarea.lec-field { height: auto; padding: 6px 7px; resize: vertical; font-fami
 }
 .lec-tip-x:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) { .lec-tip { transition: none; } }
+
+/* The welcome screen's language switcher reads as a link, not a button. */
+.lec-welcome .lec-lang { margin-top: -16px; }
+.lec-welcome .lec-lang-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; }
+.lec-welcome .lec-lang-btn:hover { text-decoration: underline; }

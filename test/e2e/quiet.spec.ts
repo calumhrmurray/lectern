@@ -61,7 +61,7 @@ test.describe('quiet mode', () => {
     expect(await page.evaluate(() => window.lectern.quiet)).toBe(true);
     await page.locator('.lec-tools-btn').click();
     await page.locator('.lec-tools-item[data-action="tool-more"]').click();
-    await page.getByText('Show the panels').click();
+    await page.locator('[data-action="menu-show-panels"]').click();
     await expect(page.locator('.lec-navigator')).toBeVisible();
   });
 });
@@ -161,12 +161,10 @@ test.describe('tips', () => {
 
   test('the first thing it says is how to leave a note', async ({ page }) => {
     await open(page);
-    await expect(page.locator('.lec-tip')).toBeVisible();
-    await expect(page.locator('.lec-tip')).toContainText('Right-click anywhere on the slide');
-    await expect(page.locator('.lec-tip')).toContainText('assistant');
+    await expect(page.locator('.lec-tip[data-tip="note"]')).toBeVisible();
     await page.locator('.lec-tip-x').click();
     // then, and only then, where the panels went
-    await expect(page.locator('.lec-tip')).toContainText('Q brings them back');
+    await expect(page.locator('.lec-tip[data-tip="panels"]')).toBeVisible();
     await page.locator('.lec-tip-x').click();
     await expect(page.locator('.lec-tip')).toHaveCount(0);
   });
@@ -292,7 +290,7 @@ test.describe('the bar', () => {
     await expect(page.locator('.lec-tools-dot')).not.toHaveClass(/lec-on/);
     await page.evaluate(() => window.lectern.editor.insertElement('ainote', { edit: false }));
     await expect(page.locator('.lec-tools-dot')).toHaveClass(/lec-on/);
-    await expect(page.locator('.lec-tools-btn')).toHaveAttribute('title', /1 note waiting/);
+    await expect(page.locator('.lec-tools-btn')).toHaveAttribute('data-note-count', '1');
   });
 
   test('the glyphs and the tools button sit together, bottom left', async ({ page }) => {
@@ -320,7 +318,7 @@ test.describe('map', () => {
     await expect(page.locator('.lec-map-col')).toHaveCount(7); // 6 slides + the trailing add column
     await expect(page.locator('.lec-map-card')).toHaveCount(7);
     await expect(page.locator('.lec-map-down')).toHaveCount(1); // one arrow inside the stack of 2
-    await expect(page.locator('.lec-map-count')).toContainText('7 slides');
+    await expect(page.locator('.lec-map-count')).toHaveAttribute('data-count', '7');
   });
 
   test('a card goes to its slide and closes the map', async ({ page }) => {

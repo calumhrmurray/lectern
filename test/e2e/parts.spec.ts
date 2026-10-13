@@ -19,7 +19,7 @@ test('multi-file decks: slides come from part files and save back to them', asyn
   await page.mouse.click(h2.x, h2.y);
   await drag(page, h2, { x: h2.x + 80, y: h2.y + 30 });
   await page.keyboard.press(`${mod}+s`);
-  await expect(page.locator('.lec-msg')).toHaveText('Saved');
+  await expect(page.locator('.lec-msg')).toHaveAttribute('data-state', 'saved');
 
   expect(read('session.html')).toBe(shellBefore);
   expect(read('slides/p0_intro.html')).toBe(p0Before);

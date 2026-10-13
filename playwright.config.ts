@@ -21,5 +21,9 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 30_000,
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /localisation\.spec\.ts/ },
+    // A zh-CN browser, to prove the suite and the UI are language-independent.
+    { name: 'chromium-zh', use: { ...devices['Desktop Chrome'], locale: 'zh-CN' }, testMatch: /localisation\.spec\.ts/ },
+  ],
 });
