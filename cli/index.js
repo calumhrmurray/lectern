@@ -12,10 +12,10 @@
  */
 
 import { createServer } from 'node:http';
-import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { exec } from 'node:child_process';
+import { exec, execSync } from 'node:child_process';
 import { createWorkspaceHandler, isLoopbackHost, safeJoin, send, serveFile } from './server.js';
 import { notesPrompt } from './notes.js';
 
@@ -48,6 +48,40 @@ const args = process.argv.slice(2);
 if (args[0] === '--help' || args[0] === '-h' || args[0] === 'help') { console.log(HELP); process.exit(0); }
 
 const command = ['new', 'notes', 'guide', 'convert'].includes(args[0]) ? args.shift() : 'serve';
+
+// Run from a git checkout, dist/ is whatever the last `npm run build` left, which after a pull
+// can be an older editor behind a newer version number. The published package has no src/, so
+// this only ever fires in a checkout. tsc and the Lectern.html bundle are skipped: a type error
+// should not stop a talk from opening, and launching should not dirty the committed Lectern.html.
+if (['serve', 'new', 'convert'].includes(command)) ensureFreshBuild();
+
+function newestMtime(path) {
+  if (!existsSync(path)) return 0;
+  const st = statSync(path);
+  if (!st.isDirectory()) return st.mtimeMs;
+  let newest = st.mtimeMs;
+  for (const name of readdirSync(path)) newest = Math.max(newest, newestMtime(join(path, name)));
+  return newest;
+}
+
+function ensureFreshBuild() {
+  if (!existsSync(join(pkgRoot, 'src'))) return;
+  const built = existsSync(join(distDir, 'index.html')) ? statSync(join(distDir, 'index.html')).mtimeMs : 0;
+  const inputs = ['src', 'index.html', 'package.json', 'vite.config.ts', 'scripts/build-cli-lib.mjs', 'scripts/copy-reveal.js',
+    'public/sw.js', 'public/tutorial', 'public/tutorial.html', 'public/examples', 'public/llms.txt'];
+  const source = Math.max(...inputs.map((p) => newestMtime(join(pkgRoot, p))));
+  if (source <= built) return;
+  if (!existsSync(join(pkgRoot, 'node_modules', '.bin', 'vite'))) {
+    console.error('lectern: dist/ is older than the source and node_modules is missing; run `npm install && npm run build`.');
+    process.exit(1);
+  }
+  console.error('lectern: the editor build is older than the source, rebuilding dist/ …');
+  const steps = ['node scripts/copy-reveal.js', 'npx vite build --logLevel error', 'node scripts/build-cli-lib.mjs'];
+  for (const step of steps) {
+    try { execSync(step, { cwd: pkgRoot, stdio: ['ignore', 2, 2] }); }
+    catch { console.error(`lectern: rebuild failed at \`${step}\`; fix it or run \`npm run build\`.`); process.exit(1); }
+  }
+}
 
 if (command === 'guide') {
   const file = join(pkgRoot, 'AGENTS.md');
